@@ -1,4 +1,4 @@
-# MODBUS WORKFLOW STUDIO v1.2.8
+# MODBUS WORKFLOW STUDIO v1.2.8 
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
@@ -50,7 +50,7 @@ Do not expose the application directly to the public Internet. Use an authentica
 - FC06 Write Single Register
 - FC16 Write Multiple Registers
 
-FC15 is intentionally unavailable.
+FC15 is intentionally unavailable. (Will be added later)
 
 ### Logic and utility blocks
 
