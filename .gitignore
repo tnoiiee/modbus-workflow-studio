@@ -11,7 +11,6 @@ coverage/
 Thumbs.db
 .vscode/
 .idea/
-
 data/*.json
 data/*.log
 data/workflows/

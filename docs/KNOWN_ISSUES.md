@@ -1,23 +1,25 @@
-# Known Issues
+# Known Issues: v1.2.8
 
-## v1.2.8
+## Monitor cycle overlap
 
-### Continuous monitor cycle overlap
+Continuous monitoring uses interval-based scheduling. A cycle can be invoked before the previous cycle finishes when total read duration exceeds the configured interval.
 
-`ModbusMonitorManager.start()` starts an immediate read and then uses `setInterval`. If one list read takes longer than the configured interval, another read invocation can begin before completion.
+## High WebSocket diagnostic volume
 
-### High diagnostic event volume
+Each Modbus request can emit TX and RX/error traffic events. Large monitor lists can create many WebSocket frames.
 
-Each Modbus request can emit TX and RX/error traffic events. Continuous monitoring with many enabled items can generate many WebSocket frames.
+## No server backpressure policy
 
-### No WebSocket backpressure policy
+Server broadcast sends immediately to open clients without an explicit `bufferedAmount` policy or traffic batching.
 
-Server broadcast sends to every open client without inspecting `bufferedAmount`. High-volume diagnostics can accumulate in the transport.
+## No client reconnect
 
-### No client WebSocket reconnect
+The client creates one WebSocket connection and does not automatically reconnect after abnormal close, proxy failure, network interruption, or backend restart.
 
-The client creates one WebSocket and handles messages, but does not register a reconnect strategy for abnormal close or proxy failure.
+## No post-reconnect resynchronization
 
-### Vite development proxy ECONNABORTED
+Live workflow runtime, device state, monitor values, traffic, and audit updates may remain stale until page refresh after a lost WebSocket connection.
 
-Under high monitoring load or a broken proxy socket, Vite may log `write ECONNABORTED`. If the browser socket is lost, live updates may remain stopped until refresh.
+## Development proxy error
+
+Under high monitoring load, Vite may report `write ECONNABORTED` when the proxied WebSocket is aborted.

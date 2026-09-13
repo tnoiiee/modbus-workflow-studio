@@ -4,20 +4,22 @@
 
 ### Added
 
+- React Flow workflow editor with workflow CRUD.
+- Concurrent isolated workflow runtime sessions.
 - Independent Modbus Multi Input with up to eight sub-inputs.
-- Per-input Modbus configuration, runtime quality, value display, status lamps, and output ports.
+- Per-input configuration, runtime quality, value display, status lamps, and output ports.
 - Read-only Modbus Monitor and configurable Add Range dialog.
 - Boolean logic symbols and Linear Mapping.
-- Audit Viewer and independent runtime sessions.
+- Audit Viewer and reliable auto-save.
 
 ### Fixed
 
-- Reliable workflow auto-save and revision recovery.
-- Modbus Monitor CSV CRLF and UTF-8 export.
-- Server device type narrowing in the Multi Input read path.
+- Workflow save serialization and revision recovery.
+- Monitor CSV CRLF and UTF-8 export.
+- Server type narrowing in the Multi Input read path.
 
 ### Known issues
 
 - Continuous monitor cycles may overlap.
-- WebSocket diagnostics have no backpressure/batching policy.
+- WebSocket diagnostics have no backpressure or batching policy.
 - Client WebSocket has no auto-reconnect or state resynchronization.
