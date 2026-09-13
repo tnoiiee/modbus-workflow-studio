@@ -1,0 +1,3094 @@
+[
+  {
+    "id": "a861e573-751b-42af-90f7-23ab554c56e5",
+    "name": "WAGO RACK 1",
+    "deviceId": "device-2",
+    "unitId": 1,
+    "scanInterval": 1000,
+    "items": [
+      {
+        "id": "cc8a4863-bb6c-41e3-b02c-f96fa3d32f59",
+        "enabled": true,
+        "tagName": "Register 0",
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "58376836-45d4-428c-a1d1-60e68ae4f332",
+        "enabled": true,
+        "tagName": "Register 1",
+        "functionCode": 1,
+        "address": 1,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "3b4a1286-ee7f-4c4e-8587-95bdb04daea1",
+        "enabled": true,
+        "tagName": "Register 2",
+        "functionCode": 1,
+        "address": 2,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "68ad238b-9f7f-42c8-b46a-9bf60a539f87",
+        "enabled": true,
+        "tagName": "Register 3",
+        "functionCode": 1,
+        "address": 3,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d1c6a7e4-2afe-4ab2-b19c-d2d0c190c5e9",
+        "enabled": true,
+        "tagName": "Register 4",
+        "functionCode": 1,
+        "address": 4,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "123139aa-ce93-40ea-9645-0b27a3ed5a2b",
+        "enabled": true,
+        "tagName": "Register 5",
+        "functionCode": 1,
+        "address": 5,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "787619db-81a6-4ace-b043-9f5a8476d94a",
+        "enabled": true,
+        "tagName": "Register 6",
+        "functionCode": 1,
+        "address": 6,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "2f6fdb28-9cc0-4868-b896-4afa3d995cc6",
+        "enabled": true,
+        "tagName": "Register 7",
+        "functionCode": 1,
+        "address": 7,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "9a5ebd13-bee5-4dde-9b3c-7d69aedc700a",
+        "enabled": true,
+        "tagName": "Register 8",
+        "functionCode": 1,
+        "address": 8,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "358f2663-7618-4b77-a1c0-b0968d710150",
+        "enabled": true,
+        "tagName": "Register 9",
+        "functionCode": 1,
+        "address": 9,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "40168c35-1b31-4b42-8021-8039a004b4fa",
+        "enabled": true,
+        "tagName": "Register 10",
+        "functionCode": 1,
+        "address": 10,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "c689fd29-30fd-4b12-a30e-33d9d4cf96c0",
+        "enabled": true,
+        "tagName": "Register 11",
+        "functionCode": 1,
+        "address": 11,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "846f437f-096b-41bd-87a9-74eb689ce074",
+        "enabled": true,
+        "tagName": "Register 12",
+        "functionCode": 1,
+        "address": 12,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "3b0b8a33-b40e-4dd0-897b-6f41f3f3f93d",
+        "enabled": true,
+        "tagName": "Register 13",
+        "functionCode": 1,
+        "address": 13,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "f16fc61e-bdc2-46a6-b6db-41569efcb526",
+        "enabled": true,
+        "tagName": "Register 14",
+        "functionCode": 1,
+        "address": 14,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4e6d725e-e006-4254-b1a8-4a11631a6114",
+        "enabled": true,
+        "tagName": "Register 15",
+        "functionCode": 1,
+        "address": 15,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "13135d4d-6dcc-470f-b7bd-52caa48e801f",
+        "enabled": true,
+        "tagName": "Register 16",
+        "functionCode": 1,
+        "address": 16,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "af83810f-ef2e-43f6-ba18-919bfdea951d",
+        "enabled": true,
+        "tagName": "Register 17",
+        "functionCode": 1,
+        "address": 17,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "cc235cba-846b-47c6-9998-e0c3944eb2ca",
+        "enabled": true,
+        "tagName": "Register 18",
+        "functionCode": 1,
+        "address": 18,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5562b170-eb3c-45ee-9608-1bf5a5157a78",
+        "enabled": true,
+        "tagName": "Register 19",
+        "functionCode": 1,
+        "address": 19,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "de90869f-c056-4668-b0cf-434a3569d0c2",
+        "enabled": true,
+        "tagName": "Register 20",
+        "functionCode": 1,
+        "address": 20,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4c5c946f-75c5-4db2-892b-4bb97a85950a",
+        "enabled": true,
+        "tagName": "Register 21",
+        "functionCode": 1,
+        "address": 21,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4bfa5f2d-73b8-4cf3-9267-f89c8d36b20d",
+        "enabled": true,
+        "tagName": "Register 22",
+        "functionCode": 1,
+        "address": 22,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "bafa61fb-5cfa-4d59-82e6-56d8e798d28c",
+        "enabled": true,
+        "tagName": "Register 23",
+        "functionCode": 3,
+        "address": 23,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a0103641-2ef4-4008-a3ce-9ee8ad2853ab",
+        "enabled": true,
+        "tagName": "Register 24",
+        "functionCode": 3,
+        "address": 24,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "f1aaa9c6-9cbd-43d0-aa21-fdcb3fa4e809",
+        "enabled": true,
+        "tagName": "Register 25",
+        "functionCode": 3,
+        "address": 25,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d1c3677a-8919-446e-abdc-3cdcd695bfec",
+        "enabled": true,
+        "tagName": "Register 26",
+        "functionCode": 3,
+        "address": 26,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d6143fe3-7e45-4f72-b2ea-2bd2b7e54934",
+        "enabled": true,
+        "tagName": "Register 27",
+        "functionCode": 3,
+        "address": 27,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "774c2939-e51b-438d-91f7-2400268c5600",
+        "enabled": true,
+        "tagName": "Register 28",
+        "functionCode": 3,
+        "address": 28,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "05a828d9-4642-447b-8223-20b81f3fd270",
+        "enabled": true,
+        "tagName": "Register 29",
+        "functionCode": 3,
+        "address": 29,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "0b96c0ef-421b-4246-a65e-9e8ac9222d35",
+        "enabled": true,
+        "tagName": "Register 30",
+        "functionCode": 3,
+        "address": 30,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d9cf4de6-7624-49a9-bb0d-ba9aedf6e6e3",
+        "enabled": true,
+        "tagName": "Register 31",
+        "functionCode": 3,
+        "address": 31,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "2754b2a1-cfde-40f9-95dd-63603556031b",
+        "enabled": true,
+        "tagName": "Register 32",
+        "functionCode": 3,
+        "address": 32,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "6197a1ec-9957-4b5c-ade0-ef6436fa9d13",
+        "enabled": true,
+        "tagName": "Register 33",
+        "functionCode": 3,
+        "address": 33,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "2ebe1be8-006a-473b-b80b-c5b5a3ff1dad",
+        "enabled": true,
+        "tagName": "Register 34",
+        "functionCode": 3,
+        "address": 34,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "fe0a7119-25c9-4681-869c-9786b2f5eb22",
+        "enabled": true,
+        "tagName": "Register 35",
+        "functionCode": 3,
+        "address": 35,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "473bb6e6-98be-46dd-b3ae-aa274d6d3882",
+        "enabled": true,
+        "tagName": "Register 36",
+        "functionCode": 3,
+        "address": 36,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "2a447235-3292-420f-9d67-5c5d4b4d8d49",
+        "enabled": true,
+        "tagName": "Register 37",
+        "functionCode": 3,
+        "address": 37,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "41835653-469e-4018-b866-f16806f1f406",
+        "enabled": true,
+        "tagName": "Register 38",
+        "functionCode": 3,
+        "address": 38,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "9024192e-a602-48ce-99ed-a46864fc7071",
+        "enabled": true,
+        "tagName": "Register 39",
+        "functionCode": 3,
+        "address": 39,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "c975740f-8aaa-4dca-a0e1-90cd52bf6d32",
+        "enabled": true,
+        "tagName": "Register 40",
+        "functionCode": 3,
+        "address": 40,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "c650d436-05cf-4a85-9fe0-85496fc67e9c",
+        "enabled": true,
+        "tagName": "Register 41",
+        "functionCode": 3,
+        "address": 41,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "9f712c71-952f-40fc-8561-e2b74747f400",
+        "enabled": true,
+        "tagName": "Register 42",
+        "functionCode": 3,
+        "address": 42,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "b20786f9-ade6-4167-a2fd-05656b1ea3b6",
+        "enabled": true,
+        "tagName": "Register 43",
+        "functionCode": 3,
+        "address": 43,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "0593e0e2-3683-4bfc-8f80-cda5bc2dab8e",
+        "enabled": true,
+        "tagName": "Register 44",
+        "functionCode": 3,
+        "address": 44,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7d72f8d3-d5dd-4e00-8c34-e190475f6813",
+        "enabled": true,
+        "tagName": "Register 45",
+        "functionCode": 3,
+        "address": 45,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "2c72d924-f8e7-4d0a-83d3-5030a0d905c0",
+        "enabled": true,
+        "tagName": "Register 46",
+        "functionCode": 3,
+        "address": 46,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "da8d7b1a-7a97-41e4-b376-003493ac34f6",
+        "enabled": true,
+        "tagName": "Register 47",
+        "functionCode": 3,
+        "address": 47,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5a38a75d-0f73-493b-bf34-dae040441729",
+        "enabled": true,
+        "tagName": "Register 48",
+        "functionCode": 3,
+        "address": 48,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5e8b84a8-93f5-49be-ba44-9502f490ada9",
+        "enabled": true,
+        "tagName": "Register 49",
+        "functionCode": 3,
+        "address": 49,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      }
+    ],
+    "createdAt": "2026-09-12T08:32:04.313Z",
+    "updatedAt": "2026-09-12T16:50:26.320Z",
+    "running": true,
+    "values": {
+      "cc8a4863-bb6c-41e3-b02c-f96fa3d32f59": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.844Z",
+        "responseTime": 1
+      },
+      "58376836-45d4-428c-a1d1-60e68ae4f332": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.845Z",
+        "responseTime": 1
+      },
+      "3b4a1286-ee7f-4c4e-8587-95bdb04daea1": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.845Z",
+        "responseTime": 0
+      },
+      "68ad238b-9f7f-42c8-b46a-9bf60a539f87": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.846Z",
+        "responseTime": 1
+      },
+      "d1c6a7e4-2afe-4ab2-b19c-d2d0c190c5e9": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.846Z",
+        "responseTime": 0
+      },
+      "123139aa-ce93-40ea-9645-0b27a3ed5a2b": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.847Z",
+        "responseTime": 1
+      },
+      "787619db-81a6-4ace-b043-9f5a8476d94a": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.847Z",
+        "responseTime": 0
+      },
+      "2f6fdb28-9cc0-4868-b896-4afa3d995cc6": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.848Z",
+        "responseTime": 1
+      },
+      "9a5ebd13-bee5-4dde-9b3c-7d69aedc700a": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.848Z",
+        "responseTime": 0
+      },
+      "358f2663-7618-4b77-a1c0-b0968d710150": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.849Z",
+        "responseTime": 1
+      },
+      "40168c35-1b31-4b42-8021-8039a004b4fa": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.849Z",
+        "responseTime": 0
+      },
+      "c689fd29-30fd-4b12-a30e-33d9d4cf96c0": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.849Z",
+        "responseTime": 0
+      },
+      "846f437f-096b-41bd-87a9-74eb689ce074": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.850Z",
+        "responseTime": 1
+      },
+      "3b0b8a33-b40e-4dd0-897b-6f41f3f3f93d": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.850Z",
+        "responseTime": 0
+      },
+      "f16fc61e-bdc2-46a6-b6db-41569efcb526": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.851Z",
+        "responseTime": 1
+      },
+      "4e6d725e-e006-4254-b1a8-4a11631a6114": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.851Z",
+        "responseTime": 0
+      },
+      "13135d4d-6dcc-470f-b7bd-52caa48e801f": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.852Z",
+        "responseTime": 1
+      },
+      "af83810f-ef2e-43f6-ba18-919bfdea951d": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.852Z",
+        "responseTime": 0
+      },
+      "cc235cba-846b-47c6-9998-e0c3944eb2ca": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.853Z",
+        "responseTime": 1
+      },
+      "5562b170-eb3c-45ee-9608-1bf5a5157a78": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.853Z",
+        "responseTime": 0
+      },
+      "de90869f-c056-4668-b0cf-434a3569d0c2": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.854Z",
+        "responseTime": 1
+      },
+      "4c5c946f-75c5-4db2-892b-4bb97a85950a": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.854Z",
+        "responseTime": 0
+      },
+      "4bfa5f2d-73b8-4cf3-9267-f89c8d36b20d": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.854Z",
+        "responseTime": 0
+      },
+      "bafa61fb-5cfa-4d59-82e6-56d8e798d28c": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.855Z",
+        "responseTime": 1
+      },
+      "a0103641-2ef4-4008-a3ce-9ee8ad2853ab": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.855Z",
+        "responseTime": 0
+      },
+      "f1aaa9c6-9cbd-43d0-aa21-fdcb3fa4e809": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.856Z",
+        "responseTime": 1
+      },
+      "d1c3677a-8919-446e-abdc-3cdcd695bfec": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.856Z",
+        "responseTime": 0
+      },
+      "d6143fe3-7e45-4f72-b2ea-2bd2b7e54934": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.857Z",
+        "responseTime": 1
+      },
+      "774c2939-e51b-438d-91f7-2400268c5600": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.857Z",
+        "responseTime": 0
+      },
+      "05a828d9-4642-447b-8223-20b81f3fd270": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.858Z",
+        "responseTime": 1
+      },
+      "0b96c0ef-421b-4246-a65e-9e8ac9222d35": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.858Z",
+        "responseTime": 0
+      },
+      "d9cf4de6-7624-49a9-bb0d-ba9aedf6e6e3": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.859Z",
+        "responseTime": 1
+      },
+      "2754b2a1-cfde-40f9-95dd-63603556031b": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.859Z",
+        "responseTime": 0
+      },
+      "6197a1ec-9957-4b5c-ade0-ef6436fa9d13": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.859Z",
+        "responseTime": 0
+      },
+      "2ebe1be8-006a-473b-b80b-c5b5a3ff1dad": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.860Z",
+        "responseTime": 1
+      },
+      "fe0a7119-25c9-4681-869c-9786b2f5eb22": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.860Z",
+        "responseTime": 0
+      },
+      "473bb6e6-98be-46dd-b3ae-aa274d6d3882": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.861Z",
+        "responseTime": 1
+      },
+      "2a447235-3292-420f-9d67-5c5d4b4d8d49": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.861Z",
+        "responseTime": 0
+      },
+      "41835653-469e-4018-b866-f16806f1f406": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.862Z",
+        "responseTime": 1
+      },
+      "9024192e-a602-48ce-99ed-a46864fc7071": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.862Z",
+        "responseTime": 0
+      },
+      "c975740f-8aaa-4dca-a0e1-90cd52bf6d32": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.862Z",
+        "responseTime": 0
+      },
+      "c650d436-05cf-4a85-9fe0-85496fc67e9c": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.863Z",
+        "responseTime": 1
+      },
+      "9f712c71-952f-40fc-8561-e2b74747f400": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.863Z",
+        "responseTime": 0
+      },
+      "b20786f9-ade6-4167-a2fd-05656b1ea3b6": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.863Z",
+        "responseTime": 0
+      },
+      "0593e0e2-3683-4bfc-8f80-cda5bc2dab8e": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.864Z",
+        "responseTime": 1
+      },
+      "7d72f8d3-d5dd-4e00-8c34-e190475f6813": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.865Z",
+        "responseTime": 1
+      },
+      "2c72d924-f8e7-4d0a-83d3-5030a0d905c0": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.865Z",
+        "responseTime": 0
+      },
+      "da8d7b1a-7a97-41e4-b376-003493ac34f6": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.866Z",
+        "responseTime": 1
+      },
+      "5a38a75d-0f73-493b-bf34-dae040441729": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.866Z",
+        "responseTime": 0
+      },
+      "5e8b84a8-93f5-49be-ba44-9502f490ada9": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T08:59:24.866Z",
+        "responseTime": 0
+      }
+    }
+  },
+  {
+    "id": "315f841e-4271-4034-a7b6-695279d3573c",
+    "name": "WAGO RACK 2",
+    "deviceId": "device-2",
+    "unitId": 1,
+    "scanInterval": 1000,
+    "items": [
+      {
+        "id": "1e5c1945-ee20-4de4-93a9-be9f71453423",
+        "enabled": true,
+        "tagName": "Register 0",
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "93bd0432-0b5d-4486-9b6d-75f9d649cb86",
+        "enabled": true,
+        "tagName": "Register 1",
+        "functionCode": 1,
+        "address": 1,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7b0decd9-4bfe-4ded-8744-98de081a0b78",
+        "enabled": true,
+        "tagName": "Register 2",
+        "functionCode": 3,
+        "address": 2,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "457e6289-d9e9-485b-a66e-d03943779d85",
+        "enabled": true,
+        "tagName": "Register 3",
+        "functionCode": 3,
+        "address": 3,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "f907a41b-aa80-40a4-935f-24303377c2cf",
+        "enabled": true,
+        "tagName": "Register 4",
+        "functionCode": 3,
+        "address": 4,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "75868da6-dcd0-48aa-9ce0-c3dfa862ef0b",
+        "enabled": true,
+        "tagName": "Register 5",
+        "functionCode": 3,
+        "address": 5,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "40e6f05c-c4e2-4e8e-9b88-e45801f1fd3e",
+        "enabled": true,
+        "tagName": "Register 6",
+        "functionCode": 3,
+        "address": 6,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4be5f61f-9f00-453a-bc30-100792134536",
+        "enabled": true,
+        "tagName": "Register 7",
+        "functionCode": 3,
+        "address": 7,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "056232f4-e5b9-4ecf-8984-808f17c6457d",
+        "enabled": true,
+        "tagName": "Register 8",
+        "functionCode": 3,
+        "address": 8,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "ecd91f58-2a3c-4c1e-8e38-cc12df33ec4d",
+        "enabled": true,
+        "tagName": "Register 9",
+        "functionCode": 3,
+        "address": 9,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7d7ccf5c-c1d1-489e-bcee-b4ca0a5ae54d",
+        "enabled": true,
+        "tagName": "Register 10",
+        "functionCode": 3,
+        "address": 10,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "8654feb2-d00f-4c32-ae2a-6dc2b2ad15c7",
+        "enabled": true,
+        "tagName": "Register 11",
+        "functionCode": 3,
+        "address": 11,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5b0726a2-7a83-4d02-8550-885e35a64e6c",
+        "enabled": true,
+        "tagName": "Register 12",
+        "functionCode": 3,
+        "address": 12,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7a64b65b-d3b4-4aae-9460-83100ac7457d",
+        "enabled": true,
+        "tagName": "Register 13",
+        "functionCode": 3,
+        "address": 13,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "77dc8a78-9e19-4c52-ad81-3b033e320464",
+        "enabled": true,
+        "tagName": "Register 14",
+        "functionCode": 3,
+        "address": 14,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a6e48624-5728-4388-b201-c0c6bdcb197b",
+        "enabled": true,
+        "tagName": "Register 15",
+        "functionCode": 3,
+        "address": 15,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d4234671-04cd-4977-9b02-f842d55c5e55",
+        "enabled": true,
+        "tagName": "Register 16",
+        "functionCode": 3,
+        "address": 16,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4becef8e-26ec-4125-a9bb-40f12b95f83c",
+        "enabled": true,
+        "tagName": "Register 17",
+        "functionCode": 3,
+        "address": 17,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7d28e87b-d058-49cb-9034-c78fd17de775",
+        "enabled": true,
+        "tagName": "Register 18",
+        "functionCode": 3,
+        "address": 18,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "57f5172c-ece8-4b34-85e5-9c7b531ff475",
+        "enabled": true,
+        "tagName": "Register 19",
+        "functionCode": 3,
+        "address": 19,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "abfd9441-dbca-4d77-9feb-7e0306b4b645",
+        "enabled": true,
+        "tagName": "Register 20",
+        "functionCode": 3,
+        "address": 20,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "16f9809c-4e65-4829-b999-1fab9236054f",
+        "enabled": true,
+        "tagName": "Register 21",
+        "functionCode": 3,
+        "address": 21,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "42e86b08-c512-4c23-9fda-719194130bdc",
+        "enabled": true,
+        "tagName": "Register 22",
+        "functionCode": 3,
+        "address": 22,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "3d4af42b-31a1-4a7e-9914-7b16a6f543f2",
+        "enabled": true,
+        "tagName": "Register 23",
+        "functionCode": 3,
+        "address": 23,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "99dfd506-fa65-4db4-8848-f0d389d763ab",
+        "enabled": true,
+        "tagName": "Register 24",
+        "functionCode": 3,
+        "address": 24,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "faba6ead-81c7-4161-93bb-7f5972404066",
+        "enabled": true,
+        "tagName": "Register 25",
+        "functionCode": 3,
+        "address": 25,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5ff0ce4b-6210-4c18-994a-ca8cfd25e299",
+        "enabled": true,
+        "tagName": "Register 26",
+        "functionCode": 3,
+        "address": 26,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "6a5ce7ec-9529-4229-b7e1-5d168130cd7e",
+        "enabled": true,
+        "tagName": "Register 27",
+        "functionCode": 3,
+        "address": 27,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "03e08d9f-2729-408f-8b3b-425eb92565ff",
+        "enabled": true,
+        "tagName": "Register 28",
+        "functionCode": 3,
+        "address": 28,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "ba73f2ec-30b3-4a0b-80b5-55522af5a569",
+        "enabled": true,
+        "tagName": "Register 29",
+        "functionCode": 3,
+        "address": 29,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "236eba83-51cf-438e-8489-c013be585716",
+        "enabled": true,
+        "tagName": "Register 30",
+        "functionCode": 3,
+        "address": 30,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "ad31ae6f-b6c5-4660-af8e-075e0e188ecf",
+        "enabled": true,
+        "tagName": "Register 31",
+        "functionCode": 3,
+        "address": 31,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "764fb99b-4a27-4b84-a80d-28a37d76f962",
+        "enabled": true,
+        "tagName": "Register 32",
+        "functionCode": 3,
+        "address": 32,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "620259fa-6c9d-4d27-b641-ce022ad0ec23",
+        "enabled": true,
+        "tagName": "Register 33",
+        "functionCode": 3,
+        "address": 33,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "44bbde6d-d6a6-4930-ad69-1c6aa4c385a9",
+        "enabled": true,
+        "tagName": "Register 34",
+        "functionCode": 3,
+        "address": 34,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "e0f0fe86-b836-412f-ad52-c76ab12defc2",
+        "enabled": true,
+        "tagName": "Register 35",
+        "functionCode": 3,
+        "address": 35,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4e3591bb-1716-41f4-9259-43c1ac63e618",
+        "enabled": true,
+        "tagName": "Register 36",
+        "functionCode": 3,
+        "address": 36,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d6d4eb9d-764c-4f63-9886-6dbee12f8849",
+        "enabled": true,
+        "tagName": "Register 37",
+        "functionCode": 3,
+        "address": 37,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "61191eac-333a-437e-b112-833d00e866a5",
+        "enabled": true,
+        "tagName": "Register 38",
+        "functionCode": 3,
+        "address": 38,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "1bd48bb1-443e-4725-9741-6690311564b7",
+        "enabled": true,
+        "tagName": "Register 39",
+        "functionCode": 3,
+        "address": 39,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "8a0a0e04-1a14-4bf7-9b36-1df33bd4bfbf",
+        "enabled": true,
+        "tagName": "Register 40",
+        "functionCode": 3,
+        "address": 40,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "43f79718-d9e4-421c-9b1b-f2276ff2df9c",
+        "enabled": true,
+        "tagName": "Register 41",
+        "functionCode": 3,
+        "address": 41,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "0f88aa70-dc05-414e-aec1-3a6c36dde844",
+        "enabled": true,
+        "tagName": "Register 42",
+        "functionCode": 3,
+        "address": 42,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d4cae576-ac90-4eec-b0db-453524ea8e24",
+        "enabled": true,
+        "tagName": "Register 43",
+        "functionCode": 3,
+        "address": 43,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "f475f09f-a88e-4e29-bb7e-1bd5d7495376",
+        "enabled": true,
+        "tagName": "Register 44",
+        "functionCode": 3,
+        "address": 44,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a09c494c-e23d-430d-80fa-87de848f32fd",
+        "enabled": true,
+        "tagName": "Register 45",
+        "functionCode": 3,
+        "address": 45,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "02b40ea2-338f-47ba-b5a8-7976b83666c1",
+        "enabled": true,
+        "tagName": "Register 46",
+        "functionCode": 3,
+        "address": 46,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a26e16cb-ca86-49df-b83a-e94d7f6b9829",
+        "enabled": true,
+        "tagName": "Register 47",
+        "functionCode": 3,
+        "address": 47,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "c907ed16-dbbc-4cc0-9573-5859878d1317",
+        "enabled": true,
+        "tagName": "Register 48",
+        "functionCode": 3,
+        "address": 48,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "72626e18-2e93-43a1-9f3f-b77f7aa14347",
+        "enabled": true,
+        "tagName": "Register 49",
+        "functionCode": 3,
+        "address": 49,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      }
+    ],
+    "createdAt": "2026-09-12T08:53:53.848Z",
+    "updatedAt": "2026-09-12T16:50:39.156Z",
+    "running": true,
+    "values": {
+      "1e5c1945-ee20-4de4-93a9-be9f71453423": {
+        "value": false,
+        "rawValue": false,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.384Z",
+        "responseTime": 18770809,
+        "error": "Request timeout"
+      },
+      "93bd0432-0b5d-4486-9b6d-75f9d649cb86": {
+        "value": true,
+        "rawValue": true,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.401Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "7b0decd9-4bfe-4ded-8744-98de081a0b78": {
+        "value": 24,
+        "rawValue": 24,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.407Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "457e6289-d9e9-485b-a66e-d03943779d85": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.423Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "f907a41b-aa80-40a4-935f-24303377c2cf": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.476Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "75868da6-dcd0-48aa-9ce0-c3dfa862ef0b": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.554Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "40e6f05c-c4e2-4e8e-9b88-e45801f1fd3e": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.622Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "4be5f61f-9f00-453a-bc30-100792134536": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.667Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "056232f4-e5b9-4ecf-8984-808f17c6457d": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.692Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "ecd91f58-2a3c-4c1e-8e38-cc12df33ec4d": {
+        "value": 3,
+        "rawValue": 3,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.709Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "7d7ccf5c-c1d1-489e-bcee-b4ca0a5ae54d": {
+        "value": 478,
+        "rawValue": 478,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.717Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "8654feb2-d00f-4c32-ae2a-6dc2b2ad15c7": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.755Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "5b0726a2-7a83-4d02-8550-885e35a64e6c": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.774Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "7a64b65b-d3b4-4aae-9460-83100ac7457d": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.785Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "77dc8a78-9e19-4c52-ad81-3b033e320464": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.924Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "a6e48624-5728-4388-b201-c0c6bdcb197b": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.942Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "d4234671-04cd-4977-9b02-f842d55c5e55": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:16.993Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "4becef8e-26ec-4125-a9bb-40f12b95f83c": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.042Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "7d28e87b-d058-49cb-9034-c78fd17de775": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.074Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "57f5172c-ece8-4b34-85e5-9c7b531ff475": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.116Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "abfd9441-dbca-4d77-9feb-7e0306b4b645": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.125Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "16f9809c-4e65-4829-b999-1fab9236054f": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.146Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "42e86b08-c512-4c23-9fda-719194130bdc": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.189Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "3d4af42b-31a1-4a7e-9914-7b16a6f543f2": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.214Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "99dfd506-fa65-4db4-8848-f0d389d763ab": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.239Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "faba6ead-81c7-4161-93bb-7f5972404066": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.255Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "5ff0ce4b-6210-4c18-994a-ca8cfd25e299": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.276Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "6a5ce7ec-9529-4229-b7e1-5d168130cd7e": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.290Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "03e08d9f-2729-408f-8b3b-425eb92565ff": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.304Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "ba73f2ec-30b3-4a0b-80b5-55522af5a569": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.337Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "236eba83-51cf-438e-8489-c013be585716": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.504Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "ad31ae6f-b6c5-4660-af8e-075e0e188ecf": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.555Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "764fb99b-4a27-4b84-a80d-28a37d76f962": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.601Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "620259fa-6c9d-4d27-b641-ce022ad0ec23": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.649Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "44bbde6d-d6a6-4930-ad69-1c6aa4c385a9": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.725Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "e0f0fe86-b836-412f-ad52-c76ab12defc2": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:17.913Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "4e3591bb-1716-41f4-9259-43c1ac63e618": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.001Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "d6d4eb9d-764c-4f63-9886-6dbee12f8849": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.122Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "61191eac-333a-437e-b112-833d00e866a5": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.198Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "1bd48bb1-443e-4725-9741-6690311564b7": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.230Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "8a0a0e04-1a14-4bf7-9b36-1df33bd4bfbf": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.258Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "43f79718-d9e4-421c-9b1b-f2276ff2df9c": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.327Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "0f88aa70-dc05-414e-aec1-3a6c36dde844": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.370Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "d4cae576-ac90-4eec-b0db-453524ea8e24": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.488Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "f475f09f-a88e-4e29-bb7e-1bd5d7495376": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.542Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "a09c494c-e23d-430d-80fa-87de848f32fd": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.574Z",
+        "responseTime": 1,
+        "error": "Device disconnected or stale request"
+      },
+      "02b40ea2-338f-47ba-b5a8-7976b83666c1": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.604Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "a26e16cb-ca86-49df-b83a-e94d7f6b9829": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.667Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "c907ed16-dbbc-4cc0-9573-5859878d1317": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.726Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      },
+      "72626e18-2e93-43a1-9f3f-b77f7aa14347": {
+        "value": 0,
+        "rawValue": 0,
+        "quality": "BAD",
+        "lastUpdate": "2026-09-12T14:12:18.761Z",
+        "responseTime": 0,
+        "error": "Device disconnected or stale request"
+      }
+    }
+  },
+  {
+    "id": "83e60819-7a66-43d9-89bb-b6a956dc4f54",
+    "name": "Commissioning",
+    "deviceId": "device-1788696309590",
+    "unitId": 1,
+    "scanInterval": 2000,
+    "items": [
+      {
+        "id": "a9a96f71-a2ed-420f-9b67-a459c89e65ac",
+        "enabled": true,
+        "tagName": "Coil 1",
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4987118e-5ee8-4377-8bc3-5e7ae96d0bab",
+        "enabled": true,
+        "tagName": "Coil 2",
+        "functionCode": 1,
+        "address": 1,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5094aab5-83ac-4b13-aea8-d88adcbafaa8",
+        "enabled": true,
+        "tagName": "Coil 3",
+        "functionCode": 1,
+        "address": 2,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "6fa30ae5-a68a-4383-847e-0791ac0e4f70",
+        "enabled": true,
+        "tagName": "Coil 4",
+        "functionCode": 1,
+        "address": 3,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "c42f77bf-af15-46f4-b2eb-4461ebaa44da",
+        "enabled": true,
+        "tagName": "Coil 5",
+        "functionCode": 1,
+        "address": 4,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "dcacd24b-9486-4a11-89f3-a8679cb34780",
+        "enabled": true,
+        "tagName": "Coil 6",
+        "functionCode": 1,
+        "address": 5,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "0e7aa92d-bf85-4a37-8d28-e51ec9842ea1",
+        "enabled": true,
+        "tagName": "Coil 7",
+        "functionCode": 1,
+        "address": 6,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a26de75d-b4e7-448f-a767-9f1163621137",
+        "enabled": true,
+        "tagName": "Coil 8",
+        "functionCode": 1,
+        "address": 7,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "91a3079c-f674-4e82-9579-87799e7220d1",
+        "enabled": true,
+        "tagName": "Coil 9",
+        "functionCode": 1,
+        "address": 8,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7cc908fa-b4dc-4b39-848e-fc538a07adec",
+        "enabled": true,
+        "tagName": "Coil 10",
+        "functionCode": 1,
+        "address": 9,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "4c0fa303-fe6b-4e59-bc12-7c248f5b72bf",
+        "enabled": true,
+        "tagName": "Coil 11",
+        "functionCode": 1,
+        "address": 10,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "0f478b8c-4950-4d3f-b243-fec6f54bea93",
+        "enabled": true,
+        "tagName": "Coil 12",
+        "functionCode": 1,
+        "address": 11,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "79370be1-6f59-4528-9eb4-730112b14acf",
+        "enabled": true,
+        "tagName": "Coil 13",
+        "functionCode": 1,
+        "address": 12,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7ae237b7-8e0e-486b-a841-6ebc45d931df",
+        "enabled": true,
+        "tagName": "Coil 14",
+        "functionCode": 1,
+        "address": 13,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "996c9701-0866-4a72-87d1-3d615b97e09e",
+        "enabled": true,
+        "tagName": "Coil 15",
+        "functionCode": 1,
+        "address": 14,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "cf4d3337-a8e2-4862-b5a1-8cf5fde9a1a1",
+        "enabled": true,
+        "tagName": "Coil 16",
+        "functionCode": 1,
+        "address": 15,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "b0815538-6299-4846-91fa-2fd282b71412",
+        "enabled": true,
+        "tagName": "Coil 17",
+        "functionCode": 1,
+        "address": 16,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "50fc974c-2c21-4432-9a81-aa3ce4756f45",
+        "enabled": true,
+        "tagName": "Coil 18",
+        "functionCode": 1,
+        "address": 17,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "364a27d8-119b-487b-afa7-5b10cfd25230",
+        "enabled": true,
+        "tagName": "Coil 19",
+        "functionCode": 1,
+        "address": 18,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "b4d48e88-cd8e-4ef3-886a-796a9aecb96a",
+        "enabled": true,
+        "tagName": "Coil 20",
+        "functionCode": 1,
+        "address": 19,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d5abbe31-0baa-490d-bc09-6880dbda40db",
+        "enabled": true,
+        "tagName": "Coil 21",
+        "functionCode": 1,
+        "address": 20,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "cbb62eff-c8ea-46ff-ad82-bb0d11c1a150",
+        "enabled": true,
+        "tagName": "Coil 22",
+        "functionCode": 1,
+        "address": 21,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "74ad2e2c-0e6e-4912-9cf5-f09e0aba5877",
+        "enabled": true,
+        "tagName": "Coil 23",
+        "functionCode": 1,
+        "address": 22,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "b0ab8571-f293-484a-906a-76e7f6d51ef7",
+        "enabled": true,
+        "tagName": "Coil 24",
+        "functionCode": 1,
+        "address": 23,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "5edd726f-c5ce-474f-be61-8336bced11a5",
+        "enabled": true,
+        "tagName": "Coil 25",
+        "functionCode": 1,
+        "address": 24,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7e0bcf63-bb9d-4b08-aabd-f8827f4f365b",
+        "enabled": true,
+        "tagName": "Coil 26",
+        "functionCode": 1,
+        "address": 25,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d5376ca5-8a32-444e-871b-0a10c311522d",
+        "enabled": true,
+        "tagName": "Coil 27",
+        "functionCode": 1,
+        "address": 26,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "7fdd6d45-a8f0-4da3-b850-62517b66a40f",
+        "enabled": true,
+        "tagName": "Coil 28",
+        "functionCode": 1,
+        "address": 27,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "cfc2d918-5afb-4dcf-816c-0c8d28cf9bea",
+        "enabled": true,
+        "tagName": "Coil 29",
+        "functionCode": 1,
+        "address": 28,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "580da13a-40ff-4f64-9d40-c8595106cb19",
+        "enabled": true,
+        "tagName": "Coil 30",
+        "functionCode": 1,
+        "address": 29,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a0cb277c-14e6-492f-8ba5-9bdddefa71c4",
+        "enabled": true,
+        "tagName": "Coil 31",
+        "functionCode": 1,
+        "address": 30,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "b2f63fcf-5d24-42ae-900d-2f1c24181364",
+        "enabled": true,
+        "tagName": "Coil 32",
+        "functionCode": 1,
+        "address": 31,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "bc031432-e6ba-4ef7-b506-b0159773ef87",
+        "enabled": true,
+        "tagName": "Coil 33",
+        "functionCode": 1,
+        "address": 32,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "1039c231-3115-4a0d-963c-19901572582c",
+        "enabled": true,
+        "tagName": "Coil 34",
+        "functionCode": 1,
+        "address": 33,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "52df912c-c126-4ec1-a35e-c7c318256b14",
+        "enabled": true,
+        "tagName": "Coil 35",
+        "functionCode": 1,
+        "address": 34,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "0359ac3b-3f96-4cfd-be4a-8cf4174f8943",
+        "enabled": true,
+        "tagName": "Coil 36",
+        "functionCode": 1,
+        "address": 35,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "6ab1022d-6a25-4981-8191-9a8c426f5e95",
+        "enabled": true,
+        "tagName": "Coil 37",
+        "functionCode": 1,
+        "address": 36,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "045b8327-c76a-49e0-a63e-4b00212ed559",
+        "enabled": true,
+        "tagName": "Coil 38",
+        "functionCode": 1,
+        "address": 37,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "769012ac-4214-4be2-9b19-cd01442e3db1",
+        "enabled": true,
+        "tagName": "Coil 39",
+        "functionCode": 1,
+        "address": 38,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "b566d20a-ff8a-466e-a907-4b39b1520ae3",
+        "enabled": true,
+        "tagName": "Coil 40",
+        "functionCode": 1,
+        "address": 39,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "d303b363-5a05-4524-ad4c-d2b30dfccde6",
+        "enabled": true,
+        "tagName": "Coil 41",
+        "functionCode": 1,
+        "address": 40,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "30eaafbc-2f7b-452f-9b3d-2e53a51cdbe9",
+        "enabled": true,
+        "tagName": "Coil 42",
+        "functionCode": 1,
+        "address": 41,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "c9aea368-feeb-49e9-af13-b97f979d9414",
+        "enabled": true,
+        "tagName": "Coil 43",
+        "functionCode": 1,
+        "address": 42,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "de5e9fca-749d-44ec-a1b6-32b30fb9dd2a",
+        "enabled": true,
+        "tagName": "Coil 44",
+        "functionCode": 1,
+        "address": 43,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "70036246-3906-42ba-8f75-34592cad9d6e",
+        "enabled": true,
+        "tagName": "Coil 45",
+        "functionCode": 1,
+        "address": 44,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "be806d58-b97b-4a5a-8378-21ea01f5fab9",
+        "enabled": true,
+        "tagName": "Coil 46",
+        "functionCode": 1,
+        "address": 45,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "f0b4e2c8-035d-4688-b433-c92c59406cc2",
+        "enabled": true,
+        "tagName": "Coil 47",
+        "functionCode": 1,
+        "address": 46,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "8847ded2-6731-4286-93cb-1ace4dfdb42f",
+        "enabled": true,
+        "tagName": "Coil 48",
+        "functionCode": 1,
+        "address": 47,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "a7e73a76-73ed-42a4-bec8-0d3518ef7a9e",
+        "enabled": true,
+        "tagName": "Coil 49",
+        "functionCode": 1,
+        "address": 48,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      },
+      {
+        "id": "e24d1bad-97d8-4df9-aa2c-3d19ba52b677",
+        "enabled": true,
+        "tagName": "Coil 50",
+        "functionCode": 1,
+        "address": 49,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": ""
+      }
+    ],
+    "createdAt": "2026-09-12T18:05:17.022Z",
+    "updatedAt": "2026-09-12T18:16:34.487Z",
+    "running": true,
+    "values": {
+      "a9a96f71-a2ed-420f-9b67-a459c89e65ac": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:00.897Z",
+        "responseTime": 1
+      },
+      "4987118e-5ee8-4377-8bc3-5e7ae96d0bab": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:00.922Z",
+        "responseTime": 25
+      },
+      "5094aab5-83ac-4b13-aea8-d88adcbafaa8": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:00.972Z",
+        "responseTime": 50
+      },
+      "6fa30ae5-a68a-4383-847e-0791ac0e4f70": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:00.993Z",
+        "responseTime": 21
+      },
+      "c42f77bf-af15-46f4-b2eb-4461ebaa44da": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.014Z",
+        "responseTime": 21
+      },
+      "dcacd24b-9486-4a11-89f3-a8679cb34780": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.050Z",
+        "responseTime": 36
+      },
+      "0e7aa92d-bf85-4a37-8d28-e51ec9842ea1": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.074Z",
+        "responseTime": 24
+      },
+      "a26de75d-b4e7-448f-a767-9f1163621137": {
+        "value": true,
+        "rawValue": true,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.236Z",
+        "responseTime": 162
+      },
+      "91a3079c-f674-4e82-9579-87799e7220d1": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.270Z",
+        "responseTime": 35
+      },
+      "7cc908fa-b4dc-4b39-848e-fc538a07adec": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.289Z",
+        "responseTime": 18
+      },
+      "4c0fa303-fe6b-4e59-bc12-7c248f5b72bf": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.327Z",
+        "responseTime": 38
+      },
+      "0f478b8c-4950-4d3f-b243-fec6f54bea93": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.365Z",
+        "responseTime": 38
+      },
+      "79370be1-6f59-4528-9eb4-730112b14acf": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.390Z",
+        "responseTime": 25
+      },
+      "7ae237b7-8e0e-486b-a841-6ebc45d931df": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.411Z",
+        "responseTime": 21
+      },
+      "996c9701-0866-4a72-87d1-3d615b97e09e": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.431Z",
+        "responseTime": 20
+      },
+      "cf4d3337-a8e2-4862-b5a1-8cf5fde9a1a1": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.452Z",
+        "responseTime": 21
+      },
+      "b0815538-6299-4846-91fa-2fd282b71412": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.471Z",
+        "responseTime": 19
+      },
+      "50fc974c-2c21-4432-9a81-aa3ce4756f45": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.488Z",
+        "responseTime": 17
+      },
+      "364a27d8-119b-487b-afa7-5b10cfd25230": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.509Z",
+        "responseTime": 21
+      },
+      "b4d48e88-cd8e-4ef3-886a-796a9aecb96a": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.530Z",
+        "responseTime": 21
+      },
+      "d5abbe31-0baa-490d-bc09-6880dbda40db": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.559Z",
+        "responseTime": 29
+      },
+      "cbb62eff-c8ea-46ff-ad82-bb0d11c1a150": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.592Z",
+        "responseTime": 33
+      },
+      "74ad2e2c-0e6e-4912-9cf5-f09e0aba5877": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.614Z",
+        "responseTime": 22
+      },
+      "b0ab8571-f293-484a-906a-76e7f6d51ef7": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.648Z",
+        "responseTime": 34
+      },
+      "5edd726f-c5ce-474f-be61-8336bced11a5": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.670Z",
+        "responseTime": 22
+      },
+      "7e0bcf63-bb9d-4b08-aabd-f8827f4f365b": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.712Z",
+        "responseTime": 42
+      },
+      "d5376ca5-8a32-444e-871b-0a10c311522d": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.777Z",
+        "responseTime": 65
+      },
+      "7fdd6d45-a8f0-4da3-b850-62517b66a40f": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.796Z",
+        "responseTime": 19
+      },
+      "cfc2d918-5afb-4dcf-816c-0c8d28cf9bea": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.816Z",
+        "responseTime": 20
+      },
+      "580da13a-40ff-4f64-9d40-c8595106cb19": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.836Z",
+        "responseTime": 20
+      },
+      "a0cb277c-14e6-492f-8ba5-9bdddefa71c4": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.854Z",
+        "responseTime": 18
+      },
+      "b2f63fcf-5d24-42ae-900d-2f1c24181364": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.874Z",
+        "responseTime": 20
+      },
+      "bc031432-e6ba-4ef7-b506-b0159773ef87": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.896Z",
+        "responseTime": 22
+      },
+      "1039c231-3115-4a0d-963c-19901572582c": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.918Z",
+        "responseTime": 22
+      },
+      "52df912c-c126-4ec1-a35e-c7c318256b14": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.942Z",
+        "responseTime": 24
+      },
+      "0359ac3b-3f96-4cfd-be4a-8cf4174f8943": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:01.985Z",
+        "responseTime": 43
+      },
+      "6ab1022d-6a25-4981-8191-9a8c426f5e95": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.010Z",
+        "responseTime": 25
+      },
+      "045b8327-c76a-49e0-a63e-4b00212ed559": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.043Z",
+        "responseTime": 33
+      },
+      "769012ac-4214-4be2-9b19-cd01442e3db1": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.080Z",
+        "responseTime": 37
+      },
+      "b566d20a-ff8a-466e-a907-4b39b1520ae3": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.300Z",
+        "responseTime": 220
+      },
+      "d303b363-5a05-4524-ad4c-d2b30dfccde6": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.319Z",
+        "responseTime": 19
+      },
+      "30eaafbc-2f7b-452f-9b3d-2e53a51cdbe9": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.340Z",
+        "responseTime": 21
+      },
+      "c9aea368-feeb-49e9-af13-b97f979d9414": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.375Z",
+        "responseTime": 35
+      },
+      "de5e9fca-749d-44ec-a1b6-32b30fb9dd2a": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.406Z",
+        "responseTime": 31
+      },
+      "70036246-3906-42ba-8f75-34592cad9d6e": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.430Z",
+        "responseTime": 24
+      },
+      "be806d58-b97b-4a5a-8378-21ea01f5fab9": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.467Z",
+        "responseTime": 37
+      },
+      "f0b4e2c8-035d-4688-b433-c92c59406cc2": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.498Z",
+        "responseTime": 31
+      },
+      "8847ded2-6731-4286-93cb-1ace4dfdb42f": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.519Z",
+        "responseTime": 21
+      },
+      "a7e73a76-73ed-42a4-bec8-0d3518ef7a9e": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.540Z",
+        "responseTime": 21
+      },
+      "e24d1bad-97d8-4df9-aa2c-3d19ba52b677": {
+        "value": false,
+        "rawValue": false,
+        "quality": "GOOD",
+        "lastUpdate": "2026-09-12T18:11:02.558Z",
+        "responseTime": 18
+      }
+    }
+  }
+]

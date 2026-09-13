@@ -1,0 +1,38 @@
+[
+  {
+    "id": "device-1788696309590",
+    "name": "PLC",
+    "host": "127.0.0.1",
+    "port": 502,
+    "defaultUnitId": 1,
+    "timeout": 2000,
+    "retryCount": 1,
+    "interRequestDelay": 20,
+    "reconnectDelay": 2000,
+    "enabled": true
+  },
+  {
+    "id": "device-1",
+    "name": "WAGO RACK 1",
+    "host": "192.168.1.3",
+    "port": 502,
+    "defaultUnitId": 1,
+    "timeout": 2000,
+    "retryCount": 1,
+    "interRequestDelay": 20,
+    "reconnectDelay": 2000,
+    "enabled": true
+  },
+  {
+    "id": "device-2",
+    "name": "WAGO RACK 2",
+    "host": "192.168.1.4",
+    "port": 502,
+    "defaultUnitId": 1,
+    "timeout": 2000,
+    "retryCount": 1,
+    "interRequestDelay": 20,
+    "reconnectDelay": 2000,
+    "enabled": true
+  }
+]

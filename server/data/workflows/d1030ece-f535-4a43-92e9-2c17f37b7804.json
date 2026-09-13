@@ -1,0 +1,137 @@
+{
+  "id": "d1030ece-f535-4a43-92e9-2c17f37b7804",
+  "name": "WAGO SPGr Test Output",
+  "description": "",
+  "enabled": true,
+  "version": 1,
+  "mode": "LIVE_ARMED",
+  "running": false,
+  "nodes": [
+    {
+      "id": "1ec89ad4-3ad5-4efa-8a87-5d2f5eea787a",
+      "type": "MODBUS_OUTPUT",
+      "name": "MODBUS OUTPUT 1",
+      "position": {
+        "x": 192,
+        "y": 304
+      },
+      "inputCount": 1,
+      "outputCount": 0,
+      "params": {
+        "deviceId": "device-1",
+        "unitId": 1,
+        "functionCode": 5,
+        "address": 7,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "polarity": "NORMAL",
+        "writeMode": "AUTOMATIC",
+        "writeOnChange": true,
+        "minimumWriteInterval": 250,
+        "initialWritePolicy": "READ_FIRST",
+        "readBackEnabled": true,
+        "readBackFunctionCode": 1,
+        "readBackAddress": 0,
+        "readBackDelay": 100,
+        "badInputPolicy": "STOP_BRANCH",
+        "safeValue": false
+      }
+    },
+    {
+      "id": "e5d588d7-6f7e-41a1-bc9d-629d896afc02",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": 176,
+        "y": -80
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "26e60c96-2cf1-45e8-aaad-0d7e113e079a",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": 176,
+        "y": 96
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 1,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "3bbfda53-15c1-48b8-8d8c-76b893a48a8b",
+      "type": "MANUAL_TRIGGER",
+      "name": "MANUAL TRIGGER",
+      "position": {
+        "x": -192,
+        "y": 304
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "triggerMode": "TOGGLE",
+        "pulseDuration": 250
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "10b059c0-5514-4e4f-88d7-89692c414955",
+      "source": "3bbfda53-15c1-48b8-8d8c-76b893a48a8b",
+      "sourcePort": 0,
+      "target": "1ec89ad4-3ad5-4efa-8a87-5d2f5eea787a",
+      "targetPort": 0,
+      "enabled": true
+    }
+  ],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "settings": {
+    "projectName": "MODBUS WORKFLOW STUDIO",
+    "autoSaveDelay": 500,
+    "maxPasses": 100
+  },
+  "revision": 80,
+  "createdAt": "2026-09-08T04:06:55.674Z",
+  "updatedAt": "2026-09-08T10:11:53.018Z"
+}

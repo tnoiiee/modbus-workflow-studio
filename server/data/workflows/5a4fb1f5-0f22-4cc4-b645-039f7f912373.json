@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "mode": "LIVE_LOCKED",
+  "running": false,
+  "nodes": [
+    {
+      "id": "14c5b346-bf59-4e03-8f96-4c86ad218382",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS Coil 1",
+      "position": {
+        "x": -304,
+        "y": -256
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 3,
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL",
+        "quantity": 1
+      }
+    },
+    {
+      "id": "982b4efc-931a-4308-b1b7-b751268cdd87",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS Coil 2",
+      "position": {
+        "x": -304,
+        "y": -96
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": "1",
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "92a311ba-221b-445f-8f4f-e6873f16afde",
+      "type": "MODBUS_OUTPUT",
+      "name": "MODBUS OUT Coil 5",
+      "position": {
+        "x": 656,
+        "y": -128
+      },
+      "inputCount": 1,
+      "outputCount": 0,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 5,
+        "address": "5",
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "d18ac93f-4d35-4e1f-b309-1bd5dd7ebae0",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS Coil 5",
+      "position": {
+        "x": 640,
+        "y": 64
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": "1",
+        "functionCode": 1,
+        "address": "5",
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "ce388944-ad70-424a-8ed4-b3c9b194de1a",
+      "type": "AND",
+      "name": "AND",
+      "position": {
+        "x": 320,
+        "y": -64
+      },
+      "inputCount": 4,
+      "outputCount": 1,
+      "params": {}
+    },
+    {
+      "id": "c50c5114-024d-4277-bec7-5e8e2896cbca",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS REG1",
+      "position": {
+        "x": -304,
+        "y": 224
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 3,
+        "address": 0,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "fb980603-489b-4be8-900a-b6f7cb329e28",
+      "type": "MANUAL_TRIGGER",
+      "name": "MANUAL TRIGGER",
+      "position": {
+        "x": -304,
+        "y": 64
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "triggerMode": "TOGGLE",
+        "pulseDuration": 250
+      }
+    },
+    {
+      "id": "e95a3900-187f-4d07-a59c-5bf7406a0a19",
+      "type": "GREATER_THAN",
+      "name": "GREATER THAN",
+      "position": {
+        "x": 16,
+        "y": 256
+      },
+      "inputCount": 2,
+      "outputCount": 1,
+      "params": {
+        "compareMode": "TWO_INPUTS",
+        "constant": 0,
+        "dataType": "Boolean"
+      }
+    },
+    {
+      "id": "6d30300f-8444-4195-a17c-2f753850b6e3",
+      "type": "NUMERIC_CONSTANT",
+      "name": "NUMERIC CONSTANT",
+      "position": {
+        "x": -496,
+        "y": 448
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "value": 16384,
+        "dataType": "UInt16"
+      }
+    },
+    {
+      "id": "0e32b214-8d85-447e-bfac-8916739d1f89",
+      "type": "MANUAL_TRIGGER",
+      "name": "MANUAL TRIGGER",
+      "position": {
+        "x": 336,
+        "y": 304
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "triggerMode": "TOGGLE",
+        "pulseDuration": 250
+      }
+    },
+    {
+      "id": "6174c40e-d178-4b63-9075-5a4daa9c3f74",
+      "type": "LINEAR_MAPPING",
+      "name": "AI Mapping AI1",
+      "position": {
+        "x": 432,
+        "y": 560
+      },
+      "inputCount": 1,
+      "outputCount": 1,
+      "params": {
+        "inputLow": 0,
+        "inputHigh": 32767,
+        "outputLow": 4,
+        "outputHigh": 20,
+        "outOfRangePolicy": "CLAMP",
+        "invalidSpanPolicy": "MARK_BAD",
+        "safeValue": 0,
+        "decimalPlaces": "2",
+        "engineeringUnit": "mA"
+      }
+    },
+    {
+      "id": "d12024c4-2e52-4932-8025-7b4ff6e2f4e7",
+      "type": "LINEAR_MAPPING",
+      "name": "AI Mapping 750-454",
+      "position": {
+        "x": -640,
+        "y": 1008
+      },
+      "inputCount": 1,
+      "outputCount": 1,
+      "params": {
+        "inputLow": 0,
+        "inputHigh": 32760,
+        "outputLow": 4,
+        "outputHigh": 20,
+        "outOfRangePolicy": "CLAMP",
+        "invalidSpanPolicy": "MARK_BAD",
+        "safeValue": 0,
+        "decimalPlaces": "2",
+        "engineeringUnit": ""
+      }
+    },
+    {
+      "id": "e6c83eec-21cb-4c4b-8bfc-37e12ca05ae8",
+      "type": "NUMERIC_CONSTANT",
+      "name": "NUMERIC CONSTANT",
+      "position": {
+        "x": -640,
+        "y": 736
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "value": 16380,
+        "dataType": "Number"
+      }
+    },
+    {
+      "id": "c6189430-7716-4a08-bc9d-3dcb4b117a20",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT AI1",
+      "position": {
+        "x": 64,
+        "y": 560
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-2",
+        "unitId": 1,
+        "functionCode": 3,
+        "address": 0,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "92eb2735-7f51-45cb-ab50-2cbce31f297c",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT AI2",
+      "position": {
+        "x": 64,
+        "y": 720
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-2",
+        "unitId": 1,
+        "functionCode": 3,
+        "address": 1,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "281f7c1e-d424-428b-aacf-95778ef9bcde",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT AI4",
+      "position": {
+        "x": 64,
+        "y": 1040
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-2",
+        "unitId": 1,
+        "functionCode": 3,
+        "address": 10,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "eb823065-c2bc-4c12-ac23-694faba804dc",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT AI3",
+      "position": {
+        "x": 64,
+        "y": 880
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-2",
+        "unitId": 1,
+        "functionCode": 3,
+        "address": 2,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "5879f55e-59d6-4fed-bf40-26aa36926a4f",
+      "type": "LINEAR_MAPPING",
+      "name": "AI Mapping AI2",
+      "position": {
+        "x": 432,
+        "y": 720
+      },
+      "inputCount": 1,
+      "outputCount": 1,
+      "params": {
+        "inputLow": 0,
+        "inputHigh": 32767,
+        "outputLow": 4,
+        "outputHigh": 20,
+        "outOfRangePolicy": "CLAMP",
+        "invalidSpanPolicy": "MARK_BAD",
+        "safeValue": 0,
+        "decimalPlaces": "2",
+        "engineeringUnit": "mA"
+      }
+    },
+    {
+      "id": "124e0206-4298-4ca9-a823-69726b627e06",
+      "type": "LINEAR_MAPPING",
+      "name": "AI Mapping AI3",
+      "position": {
+        "x": 432,
+        "y": 880
+      },
+      "inputCount": 1,
+      "outputCount": 1,
+      "params": {
+        "inputLow": 0,
+        "inputHigh": 32767,
+        "outputLow": 4,
+        "outputHigh": 20,
+        "outOfRangePolicy": "CLAMP",
+        "invalidSpanPolicy": "MARK_BAD",
+        "safeValue": 0,
+        "decimalPlaces": "2",
+        "engineeringUnit": "mA"
+      }
+    },
+    {
+      "id": "04f978d3-799d-46da-85ab-4f15d3b9a9f4",
+      "type": "LINEAR_MAPPING",
+      "name": "AI Mapping AI4",
+      "position": {
+        "x": 432,
+        "y": 1040
+      },
+      "inputCount": 1,
+      "outputCount": 1,
+      "params": {
+        "inputLow": 0,
+        "inputHigh": 32760,
+        "outputLow": 4,
+        "outputHigh": 20,
+        "outOfRangePolicy": "CLAMP",
+        "invalidSpanPolicy": "MARK_BAD",
+        "safeValue": 0,
+        "decimalPlaces": "2",
+        "engineeringUnit": "mA"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "91b22b32-2dba-4e0c-82bd-7954c072cc42",
+      "source": "14c5b346-bf59-4e03-8f96-4c86ad218382",
+      "sourcePort": 0,
+      "target": "ce388944-ad70-424a-8ed4-b3c9b194de1a",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "a8e97ee7-3f32-426c-a871-0260add28f1e",
+      "source": "982b4efc-931a-4308-b1b7-b751268cdd87",
+      "sourcePort": 0,
+      "target": "ce388944-ad70-424a-8ed4-b3c9b194de1a",
+      "targetPort": 1,
+      "enabled": true
+    },
+    {
+      "id": "d970dd26-7b01-46a2-bfb4-268c82534a21",
+      "source": "fb980603-489b-4be8-900a-b6f7cb329e28",
+      "sourcePort": 0,
+      "target": "ce388944-ad70-424a-8ed4-b3c9b194de1a",
+      "targetPort": 2,
+      "enabled": true
+    },
+    {
+      "id": "db641625-2b60-4a34-8511-c10b01d39854",
+      "source": "e95a3900-187f-4d07-a59c-5bf7406a0a19",
+      "sourcePort": 0,
+      "target": "ce388944-ad70-424a-8ed4-b3c9b194de1a",
+      "targetPort": 3,
+      "enabled": true
+    },
+    {
+      "id": "afe9a329-3bb7-40eb-94a7-20509cbe091f",
+      "source": "c50c5114-024d-4277-bec7-5e8e2896cbca",
+      "sourcePort": 0,
+      "target": "e95a3900-187f-4d07-a59c-5bf7406a0a19",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "c273f986-37ee-4b2c-ad22-dea3d7bbb104",
+      "source": "e6c83eec-21cb-4c4b-8bfc-37e12ca05ae8",
+      "sourcePort": 0,
+      "target": "d12024c4-2e52-4932-8025-7b4ff6e2f4e7",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "a166eee7-b5d7-4712-ae1b-56e7d9d5c317",
+      "source": "c6189430-7716-4a08-bc9d-3dcb4b117a20",
+      "sourcePort": 0,
+      "target": "6174c40e-d178-4b63-9075-5a4daa9c3f74",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "6584fc4a-d404-48ca-b175-e58bb44eb586",
+      "source": "92eb2735-7f51-45cb-ab50-2cbce31f297c",
+      "sourcePort": 0,
+      "target": "5879f55e-59d6-4fed-bf40-26aa36926a4f",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "edd12117-8f23-437a-ac6e-1550fdf276ec",
+      "source": "eb823065-c2bc-4c12-ac23-694faba804dc",
+      "sourcePort": 0,
+      "target": "124e0206-4298-4ca9-a823-69726b627e06",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "867c0a84-fd72-4c65-9a38-0e5a5b106939",
+      "source": "281f7c1e-d424-428b-aacf-95778ef9bcde",
+      "sourcePort": 0,
+      "target": "04f978d3-799d-46da-85ab-4f15d3b9a9f4",
+      "targetPort": 0,
+      "enabled": true
+    }
+  ],
+  "settings": {
+    "projectName": "MODBUS WORKFLOW STUDIO",
+    "autoSaveDelay": 500,
+    "maxPasses": 100
+  },
+  "id": "5a4fb1f5-0f22-4cc4-b645-039f7f912373",
+  "name": "Function Test",
+  "description": "Migrated from the single-workflow project format",
+  "enabled": true,
+  "revision": 227,
+  "createdAt": "2026-09-06T17:48:29.769Z",
+  "updatedAt": "2026-09-08T09:55:00.676Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  }
+}

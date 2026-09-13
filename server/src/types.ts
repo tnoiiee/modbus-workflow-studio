@@ -1,0 +1,8 @@
+export type Mode='DESIGN'|'SIMULATION'|'LIVE_LOCKED'|'LIVE_ARMED';
+export type Quality='GOOD'|'UNCERTAIN'|'STALE'|'BAD'|'DISCONNECTED';
+export interface DeviceConfig{id:string;name:string;host:string;port:number;defaultUnitId:number;timeout:number;retryCount:number;interRequestDelay:number;reconnectDelay:number;enabled:boolean}
+export interface DeviceRuntime{desiredState:'connected'|'disconnected';actualState:'disconnected'|'connecting'|'connected'|'reconnecting'|'error';lastConnected?:string;lastDisconnected?:string;lastError?:string;latency?:number;queueLength:number;activePollers:number;averageResponseTime:number;timeoutCount:number}
+export interface EdgeData{id:string;source:string;sourcePort:number;target:string;targetPort:number;enabled:boolean}
+export interface WorkflowNode{id:string;type:string;name:string;position:{x:number;y:number};inputCount:number;outputCount:number;params:Record<string,unknown>}
+export interface Workflow{version:number;mode:Mode;running:boolean;nodes:WorkflowNode[];edges:EdgeData[];settings:Record<string,unknown>}
+export interface RuntimeValue{value:unknown;outputs?:Record<string,RuntimeValue>;lastKnownValue?:unknown;commandedValue?:unknown;effectiveValue?:unknown;encodedPayload?:string;writeStatus?:string;readBackValue?:unknown;readBackQuality?:Quality;status:string;quality:Quality;error?:string;lastPollTime?:string;lastSuccessfulRead?:string;lastValueChange?:string;lastWriteTime?:string;responseTime?:number;consecutiveErrors:number}

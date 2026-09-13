@@ -1,0 +1,24 @@
+{
+  "id": "9b3e00f9-bc71-42e0-9423-80544e421774",
+  "name": "Global Permissive",
+  "description": "",
+  "enabled": true,
+  "version": 1,
+  "mode": "DESIGN",
+  "running": false,
+  "nodes": [],
+  "edges": [],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "settings": {
+    "projectName": "MODBUS WORKFLOW STUDIO",
+    "autoSaveDelay": 500,
+    "maxPasses": 100
+  },
+  "revision": 1,
+  "createdAt": "2026-09-06T17:26:56.121Z",
+  "updatedAt": "2026-09-06T17:26:56.121Z"
+}

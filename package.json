@@ -1,0 +1,23 @@
+{
+  "name": "modbus-workflow-studio",
+  "version": "1.2.8",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c yellow,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
+    "test": "npm test -w server -- --run && npm test -w client -- --run",
+    "build": "npm run build -w server && npm run build -w client",
+    "check": "npm run typecheck && npm test && npm run build",
+    "start": "npm start -w server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

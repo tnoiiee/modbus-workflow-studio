@@ -1,0 +1,62 @@
+[
+  {
+    "id": "e954250c-f84d-4fa3-b38d-78f911dee227",
+    "name": "Main Workflow",
+    "description": "Migrated from the single-workflow project format",
+    "enabled": true,
+    "mode": "LIVE_LOCKED",
+    "revision": 29,
+    "createdAt": "2026-09-06T17:26:13.676Z",
+    "updatedAt": "2026-09-07T07:38:35.461Z"
+  },
+  {
+    "id": "9b3e00f9-bc71-42e0-9423-80544e421774",
+    "name": "Global Permissive",
+    "description": "",
+    "enabled": true,
+    "mode": "DESIGN",
+    "revision": 1,
+    "createdAt": "2026-09-06T17:26:56.121Z",
+    "updatedAt": "2026-09-06T17:26:56.121Z"
+  },
+  {
+    "id": "5a4fb1f5-0f22-4cc4-b645-039f7f912373",
+    "name": "Function Test",
+    "description": "Migrated from the single-workflow project format",
+    "enabled": true,
+    "mode": "LIVE_LOCKED",
+    "revision": 227,
+    "createdAt": "2026-09-06T17:48:29.769Z",
+    "updatedAt": "2026-09-08T09:55:00.676Z"
+  },
+  {
+    "id": "de19013d-244e-4e6e-be8a-a24c5045f4ed",
+    "name": "WAGO SPGr Test Input",
+    "description": "",
+    "enabled": true,
+    "mode": "LIVE_LOCKED",
+    "revision": 143,
+    "createdAt": "2026-09-07T11:04:17.687Z",
+    "updatedAt": "2026-09-08T09:06:11.422Z"
+  },
+  {
+    "id": "d1030ece-f535-4a43-92e9-2c17f37b7804",
+    "name": "WAGO SPGr Test Output",
+    "description": "",
+    "enabled": true,
+    "mode": "LIVE_LOCKED",
+    "revision": 80,
+    "createdAt": "2026-09-08T04:06:55.674Z",
+    "updatedAt": "2026-09-08T10:11:53.018Z"
+  },
+  {
+    "id": "df5f89ac-de55-45e9-a2d4-8a036577bcdf",
+    "name": "MODBUS MULTI INPUT",
+    "description": "",
+    "enabled": true,
+    "mode": "LIVE_LOCKED",
+    "revision": 31,
+    "createdAt": "2026-09-12T08:10:51.602Z",
+    "updatedAt": "2026-09-12T18:03:39.562Z"
+  }
+]

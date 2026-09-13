@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "mode": "LIVE_LOCKED",
+  "running": false,
+  "nodes": [
+    {
+      "id": "d5de27d4-dc00-448d-93aa-e8ee33bd95aa",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS Coil 1",
+      "position": {
+        "x": -304,
+        "y": -256
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL",
+        "quantity": 1
+      }
+    },
+    {
+      "id": "767892af-5217-4044-801e-8f26bf32f25d",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS Coil 2",
+      "position": {
+        "x": -304,
+        "y": -96
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": "1",
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "9d48f223-f907-4f13-82fb-a58dfc7652d3",
+      "type": "MODBUS_OUTPUT",
+      "name": "MODBUS OUT Coil 5",
+      "position": {
+        "x": 672,
+        "y": -112
+      },
+      "inputCount": 1,
+      "outputCount": 0,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 5,
+        "address": "5",
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "6cb298d2-abad-4b46-bd2c-3c561e241f42",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS Coil 5",
+      "position": {
+        "x": 640,
+        "y": 64
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": "1",
+        "functionCode": 1,
+        "address": "5",
+        "dataType": "Boolean",
+        "scanInterval": 1000,
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "e188fa06-6dfe-4504-acdd-824db6e5841e",
+      "type": "AND",
+      "name": "AND",
+      "position": {
+        "x": 304,
+        "y": -64
+      },
+      "inputCount": 4,
+      "outputCount": 1,
+      "params": {}
+    },
+    {
+      "id": "5a5e7f83-b322-47c2-9147-48455c64f83b",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS REG1",
+      "position": {
+        "x": -304,
+        "y": 224
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 3,
+        "address": 0,
+        "dataType": "UInt16",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "f3c145e6-bcb9-4af7-856b-750b6a6ebafd",
+      "type": "MANUAL_TRIGGER",
+      "name": "MANUAL TRIGGER",
+      "position": {
+        "x": -304,
+        "y": 64
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "triggerMode": "TOGGLE",
+        "pulseDuration": 250
+      }
+    },
+    {
+      "id": "0bba844f-3fc9-4230-9cd0-9065a7e036f9",
+      "type": "GREATER_THAN",
+      "name": "GREATER THAN",
+      "position": {
+        "x": 16,
+        "y": 256
+      },
+      "inputCount": 2,
+      "outputCount": 1,
+      "params": {
+        "compareMode": "TWO_INPUTS",
+        "constant": 0,
+        "dataType": "Boolean"
+      }
+    },
+    {
+      "id": "1d3cd9aa-391a-46bd-a37d-0bdd65f54d12",
+      "type": "NUMERIC_CONSTANT",
+      "name": "NUMERIC CONSTANT",
+      "position": {
+        "x": -304,
+        "y": 432
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "value": 20,
+        "dataType": "UInt16"
+      }
+    },
+    {
+      "id": "19d157e2-2b54-451e-8123-a1c7d2e97722",
+      "type": "MANUAL_TRIGGER",
+      "name": "MANUAL TRIGGER",
+      "position": {
+        "x": 336,
+        "y": 304
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "triggerMode": "TOGGLE",
+        "pulseDuration": 250
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "ecd9fa69-3083-46c5-aaf5-465729d1ac49",
+      "source": "d5de27d4-dc00-448d-93aa-e8ee33bd95aa",
+      "sourcePort": 0,
+      "target": "e188fa06-6dfe-4504-acdd-824db6e5841e",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "cf897c76-ff7a-40c2-ad43-44c4ab5eaa72",
+      "source": "e188fa06-6dfe-4504-acdd-824db6e5841e",
+      "sourcePort": 0,
+      "target": "9d48f223-f907-4f13-82fb-a58dfc7652d3",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "33964ab3-9027-4cf2-b92c-e5616e6e4375",
+      "source": "767892af-5217-4044-801e-8f26bf32f25d",
+      "sourcePort": 0,
+      "target": "e188fa06-6dfe-4504-acdd-824db6e5841e",
+      "targetPort": 1,
+      "enabled": true
+    },
+    {
+      "id": "9692fe1c-0c0e-4b82-a495-ae1666b95cf7",
+      "source": "f3c145e6-bcb9-4af7-856b-750b6a6ebafd",
+      "sourcePort": 0,
+      "target": "e188fa06-6dfe-4504-acdd-824db6e5841e",
+      "targetPort": 2,
+      "enabled": true
+    },
+    {
+      "id": "e0bee95a-10ce-475e-98aa-eef9a2312ee8",
+      "source": "0bba844f-3fc9-4230-9cd0-9065a7e036f9",
+      "sourcePort": 0,
+      "target": "e188fa06-6dfe-4504-acdd-824db6e5841e",
+      "targetPort": 3,
+      "enabled": true
+    },
+    {
+      "id": "98003823-833b-4d9d-89a1-c6096e5c65db",
+      "source": "5a5e7f83-b322-47c2-9147-48455c64f83b",
+      "sourcePort": 0,
+      "target": "0bba844f-3fc9-4230-9cd0-9065a7e036f9",
+      "targetPort": 0,
+      "enabled": true
+    },
+    {
+      "id": "ccc9afab-0180-4036-a18a-18a47d0887f7",
+      "source": "1d3cd9aa-391a-46bd-a37d-0bdd65f54d12",
+      "sourcePort": 0,
+      "target": "0bba844f-3fc9-4230-9cd0-9065a7e036f9",
+      "targetPort": 1,
+      "enabled": true
+    }
+  ],
+  "settings": {
+    "projectName": "MODBUS WORKFLOW STUDIO",
+    "autoSaveDelay": 500,
+    "maxPasses": 100
+  },
+  "id": "e954250c-f84d-4fa3-b38d-78f911dee227",
+  "name": "Main Workflow",
+  "description": "Migrated from the single-workflow project format",
+  "enabled": true,
+  "revision": 29,
+  "createdAt": "2026-09-06T17:26:13.676Z",
+  "updatedAt": "2026-09-07T07:38:35.461Z",
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  }
+}

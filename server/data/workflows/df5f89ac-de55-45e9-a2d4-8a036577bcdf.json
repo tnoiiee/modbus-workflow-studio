@@ -1,0 +1,133 @@
+{
+  "id": "df5f89ac-de55-45e9-a2d4-8a036577bcdf",
+  "name": "MODBUS MULTI INPUT",
+  "description": "",
+  "enabled": true,
+  "version": 1,
+  "mode": "LIVE_LOCKED",
+  "running": false,
+  "nodes": [
+    {
+      "id": "7dfa5436-bdb7-4451-b58d-30c089a0b9b4",
+      "type": "MODBUS_MULTI_INPUT",
+      "name": "MODBUS MULTI INPUT",
+      "position": {
+        "x": -560,
+        "y": -224
+      },
+      "inputCount": 0,
+      "outputCount": 4,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 0,
+        "outputCount": 5,
+        "dataType": "Boolean",
+        "order": "ABCD",
+        "scanInterval": 1000,
+        "scale": 1,
+        "offset": 0,
+        "outputNames": [
+          "OUT 1",
+          "OUT 2",
+          "OUT 3",
+          "OUT 4",
+          "OUT 5"
+        ],
+        "inputs": [
+          {
+            "id": "c0dae36b-b67d-4463-b561-0c75d0bb0880",
+            "name": "INPUT 1",
+            "functionCode": 1,
+            "address": 0,
+            "dataType": "Boolean",
+            "order": "ABCD",
+            "scale": 1,
+            "offset": 0,
+            "engineeringUnit": "",
+            "scanInterval": 1000
+          },
+          {
+            "id": "4443261c-0a96-47d8-a9ff-b959ee7675a9",
+            "name": "INPUT 2",
+            "functionCode": 1,
+            "address": 1,
+            "dataType": "Boolean",
+            "order": "ABCD",
+            "scale": 1,
+            "offset": 0,
+            "engineeringUnit": "",
+            "scanInterval": 1000
+          },
+          {
+            "id": "f9a1d09d-2e83-4b68-964f-23525017e676",
+            "name": "INPUT 3",
+            "functionCode": 1,
+            "address": 2,
+            "dataType": "Boolean",
+            "order": "ABCD",
+            "scale": 1,
+            "offset": 0,
+            "engineeringUnit": "",
+            "scanInterval": 1000
+          },
+          {
+            "id": "28ae093c-0f10-4a21-a7f4-6420bf8d5ec8",
+            "name": "INPUT 4",
+            "functionCode": 1,
+            "address": 3,
+            "dataType": "Boolean",
+            "order": "ABCD",
+            "scale": 1,
+            "offset": 0,
+            "engineeringUnit": "",
+            "scanInterval": 1000
+          }
+        ],
+        "selectedInput": 3
+      }
+    },
+    {
+      "id": "7574b052-e764-48fa-bf04-5d2164c5c8d8",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": -304,
+        "y": -192
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788696309590",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    }
+  ],
+  "edges": [],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "settings": {
+    "projectName": "MODBUS WORKFLOW STUDIO",
+    "autoSaveDelay": 500,
+    "maxPasses": 100
+  },
+  "revision": 31,
+  "createdAt": "2026-09-12T08:10:51.602Z",
+  "updatedAt": "2026-09-12T18:03:39.562Z"
+}

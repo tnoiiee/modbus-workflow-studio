@@ -1,0 +1,322 @@
+{
+  "id": "de19013d-244e-4e6e-be8a-a24c5045f4ed",
+  "name": "WAGO SPGr Test Input",
+  "description": "",
+  "enabled": true,
+  "version": 1,
+  "mode": "LIVE_LOCKED",
+  "running": false,
+  "nodes": [
+    {
+      "id": "a43fcc49-3b74-4ed7-841a-9cfabcb7ae8e",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": -384,
+        "y": -208
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 1,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "8fe254e4-bcbc-4e80-9ec1-707614bcdcaa",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": -384,
+        "y": -32
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 2,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "9981db9f-d2c0-4156-adcd-d4c65f2f9c7f",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": -384,
+        "y": -384
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "2433ccdb-20f4-4858-bbbb-5e49e826e3b5",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": -384,
+        "y": 144
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 3,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "590798bb-ae7f-4961-8e48-9de9e07bad77",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT 73",
+      "position": {
+        "x": -112,
+        "y": -384
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 5,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "852f5f84-23f8-4f5a-a75b-569c55e47525",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT 74",
+      "position": {
+        "x": -112,
+        "y": -208
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 6,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "50f0cc1f-3684-4196-b1db-7313c7200be7",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": -384,
+        "y": 304
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 4,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "7e916073-b858-42e5-9ea6-474968de35c4",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT 75",
+      "position": {
+        "x": -112,
+        "y": -32
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788777596446",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 7,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "6c31f44b-10eb-47ff-a8cc-039c87387f26",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": 240,
+        "y": -288
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788838233281",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 0,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "9231879d-1066-46a8-af81-402c1dbe3584",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": 240,
+        "y": -128
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788838233281",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 6,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    },
+    {
+      "id": "e969d1f5-7613-4664-ad67-149bc1f24748",
+      "type": "MODBUS_INPUT",
+      "name": "MODBUS INPUT",
+      "position": {
+        "x": 240,
+        "y": 32
+      },
+      "inputCount": 0,
+      "outputCount": 1,
+      "params": {
+        "deviceId": "device-1788838233281",
+        "unitId": 1,
+        "functionCode": 1,
+        "address": 7,
+        "dataType": "Boolean",
+        "quantity": 1,
+        "order": "ABCD",
+        "scale": 1,
+        "offset": 0,
+        "engineeringUnit": "",
+        "scanInterval": 1000,
+        "timeoutPolicy": "KEEP_LAST",
+        "badInputPolicy": "STOP_BRANCH",
+        "polarity": "NORMAL"
+      }
+    }
+  ],
+  "edges": [],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "settings": {
+    "projectName": "MODBUS WORKFLOW STUDIO",
+    "autoSaveDelay": 500,
+    "maxPasses": 100
+  },
+  "revision": 124,
+  "createdAt": "2026-09-07T11:04:17.687Z",
+  "updatedAt": "2026-09-08T04:40:33.326Z"
+}
