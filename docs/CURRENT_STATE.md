@@ -49,9 +49,9 @@ Validation evidence is recorded in [docs/ACCEPTANCE_TESTS/v1.2.10.md](ACCEPTANCE
 
 ## Next proposed target
 
-`v1.2.11`, Monitor Scheduler and WebSocket Reliability. This remains a proposal and is not approved for implementation.
+`v1.2.11`, Monitor Scheduler and WebSocket Reliability. The planning scope is approved, but implementation is not included in this release. See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md).
 
-The proposal includes bounded handling for overlapping monitor cycles that currently enqueue work into a shared device FIFO without a backlog bound or stop cancellation. Without those controls, latency can grow without bound and workflow reads may starve. The proposal also covers WebSocket reliability work; no scheduler, WebSocket, React Flow, workflow runtime, Modbus semantics, or safety behavior was changed for this documentation/toolkit update.
+The plan includes bounded handling for overlapping monitor cycles that currently enqueue work into a shared device FIFO without a backlog bound or stop cancellation. Without those controls, latency can grow without bound and workflow reads may starve. It also covers WebSocket reliability; no scheduler, WebSocket, React Flow, workflow runtime, Modbus semantics, or safety behavior was changed in the planning/documentation update.
 
 ## Publishing controls
 

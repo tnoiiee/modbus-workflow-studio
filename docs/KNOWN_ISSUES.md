@@ -26,4 +26,4 @@ Under high monitoring load, Vite may report `write ECONNABORTED` when the proxie
 
 ## v1.2.11 proposal: Monitor Scheduler & WebSocket Reliability
 
-This remains a proposed, unapproved item. Overlapping monitor rounds can enqueue work into the shared device FIFO without a backlog bound or stop cancellation. Latency can therefore grow without bound and may starve workflow reads. The proposal also covers the WebSocket reliability issues listed above; this documentation/toolkit change does not alter scheduler or WebSocket behavior.
+The planning scope is approved, but implementation remains outside the current release. Overlapping monitor rounds can enqueue work into the shared device FIFO without a backlog bound or stop cancellation. Latency can therefore grow without bound and may starve workflow reads. The proposal also covers the WebSocket reliability issues listed above. See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md); this planning/documentation change does not alter scheduler or WebSocket behavior.

@@ -2,7 +2,7 @@
 
 ## v1.2.11: Monitor Scheduler & WebSocket Reliability
 
-Proposed, pending final acceptance approval. This item is not approved for implementation in the current release:
+Proposed planning scope approved; implementation is not included in the current release. See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md):
 
 - Overlapping monitor rounds currently enqueue work into the shared device FIFO without a backlog bound or stop cancellation. Latency can grow without bound and workflow reads may be starved.
 - Non-overlapping monitor scheduler
