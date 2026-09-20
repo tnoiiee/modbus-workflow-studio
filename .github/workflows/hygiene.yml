@@ -26,10 +26,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Audit the published tree
-        run: node scripts/hygiene-check.mjs --tracked --report hygiene-report.md
-      - name: Audit reachable history
-        run: node scripts/hygiene-check.mjs --history
+      - name: Audit tracked tree and reachable history
+        run: node scripts/hygiene-check.mjs --all --strict --report hygiene-report.md
       - name: Upload hygiene report
         if: always()
         uses: actions/upload-artifact@v4

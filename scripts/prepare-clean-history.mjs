@@ -2,8 +2,9 @@
 /**
  * Prepares a clean, single-commit history for a fresh push.
  *
- * Run this on the machine that holds the version you want to publish, in a clean
- * working tree. The procedure is described in docs/CLEAN_HISTORY_PUSH_RUNBOOK.md.
+ * Run this on the machine that holds the version you want to publish. By default it
+ * requires a clean working tree; --allow-dirty snapshots uncommitted work before the
+ * destructive step. The procedure is described in docs/CLEAN_HISTORY_PUSH_RUNBOOK.md.
  *
  * Default behaviour is a dry run: nothing is modified, the plan is printed.
  * To execute, pass --execute --confirm=DELETE-OLD-HISTORY.
@@ -15,9 +16,9 @@
  *                            on a new root, then replace the previous branch.
  *
  * Safety
- *   - Requires a clean working tree so the backup bundle captures everything.
- *   - Copies history into a Git bundle before any destructive step.
- *   - Never pushes. Push commands are printed for the owner/admin to run.
+ *   - Requires a clean working tree unless --allow-dirty is supplied; dirty work is backed up as patches and files.
+ *   - Copies the complete .git directory and history into recovery material before any destructive step.
+ *   - Never pushes and never configures a remote. Push commands are printed for the owner/admin to run.
  *   - Never prints secret values; the hygiene scanner masks them.
  */
 
@@ -66,13 +67,11 @@ function parseArgs(argv) {
   const options = {
     mode: 'reinit',
     branch: 'main',
-    remote: null,
     message: null,
     backupDir: null,
     execute: false,
     confirm: null,
     pruneRefs: false,
-    skipGitCopy: false,
     allowDirty: false,
   };
   for (let i = 0; i < argv.length; i += 1) {
@@ -90,9 +89,6 @@ function parseArgs(argv) {
       case '--branch':
         options.branch = takeValue();
         break;
-      case '--remote':
-        options.remote = takeValue();
-        break;
       case '--message':
         options.message = takeValue();
         break;
@@ -104,9 +100,6 @@ function parseArgs(argv) {
         break;
       case '--prune-refs':
         options.pruneRefs = true;
-        break;
-      case '--skip-git-copy':
-        options.skipGitCopy = true;
         break;
       case '--allow-dirty':
         options.allowDirty = true;
@@ -135,9 +128,7 @@ function printUsage() {
       '  --branch=<name>        published branch name (default: main)',
       '  --message="<text>"     first commit message',
       '  --backup-dir=<path>    backup location (default: ../<repo>-backup-<timestamp>)',
-      '  --remote=<url>         optional remote URL to add after the commit',
       '  --prune-refs           orphan mode only: delete other refs and prune old objects',
-      '  --skip-git-copy        do not copy .git into the backup (bundle only; not recommended)',
       '  --allow-dirty          accept uncommitted changes, snapshotting them into the backup',
       '  --execute              perform the change (default: dry run)',
       `  --confirm=${CONFIRM_TOKEN}`,
@@ -158,7 +149,9 @@ function listTracked(cwd) {
 function snapshotLocalConfig(root) {
   const snapshot = {};
   for (const key of PRESERVED_LOCAL_CONFIG) {
-    const value = tryGit(['config', '--local', '--get', key], root);
+    // Capture the effective value as well as local config. A global identity or
+    // line-ending setting should continue to work after .git is re-created.
+    const value = tryGit(['config', '--local', '--get', key], root) ?? tryGit(['config', '--get', key], root);
     if (value && value.trim()) snapshot[key] = value.trim();
   }
   return snapshot;
@@ -179,7 +172,7 @@ function compareFileLists(before, after) {
   };
 }
 
-function writeBackup(root, backupDir, branch, { copyGitDirectory, snapshotWorkingTree }) {
+function writeBackup(root, backupDir, branch, { snapshotWorkingTree }) {
   fs.mkdirSync(backupDir, { recursive: true });
   const bundlePath = path.join(backupDir, 'history.bundle');
   fs.writeFileSync(path.join(backupDir, 'tracked-files.txt'), `${listTracked(root).join('\n')}\n`, 'utf8');
@@ -191,10 +184,8 @@ function writeBackup(root, backupDir, branch, { copyGitDirectory, snapshotWorkin
   // A byte-for-byte copy of .git is the recovery path that always works, including
   // for shallow or partially fetched repositories where a bundle cannot be re-cloned.
   let gitCopyPath = null;
-  if (copyGitDirectory) {
-    gitCopyPath = path.join(backupDir, 'git-directory');
-    fs.cpSync(path.join(root, '.git'), gitCopyPath, { recursive: true });
-  }
+  gitCopyPath = path.join(backupDir, 'git-directory');
+  fs.cpSync(path.join(root, '.git'), gitCopyPath, { recursive: true });
 
   // The bundle stays the portable artefact, and its restore path is verified, not assumed.
   let bundleState = 'not created';
@@ -271,9 +262,10 @@ function writeBackup(root, backupDir, branch, { copyGitDirectory, snapshotWorkin
             '',
             '```bash',
             '# inside a checkout of the restored repository',
-            'git apply --binary /path/to/backup/working-tree.patch',
-            'git apply --binary --index /path/to/backup/staged.patch   # only staged changes',
-            'cp -a /path/to/backup/untracked/. .                      # untracked files',
+            'git apply --binary /path/to/backup/working-tree.patch  # full HEAD-to-worktree patch',
+            '# Or, from a fresh HEAD checkout, restore only the original index delta:',
+            'git apply --binary --index /path/to/backup/staged.patch',
+            'cp -a /path/to/backup/untracked/. .                       # untracked files',
             'git status --short                                      # compare with status.txt',
             '```',
             '',
@@ -302,17 +294,17 @@ function writeBackup(root, backupDir, branch, { copyGitDirectory, snapshotWorkin
   return { bundlePath, bundleState, restoreState, restoreError, gitCopyPath, snapshotState };
 }
 
-function printNextSteps({ branch, remote, commitSha }) {
+function printNextSteps({ branch, commitSha }) {
   process.stdout.write(
     [
       '',
       'Next steps (owner/admin):',
       '',
       '1. Create a NEW empty repository on GitHub (private first, no README, no license, no .gitignore).',
-      '2. Add the remote and push the single clean commit:',
+      '2. Add the new remote yourself and push the single clean commit:',
       '',
       '```bash',
-      remote ? `git remote add origin ${remote}` : 'git remote add origin https://github.com/<owner>/<repository>.git',
+      'git remote add origin https://github.com/<owner>/<repository>.git',
       `git push -u origin ${branch}`,
       '```',
       '',
@@ -376,6 +368,10 @@ function main() {
   const branch = options.branch;
   const message = options.message ?? `chore: publish ${repoName} v${readVersion(root) ?? '1.0.0'}`;
   const backupDir = path.resolve(root, options.backupDir ?? path.join('..', `${repoName}-history-backup-${timestamp()}`));
+  const backupRelative = path.relative(root, backupDir);
+  if (backupRelative === '' || (!backupRelative.startsWith('..') && !path.isAbsolute(backupRelative))) {
+    fail(`backup directory must be outside the repository: ${backupDir}`);
+  }
   const commitSha = tryGit(['rev-parse', '--short', 'HEAD'], root);
 
   process.stdout.write(
@@ -446,7 +442,6 @@ function main() {
     fail(`backup directory already exists and is not empty: ${backupDir}`);
   }
   const backup = writeBackup(root, backupDir, branch, {
-    copyGitDirectory: !options.skipGitCopy,
     snapshotWorkingTree: Boolean(dirty),
   });
   const bundlePath = backup.bundlePath;
@@ -458,7 +453,7 @@ function main() {
     process.stdout.write(`Restore warning: ${backup.restoreError.split('\n')[0]}\n`);
     if (!backup.gitCopyPath) {
       fail(
-        'the bundle could not be restored and no .git directory copy was made. Run again without --skip-git-copy.',
+        'the bundle could not be restored and the required .git directory recovery copy is unavailable.',
       );
     }
     process.stdout.write(
@@ -521,23 +516,15 @@ function main() {
     process.stdout.write(`Newly published files (${difference.added.length}):\n`);
     for (const entry of difference.added.slice(0, 50)) process.stdout.write(`  + ${entry}\n`);
   }
-  const treeStatus = runScanner(['--tracked'], root);
-  const historyStatus = runScanner(['--tracked', '--history'], root);
-  if (treeStatus !== 0 || historyStatus !== 0) {
+  const verificationStatus = runScanner(['--all', '--strict'], root);
+  if (verificationStatus !== 0) {
     fail('verification failed. Do not push; inspect the findings above. The backup bundle still holds the old history.');
   }
 
   process.stdout.write('\nStep 5/5 — remote configuration\n');
-  if (options.remote) {
-    const existing = tryGit(['remote', 'get-url', 'origin'], root);
-    if (existing) git(['remote', 'set-url', 'origin', options.remote], root);
-    else git(['remote', 'add', 'origin', options.remote], root);
-    process.stdout.write(`origin = ${options.remote}\n`);
-  } else {
-    process.stdout.write('No --remote given; nothing was configured.\n');
-  }
+  process.stdout.write('No remote was configured. Add the new repository remote only after reviewing the clean commit.\n');
 
-  printNextSteps({ branch, remote: options.remote, commitSha: newSha });
+  printNextSteps({ branch, commitSha: newSha });
 }
 
 function timestamp() {

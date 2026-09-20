@@ -1,9 +1,10 @@
 # Roadmap
 
-## v1.2.11: Monitor and WebSocket reliability
+## v1.2.11: Monitor Scheduler & WebSocket Reliability
 
-Proposed, pending final acceptance approval:
+Proposed, pending final acceptance approval. This item is not approved for implementation in the current release:
 
+- Overlapping monitor rounds currently enqueue work into the shared device FIFO without a backlog bound or stop cancellation. Latency can grow without bound and workflow reads may be starved.
 - Non-overlapping monitor scheduler
 - Idempotent Start/Stop and generation guard
 - Cycle/request diagnostics

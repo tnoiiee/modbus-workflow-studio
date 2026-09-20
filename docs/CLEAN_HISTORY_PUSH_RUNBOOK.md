@@ -8,9 +8,10 @@ Use this runbook when the published repository contains files that must never ha
 published (runtime `DATA_DIR` state, device endpoints, audit records, credentials, local
 build metadata) and the goal is a **new history that never contained them**.
 
-Two related documents exist:
+Related documents:
 
 - `docs/HISTORY_REWRITE_RUNBOOK.md` — rewrite history inside the existing repository.
+- [`docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md`](CLEAN_HISTORY_PUSH_RUNBOOK_TH.md) — Thai translation of this runbook.
 - This document — publish a **new first commit** and, when complete erasure matters, push it to
   a **new repository**.
 
@@ -41,7 +42,7 @@ follow `docs/HISTORY_REWRITE_RUNBOOK.md`.
 | --- | --- |
 | `.gitignore` | Hardened path policy: secrets, runtime data, build output, logs, archives, OS/editor files |
 | `.gitattributes` | Line-ending policy for hooks/scripts; suppresses diffs of accidental runtime files under `data/` and `server/data/` |
-| `scripts/hygiene-check.mjs` | Scanner with path rules, credential patterns, and size limits. Modes: `--worktree`, `--staged`, `--tracked`, `--history` |
+| `scripts/hygiene-check.mjs` | Scanner with path rules, credential patterns, and size limits. Modes: `--worktree`, `--staged`, `--tracked`, `--history`, `--all` (`tree+history`) |
 | `.githooks/pre-commit` | Blocks a commit that adds a critical file or a credential |
 | `.githooks/pre-push` | Blocks a push whose tree or reachable history breaks the policy |
 | `scripts/install-hooks.mjs` | `core.hooksPath` registration for each clone (`npm run hooks:install`) |
@@ -68,6 +69,25 @@ hardening step below so a credential is rejected before it reaches the repositor
 Do not run this from a checkout that contains uncommitted work you have not decided about: the
 procedure commits the working tree **as it is**.
 
+## Step 0 — Confirm that the local toolkit scripts are installed
+
+Before following the operational steps, confirm that the package scripts have been merged:
+
+```bash
+npm run verify:publish
+```
+
+If npm prints `npm error ... To see a list of scripts`, the toolkit scripts have not been
+merged into `package.json` yet. Use the scanner directly as a safe fallback:
+
+```bash
+node scripts/hygiene-check.mjs --all --strict
+```
+
+Then run `node scripts/apply-toolkit.mjs --write`, review the `package.json` diff, and repeat
+`npm run verify:publish` when the merge is complete. Do not interpret a missing npm script as a
+successful hygiene result.
+
 ## Step 1 — Install the gate in the local checkout
 
 Copy or merge these paths into the version you are publishing if they are not present yet:
@@ -86,6 +106,7 @@ git config --get core.hooksPath   # expected: .githooks
 ```bash
 npm run hygiene           # tracked files + untracked files that are not ignored
 npm run hygiene:history   # every path that ever existed in reachable history
+npm run hygiene:all       # tracked tree and reachable history in one run
 ```
 
 `npm run hygiene` must pass. Fix every error: delete the file, or add the path to `.gitignore`
@@ -139,17 +160,25 @@ git bundle verify ../verification-history-backup-YYYYMMDD.bundle
 ```
 
 `scripts/prepare-clean-history.mjs` performs this step again and refuses to continue if the backup
-directory already contains data. It writes four things:
+directory already contains data. It writes the following recovery material:
 
-- `git-directory/` — a byte-for-byte copy of `.git`. This is the recovery path that always works,
-  including for shallow or partially fetched repositories (`--skip-git-copy` disables it, and is
-  not recommended).
-- `history.bundle` — a portable Git bundle.
+- `git-directory/` — a byte-for-byte copy of `.git`. This recovery path is always created and works
+  even when a shallow or partially fetched repository cannot produce a portable bundle.
+- `history.bundle` — a portable Git bundle, followed by `git bundle verify` and a real clone check.
 - `RESTORE.md`, `tracked-files.txt`, `refs.txt`, `log.txt`, `status.txt`, `stashes.txt` — recovery
   instructions and a record of what the repository contained.
+- If `--allow-dirty` is used: `working-tree.patch` from `git diff HEAD --binary`,
+  `staged.patch` from `git diff --cached --binary`, `untracked/`, and `untracked-files.txt`.
 - A **restore check**: the tool re-clones the bundle into a scratch directory and deletes it again.
-  If the source repository is shallow or partial, the bundle cannot always be re-cloned; the run
-  reports that and tells you to use `git-directory/`. Both paths are documented in `RESTORE.md`.
+  If the source repository is shallow or partial, the bundle clone can fail; the run reports that
+  and tells you to use `git-directory/`. Both paths are documented in `RESTORE.md`.
+
+When reviewing the clean commit, compare the backup's old tracked-file list with the new tree:
+
+| Tree state before reinit | Diff against `tracked-files.txt` | Interpretation |
+| --- | --- | --- |
+| Runtime data is still tracked | You will see lines such as `-  server/data/....json` | Expected: those paths were removed from the clean commit. |
+| Tree is already clean | The diff can have **no differences at all** | Normal: history cleanup removes old objects, not current file-list entries. The real evidence is `node scripts/hygiene-check.mjs --history` returning 0 errors. |
 
 Store the backup directory in an access-controlled location: **it contains the leaked data by
 definition.** Do not attach it to an issue and do not commit it.
@@ -190,18 +219,29 @@ Notes:
   `refs/remotes/origin/*`, so re-add the new remote before pushing.
 - The working tree is never rewritten. Only `.git` changes.
 
-## Step 5 — Verify the new history locally
+## Step 5 — Verify the new history locally and on the remote
+
+After the clean commit exists, verify the local shape and then compare the remote tree. The
+published tree must contain only the two placeholders under the runtime directories:
 
 ```bash
-git log --oneline --all              # exactly one commit
-git ls-files server/data data        # only data/.gitkeep and server/data/.gitkeep
-git ls-files | grep -c .             # compare with the backup listing
-npm run verify:publish               # scanner, strict mode
+git log --oneline --all
+git rev-list --all --count                 # must be 1
+git ls-tree -r --name-only origin/main     # inspect the exact remote tree
+git ls-tree -r --name-only origin/main | grep -E '^(data|server/data)/'
+# expected runtime output: data/.gitkeep and server/data/.gitkeep only
+
+git rev-list --objects --all | grep -E 'server/data/(audit|devices|monitor-lists|workflow|workflows)|tsbuildinfo' || echo "ไม่พบ ✓"
+node scripts/hygiene-check.mjs --history   # must report 0 errors
+npm run verify:publish                      # tree + history, strict mode
 ```
 
-Also confirm the difference against the backup listing written by the script
-(`tracked-files.txt` in the backup directory). Files that disappeared are the files that will no
-longer be published.
+If `origin/main` is not available yet, run the same `git ls-tree` command after the push. Also
+confirm the difference against the backup listing written by the script (`tracked-files.txt`). A
+runtime file that was still tracked before cleanup will appear as a removed line such as
+`-  server/data/....json`; if the tree was already clean, the diff can be empty, which is normal.
+The history scan returning 0 errors is the authoritative proof that old paths are no longer
+reachable.
 
 ## Step 6 — Publish to a new repository
 
@@ -230,10 +270,10 @@ git push -u origin main
 Run in a **fresh clone**, never in the prepared working copy:
 
 ```bash
-git clone https://github.com/<owner>/<new-repository>.git verify-clean
+git clone -b main https://github.com/<owner>/<new-repository>.git verify-clean
 cd verify-clean
 git log --oneline --all
-git ls-files server/data data
+git ls-tree -r --name-only origin/main
 npm run hygiene
 npm run hygiene:history
 ```

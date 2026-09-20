@@ -23,12 +23,10 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
-node "$root/scripts/hygiene-check.mjs" --tracked
-tracked_status=$?
-node "$root/scripts/hygiene-check.mjs" --history
-history_status=$?
+node "$root/scripts/hygiene-check.mjs" --all
+status=$?
 
-if [ "$tracked_status" -ne 0 ] || [ "$history_status" -ne 0 ]; then
+if [ "$status" -ne 0 ]; then
   echo "" >&2
   echo "hygiene: push blocked." >&2
   echo "hygiene: tree findings must be fixed before publishing." >&2
@@ -37,4 +35,4 @@ if [ "$tracked_status" -ne 0 ] || [ "$history_status" -ne 0 ]; then
 fi
 
 echo "hygiene: pre-push verification passed." >&2
-exit 0
+exit "$status"

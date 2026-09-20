@@ -151,6 +151,9 @@ function main() {
     process.stdout.write(`\nReported for manual review (${manual.length}): ${manual.map((f) => f.path).join(', ')}\n`);
   }
 
+  const ignorePath = path.join(root, '.gitignore');
+  const existingIgnore = fs.existsSync(ignorePath) ? fs.readFileSync(ignorePath, 'utf8') : '';
+  const managedIgnoreBlockMissing = !existingIgnore.includes(IGNORE_BLOCK_MARKER);
   const ignoreNeedsUpdate = [];
   for (const target of targets) {
     // --no-index is required: without it, check-ignore silently skips tracked paths,
@@ -159,8 +162,9 @@ function main() {
     if (!ignored) ignoreNeedsUpdate.push(target);
   }
 
-  const placeholders = PLACEHOLDER_DIRECTORIES.filter((directory) => fs.existsSync(path.join(root, directory)));
-  const placeholderActions = placeholders
+  // Always restore both placeholders. The directories may not exist in a partial
+  // checkout, but a fresh clone still needs the runtime locations represented.
+  const placeholderActions = PLACEHOLDER_DIRECTORIES
     .map((directory) => path.posix.join(directory, PLACEHOLDER_FILE))
     .filter((relative) => !fs.existsSync(path.join(root, relative)));
 
@@ -173,9 +177,9 @@ function main() {
         placeholderActions.length > 0
           ? `  2. create placeholder(s): ${placeholderActions.join(', ')}`
           : '  2. placeholders already present',
-        ignoreNeedsUpdate.length > 0
-          ? `  3. append ignore rules covering: ${summarizeLocations(ignoreNeedsUpdate)}`
-          : '  3. .gitignore already covers every path',
+        ignoreNeedsUpdate.length > 0 || managedIgnoreBlockMissing
+          ? `  3. append the managed ignore block${ignoreNeedsUpdate.length > 0 ? ` (also covering: ${summarizeLocations(ignoreNeedsUpdate)})` : ''}`
+          : '  3. .gitignore already has the managed block and covers every path',
         '  4. re-run the hygiene scanner and print the commit command',
         '',
         'Dry run: nothing changed. Apply with:',
@@ -211,19 +215,15 @@ function main() {
   }
 
   process.stdout.write('\nStep 3/4 — confirming ignore rules\n');
-  if (ignoreNeedsUpdate.length > 0) {
-    const ignorePath = path.join(root, '.gitignore');
-    const existing = fs.existsSync(ignorePath) ? fs.readFileSync(ignorePath, 'utf8') : '';
-    if (existing.includes(IGNORE_BLOCK_MARKER)) {
-      process.stdout.write('  managed block already present\n');
-    } else {
-      const separator = existing.endsWith('\n') || existing.length === 0 ? '' : '\n';
-      fs.writeFileSync(ignorePath, `${existing}${separator}${IGNORE_BLOCK.join('\n')}`, 'utf8');
-      git(['add', '--', '.gitignore'], root);
-      process.stdout.write(`  appended ignore rules to .gitignore covering: ${summarizeLocations(ignoreNeedsUpdate)}\n`);
-    }
+  if (ignoreNeedsUpdate.length > 0 || managedIgnoreBlockMissing) {
+    const separator = existingIgnore.endsWith('\n') || existingIgnore.length === 0 ? '' : '\n';
+    fs.writeFileSync(ignorePath, `${existingIgnore}${separator}${IGNORE_BLOCK.join('\n')}`, 'utf8');
+    git(['add', '--', '.gitignore'], root);
+    process.stdout.write(
+      `  appended the managed ignore block${ignoreNeedsUpdate.length > 0 ? ` covering: ${summarizeLocations(ignoreNeedsUpdate)}` : ''}\n`,
+    );
   } else {
-    process.stdout.write('  .gitignore already covers every path\n');
+    process.stdout.write('  .gitignore already has the managed block and covers every path\n');
   }
 
   process.stdout.write('\nStep 4/4 — verification\n');
