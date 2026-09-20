@@ -1,0 +1,40 @@
+#!/bin/sh
+# Repository hygiene gate for modbus-workflow-studio.
+# Runs before every push: audits the files being published and the reachable history.
+# Emergency bypass: HYGIENE_SKIP=1 git push ...
+# Policy: docs/CLEAN_HISTORY_PUSH_RUNBOOK.md
+
+if [ "${HYGIENE_SKIP:-}" = "1" ]; then
+  echo "hygiene: pre-push check skipped (HYGIENE_SKIP=1)" >&2
+  exit 0
+fi
+
+root="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$root" ]; then
+  exit 0
+fi
+if [ ! -f "$root/scripts/hygiene-check.mjs" ]; then
+  echo "hygiene: scripts/hygiene-check.mjs not found in this checkout; skipping." >&2
+  exit 0
+fi
+if ! command -v node >/dev/null 2>&1; then
+  echo "hygiene: Node.js is required for the pre-push hygiene check but was not found on PATH." >&2
+  echo "hygiene: install Node.js >= 20, or bypass once with: HYGIENE_SKIP=1 git push ..." >&2
+  exit 1
+fi
+
+node "$root/scripts/hygiene-check.mjs" --tracked
+tracked_status=$?
+node "$root/scripts/hygiene-check.mjs" --history
+history_status=$?
+
+if [ "$tracked_status" -ne 0 ] || [ "$history_status" -ne 0 ]; then
+  echo "" >&2
+  echo "hygiene: push blocked." >&2
+  echo "hygiene: tree findings must be fixed before publishing." >&2
+  echo "hygiene: history findings require the owner/admin procedure in docs/CLEAN_HISTORY_PUSH_RUNBOOK.md." >&2
+  exit 1
+fi
+
+echo "hygiene: pre-push verification passed." >&2
+exit 0

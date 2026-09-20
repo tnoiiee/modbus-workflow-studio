@@ -1,0 +1,40 @@
+name: Hygiene
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - 'hotfix/**'
+      - 'feature/**'
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Audit the published tree
+        run: node scripts/hygiene-check.mjs --tracked --report hygiene-report.md
+      - name: Audit reachable history
+        run: node scripts/hygiene-check.mjs --history
+      - name: Upload hygiene report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hygiene-report
+          path: hygiene-report.md
+          if-no-files-found: ignore
+          retention-days: 7

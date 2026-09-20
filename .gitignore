@@ -1,0 +1,100 @@
+# ---------------------------------------------------------------------------
+# modbus-workflow-studio — publishing policy
+#
+# Everything listed here must never be committed. The rules are enforced twice:
+#   1. by this file, so the files are not offered to Git at all
+#   2. by scripts/hygiene-check.mjs, which fails a commit or push that still
+#      contains a critical file (path rules), a credential (content rules), or
+#      an oversized artifact
+#
+# Policy and owner procedure: docs/CLEAN_HISTORY_PUSH_RUNBOOK.md
+# ---------------------------------------------------------------------------
+
+# --- Dependencies and build output ---
+node_modules/
+dist/
+build/
+out/
+.next/
+.vite/
+.turbo/
+*.tsbuildinfo
+
+# --- Test, coverage, and tooling caches ---
+coverage/
+.nyc_output/
+.cache/
+.parcel-cache/
+.vitest/
+.eslintcache
+.hygiene-out/
+
+# --- Environment and secrets (never commit) ---
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.ppk
+id_rsa*
+id_ed25519*
+.ssh/
+.npmrc
+.netrc
+.git-credentials
+credentials.json
+service-account*.json
+
+# --- Runtime data (DATA_DIR) and generated operational state ---
+# Local operational files: devices, workflows, monitor lists, audit records.
+/data/*
+!/data/.gitkeep
+/server/data/*
+!/server/data/.gitkeep
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+
+# --- Logs and temporary files ---
+*.log
+logs/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# --- Release and backup artifacts (external storage only) ---
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.tgz
+*.bundle
+release/
+backups/
+hygiene-report.md
+
+# --- Operating system and editor files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.code-workspace

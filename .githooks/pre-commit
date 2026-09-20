@@ -1,0 +1,33 @@
+#!/bin/sh
+# Repository hygiene gate for modbus-workflow-studio.
+# Blocks a commit that would publish runtime data, credentials, or generated artifacts.
+# Emergency bypass: HYGIENE_SKIP=1 git commit ...
+# Policy: docs/CLEAN_HISTORY_PUSH_RUNBOOK.md
+
+if [ "${HYGIENE_SKIP:-}" = "1" ]; then
+  echo "hygiene: pre-commit check skipped (HYGIENE_SKIP=1)" >&2
+  exit 0
+fi
+
+root="$(git rev-parse --show-toplevel 2>/dev/null)"
+if [ -z "$root" ]; then
+  exit 0
+fi
+if [ ! -f "$root/scripts/hygiene-check.mjs" ]; then
+  echo "hygiene: scripts/hygiene-check.mjs not found in this checkout; skipping." >&2
+  exit 0
+fi
+if ! command -v node >/dev/null 2>&1; then
+  echo "hygiene: Node.js is required for the pre-commit hygiene check but was not found on PATH." >&2
+  echo "hygiene: install Node.js >= 20, or bypass once with: HYGIENE_SKIP=1 git commit ..." >&2
+  exit 1
+fi
+
+node "$root/scripts/hygiene-check.mjs" --staged
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "" >&2
+  echo "hygiene: commit blocked. Remove or unstage the listed files." >&2
+  echo "hygiene: bypass once with HYGIENE_SKIP=1 git commit ... only after confirming the content is safe." >&2
+fi
+exit "$status"

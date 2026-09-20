@@ -1,0 +1,22 @@
+name: Build clean source ZIP
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Create source ZIP
+        run: bash scripts/create-release-zip.sh
+      - name: Upload source ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: clean-source-zip
+          path: release/*.zip
+          if-no-files-found: error
