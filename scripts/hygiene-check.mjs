@@ -11,6 +11,7 @@
  *   --staged               files staged for the next commit (index content)
  *   --tracked              tracked files only
  *   --history              audit every path that ever existed in reachable history
+ *   --all                  tracked tree and reachable history in one run
  *
  * Options
  *   --strict               treat warnings as errors
@@ -373,6 +374,7 @@ function looksBinary(buffer) {
 function parseArgs(argv) {
   const options = {
     mode: 'worktree',
+    requestedModes: new Set(),
     strict: false,
     softHistory: false,
     json: false,
@@ -383,16 +385,19 @@ function parseArgs(argv) {
     const arg = argv[i];
     switch (arg) {
       case '--worktree':
-        options.mode = 'worktree';
+        options.requestedModes.add('worktree');
         break;
       case '--staged':
-        options.mode = 'staged';
+        options.requestedModes.add('staged');
         break;
       case '--tracked':
-        options.mode = 'tracked';
+        options.requestedModes.add('tracked');
         break;
       case '--history':
-        options.mode = 'history';
+        options.requestedModes.add('history');
+        break;
+      case '--all':
+        options.requestedModes.add('all');
         break;
       case '--strict':
         options.strict = true;
@@ -419,6 +424,16 @@ function parseArgs(argv) {
         fail(`unknown argument: ${arg}`);
     }
   }
+
+  const requested = options.requestedModes;
+  if (requested.has('all') || (requested.has('tracked') && requested.has('history'))) {
+    options.mode = 'tree+history';
+  } else if (requested.size === 1) {
+    const [mode] = requested;
+    options.mode = mode === 'tracked' ? 'tracked' : mode;
+  } else if (requested.size > 1) {
+    fail('choose one scan mode, or use --all for the tracked tree plus reachable history');
+  }
   return options;
 }
 
@@ -432,13 +447,14 @@ function printUsage() {
       '  --staged     files staged for the next commit',
       '  --tracked    tracked files only',
       '  --history    audit every path that ever existed in reachable history',
+      '  --all        tracked tree plus reachable history in one run',
       '',
       'Options:',
       '  --strict         treat warnings as errors',
       '  --soft-history   report history findings as warnings',
       '  --json           print a machine-readable summary',
       '  --report <file>  write a masked Markdown report',
-      '  --quiet          print only the summary line',
+      '  --quiet          print only the final summary line(s)',
       '',
     ].join('\n'),
   );
@@ -601,6 +617,10 @@ function scanHistory(root, options) {
   return { findings, pathsScanned: seen.size };
 }
 
+function addPhase(findings, phase) {
+  return findings.map((finding) => ({ ...finding, phase }));
+}
+
 /* -------------------------------------------------------------------------- */
 /* reporting                                                                  */
 /* -------------------------------------------------------------------------- */
@@ -633,6 +653,12 @@ function buildReport({ root, options, findings, counts }) {
   const warnings = findings.filter((finding) => finding.severity === 'warn');
   const head = tryGit(['rev-parse', 'HEAD'], root);
   const remote = tryGit(['remote', '-v'], root);
+  const nextAction =
+    errors.length === 0
+      ? 'No action required; there are no blocking hygiene errors.'
+      : counts.treeErrors === 0 && counts.historyErrors > 0
+        ? 'The tree is clean, but reachable history still has findings. Perform the clean-history procedure in [docs/CLEAN_HISTORY_PUSH_RUNBOOK.md](docs/CLEAN_HISTORY_PUSH_RUNBOOK.md).'
+        : 'Runtime or build data is still tracked. Run `node scripts/untrack-runtime-data.mjs --write` first, then review history.';
   const lines = [
     '# Repository hygiene report',
     '',
@@ -644,19 +670,25 @@ function buildReport({ root, options, findings, counts }) {
     `- Files checked: ${counts.filesChecked}`,
     `- Errors: ${errors.length}`,
     `- Warnings: ${warnings.length}`,
+    `- Tree errors: ${counts.treeErrors}`,
+    `- History errors: ${counts.historyErrors}`,
+    '',
+    '## Next action',
+    '',
+    nextAction,
     '',
     '> Suspected values are masked. Do not paste raw secrets into issues, chat, or pull requests.',
     '',
   ];
   if (findings.length === 0) {
-    lines.push('No findings. The tree matches the repository hygiene policy.', '');
+    lines.push('No findings. The tree and reachable history match the repository hygiene policy.', '');
     return `${lines.join('\n')}\n`;
   }
-  lines.push('| Severity | Rule | Path | Evidence | Message |', '| --- | --- | --- | --- | --- |');
+  lines.push('| Phase | Severity | Rule | Path | Evidence | Message |', '| --- | --- | --- | --- | --- | --- |');
   for (const finding of sortFindings(findings)) {
     const location = finding.line ? `${finding.path}:${finding.line}` : finding.path;
     lines.push(
-      `| ${finding.severity} | \`${finding.rule}\` | \`${location}\` | ${finding.evidence || ''} | ${finding.message.replace(/\|/g, '\\|')} |`,
+      `| ${finding.phase} | ${finding.severity} | \`${finding.rule}\` | \`${location}\` | ${finding.evidence || ''} | ${finding.message.replace(/\|/g, '\\|')} |`,
     );
   }
   lines.push('');
@@ -666,6 +698,15 @@ function buildReport({ root, options, findings, counts }) {
 /* -------------------------------------------------------------------------- */
 /* main                                                                       */
 /* -------------------------------------------------------------------------- */
+
+function scanTree(root, mode) {
+  const { paths, source } = collectFilePaths(root, mode);
+  const findings = [];
+  for (const relativePath of paths) {
+    findings.push(...scanFile(root, toPosix(relativePath), source));
+  }
+  return { findings: addPhase(findings, 'tree'), pathsScanned: paths.length };
+}
 
 function main() {
   const options = parseArgs(process.argv.slice(2));
@@ -678,18 +719,23 @@ function main() {
   if (!root) fail('not inside a Git working tree. Run this from the repository root.', 2);
 
   let findings = [];
-  let filesChecked = 0;
+  let treeFiles = 0;
+  let historyFiles = 0;
 
   if (options.mode === 'history') {
     const historyResult = scanHistory(root, options);
-    findings = historyResult.findings;
-    filesChecked = historyResult.pathsScanned;
+    findings = addPhase(historyResult.findings, 'history');
+    historyFiles = historyResult.pathsScanned;
+  } else if (options.mode === 'tree+history') {
+    const treeResult = scanTree(root, 'tracked');
+    const historyResult = scanHistory(root, options);
+    findings = [...treeResult.findings, ...addPhase(historyResult.findings, 'history')];
+    treeFiles = treeResult.pathsScanned;
+    historyFiles = historyResult.pathsScanned;
   } else {
-    const { paths, source } = collectFilePaths(root, options.mode);
-    filesChecked = paths.length;
-    for (const relativePath of paths) {
-      findings.push(...scanFile(root, toPosix(relativePath), source));
-    }
+    const treeResult = scanTree(root, options.mode);
+    findings = treeResult.findings;
+    treeFiles = treeResult.pathsScanned;
   }
 
   if (options.strict) {
@@ -698,18 +744,25 @@ function main() {
 
   const errors = findings.filter((finding) => finding.severity === 'error');
   const warnings = findings.filter((finding) => finding.severity === 'warn');
+  const treeErrors = errors.filter((finding) => finding.phase === 'tree').length;
+  const historyErrors = errors.filter((finding) => finding.phase === 'history').length;
+  const filesChecked = treeFiles + historyFiles;
+  const counts = { filesChecked, treeFiles, historyFiles, treeErrors, historyErrors };
 
   if (!options.json) {
     printFindings(findings, options.quiet);
     if (options.report) {
       fs.mkdirSync(path.dirname(path.resolve(root, options.report)), { recursive: true });
-      fs.writeFileSync(path.resolve(root, options.report), buildReport({ root, options, findings, counts: { filesChecked } }), 'utf8');
+      fs.writeFileSync(path.resolve(root, options.report), buildReport({ root, options, findings, counts }), 'utf8');
       if (!options.quiet) process.stdout.write(`${COLORS.dim}Report written: ${options.report}${COLORS.reset}\n`);
     }
     const verdict = errors.length === 0 ? `${COLORS.green}PASS${COLORS.reset}` : `${COLORS.red}FAIL${COLORS.reset}`;
     process.stdout.write(
       `hygiene-check [${options.mode}] ${verdict} — files: ${filesChecked}, errors: ${errors.length}, warnings: ${warnings.length}\n`,
     );
+    if (options.mode === 'tree+history') {
+      process.stdout.write(`tree: ${treeErrors} error(s) · history: ${historyErrors} error(s)\n`);
+    }
   } else {
     process.stdout.write(
       `${JSON.stringify(
@@ -717,8 +770,12 @@ function main() {
           mode: options.mode,
           repository: root,
           filesChecked,
+          treeFiles,
+          historyFiles,
           errors: errors.length,
           warnings: warnings.length,
+          treeErrors,
+          historyErrors,
           findings,
         },
         null,

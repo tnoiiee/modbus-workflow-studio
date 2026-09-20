@@ -37,6 +37,7 @@ const REQUIRED_FILES = [
   'MANIFEST.sha256.txt',
   'START-HERE.md',
   'docs/CLEAN_HISTORY_PUSH_RUNBOOK.md',
+  'docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md',
   'docs/OPTIONAL-DOC-UPDATES.md',
   'scripts/apply-toolkit.mjs',
   'scripts/build-toolkit-zip.mjs',
@@ -56,6 +57,7 @@ const FORBIDDEN_GLOBS = [
   /(^|\/)dist\//,
   /(^|\/)coverage\//,
   /(^|\/)server\/data\/(?!\.gitkeep$)/,
+  /(^|\/)data\/(?!\.gitkeep$)/,
   /\.zip$/,
   /\.pem$/,
   /\.key$/,
@@ -192,7 +194,7 @@ function main() {
     // repository. This also proves the payload itself contains no forbidden path.
     spawnSync('git', ['init', '--quiet', '-b', 'main'], { cwd: payloadRoot });
     spawnSync('git', ['add', '-A'], { cwd: payloadRoot });
-    const scan = spawnSync(process.execPath, [path.join(payloadRoot, 'scripts/hygiene-check.mjs'), '--tracked', '--json'], {
+    const scan = spawnSync(process.execPath, [path.join(payloadRoot, 'scripts/hygiene-check.mjs'), '--all', '--strict', '--json'], {
       cwd: payloadRoot,
       encoding: 'utf8',
       maxBuffer: 32 * 1024 * 1024,

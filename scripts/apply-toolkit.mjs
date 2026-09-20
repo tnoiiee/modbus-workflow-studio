@@ -26,12 +26,13 @@ import process from 'node:process';
 const PACKAGE_SCRIPTS = {
   hygiene: 'node scripts/hygiene-check.mjs',
   'hygiene:staged': 'node scripts/hygiene-check.mjs --staged',
-  'hygiene:history': 'node scripts/hygiene-check.mjs --tracked --history',
-  'hygiene:report': 'node scripts/hygiene-check.mjs --tracked --history --report .hygiene-out/hygiene-report.md',
+  'hygiene:history': 'node scripts/hygiene-check.mjs --history',
+  'hygiene:all': 'node scripts/hygiene-check.mjs --all',
+  'hygiene:report': 'node scripts/hygiene-check.mjs --all --strict --report .hygiene-out/hygiene-report.md',
   'hooks:install': 'node scripts/install-hooks.mjs',
   'clean-history:prepare': 'node scripts/prepare-clean-history.mjs',
   'untrack:runtime-data': 'node scripts/untrack-runtime-data.mjs',
-  'verify:publish': 'node scripts/hygiene-check.mjs --tracked --history --strict',
+  'verify:publish': 'node scripts/hygiene-check.mjs --all --strict',
   'toolkit:apply': 'node scripts/apply-toolkit.mjs',
 };
 
@@ -46,7 +47,10 @@ const MANAGED_FILES = [
   'scripts/prepare-clean-history.mjs',
   'scripts/untrack-runtime-data.mjs',
   'scripts/apply-toolkit.mjs',
+  'scripts/build-toolkit-zip.mjs',
+  'scripts/verify-toolkit-zip.mjs',
   'docs/CLEAN_HISTORY_PUSH_RUNBOOK.md',
+  'docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md',
 ];
 
 function git(args, cwd) {

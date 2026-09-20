@@ -38,6 +38,7 @@ const PAYLOAD = [
   ['scripts/build-toolkit-zip.mjs', 'scripts/build-toolkit-zip.mjs'],
   ['scripts/verify-toolkit-zip.mjs', 'scripts/verify-toolkit-zip.mjs'],
   ['docs/CLEAN_HISTORY_PUSH_RUNBOOK.md', 'docs/CLEAN_HISTORY_PUSH_RUNBOOK.md'],
+  ['docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md', 'docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md'],
 ];
 
 const START_HERE = `# START HERE — ชุดเครื่องมือกันไฟล์สำคัญหลุด (hygiene toolkit)
@@ -61,6 +62,7 @@ const START_HERE = `# START HERE — ชุดเครื่องมือก�
 | \`.github/workflows/hygiene.yml\` | ตรวจซ้ำฝั่ง GitHub ทุก push/PR |
 | \`MANIFEST.sha256.txt\` | SHA-256 ของทุกไฟล์ในซิป สำหรับ recheck หลังแตกไฟล์ |
 | \`docs/CLEAN_HISTORY_PUSH_RUNBOOK.md\` | ขั้นตอนทั้งหมด (10 สเตป + troubleshooting) |
+| \`docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md\` | ฉบับภาษาไทยของ runbook |
 | \`docs/OPTIONAL-DOC-UPDATES.md\` | ข้อความที่ควรเพิ่มใน README/CURRENT_STATE/RELEASE_CHECKLIST |
 
 ซิปนี้ **ไม่มีข้อมูลลับหรือข้อมูล runtime** (ตรวจด้วยตัวสแกนเอง)
@@ -116,7 +118,8 @@ node scripts/apply-toolkit.mjs --write
 \`\`\`
 [ERROR] server/data/devices.json        runtime-data: ...
 [ERROR] client/tsconfig.tsbuildinfo     build-output: ...
-hygiene-check [worktree] FAIL — files: N, errors: M
+hygiene-check [tree+history] FAIL — files: N, errors: M, warnings: W
+tree: X error(s) · history: Y error(s)
 \`\`\`
 
 แก้โดยไม่ลบไฟล์ในเครื่อง:
@@ -133,9 +136,10 @@ node scripts/apply-toolkit.mjs                   # ต้องผ่านแ�
 ## ขั้นต่อไป
 
 1. \`npm run hygiene\` ต้อง PASS
-2. \`npm run clean-history:prepare\` (dry run) → \`node scripts/prepare-clean-history.mjs --execute --confirm=DELETE-OLD-HISTORY\`
-3. ลบ repo เก่า → สร้าง repo ใหม่ (private ก่อน) → \`git push -u origin main\` → ตรวจ → ค่อย public
-4. อ่าน \`docs/CLEAN_HISTORY_PUSH_RUNBOOK.md\` สำหรับรายละเอียดและข้อจำกัดทั้งหมด (forks, clones, caches)
+2. \`npm run hygiene:all\` ต้อง PASS ทั้ง tracked tree และ reachable history
+3. \`npm run clean-history:prepare\` (dry run) → \`node scripts/prepare-clean-history.mjs --execute --confirm=DELETE-OLD-HISTORY\`
+4. ลบ repo เก่า → สร้าง repo ใหม่ (private ก่อน) → \`git push -u origin main\` → ตรวจ → ค่อย public
+5. อ่าน \`docs/CLEAN_HISTORY_PUSH_RUNBOOK.md\` สำหรับรายละเอียดและข้อจำกัดทั้งหมด (forks, clones, caches)
 
 ## หมายเหตุ
 
@@ -171,6 +175,7 @@ Publishing rules are enforced in three places:
 npm run hooks:install    # once per clone
 npm run hygiene          # tracked files plus untracked, non-ignored files
 npm run hygiene:history  # every path reachable in history
+npm run hygiene:all      # tracked tree plus reachable history in one run
 \\\`\\\`\\\`
 \`\`\`
 
@@ -191,6 +196,7 @@ npm run hygiene:history  # every path reachable in history
 \`\`\`markdown
 - [ ] \`npm run hygiene\` passed and no critical file is tracked
 - [ ] \`npm run hygiene:history\` passed for the branch being released
+- [ ] \`npm run hygiene:all\` passed for the tracked tree and reachable history
 \`\`\`
 
 ## package.json — scripts ที่ toolkit เพิ่มให้
@@ -199,12 +205,13 @@ npm run hygiene:history  # every path reachable in history
 | --- | --- |
 | \`hygiene\` | \`node scripts/hygiene-check.mjs\` |
 | \`hygiene:staged\` | \`node scripts/hygiene-check.mjs --staged\` |
-| \`hygiene:history\` | \`node scripts/hygiene-check.mjs --tracked --history\` |
-| \`hygiene:report\` | \`node scripts/hygiene-check.mjs --tracked --history --report .hygiene-out/hygiene-report.md\` |
+| \`hygiene:history\` | \`node scripts/hygiene-check.mjs --history\` |
+| \`hygiene:all\` | \`node scripts/hygiene-check.mjs --all\` |
+| \`hygiene:report\` | \`node scripts/hygiene-check.mjs --all --strict --report .hygiene-out/hygiene-report.md\` |
 | \`hooks:install\` | \`node scripts/install-hooks.mjs\` |
 | \`clean-history:prepare\` | \`node scripts/prepare-clean-history.mjs\` |
 | \`untrack:runtime-data\` | \`node scripts/untrack-runtime-data.mjs\` |
-| \`verify:publish\` | \`node scripts/hygiene-check.mjs --tracked --history --strict\` |
+| \`verify:publish\` | \`node scripts/hygiene-check.mjs --all --strict\` |
 | \`toolkit:apply\` | \`node scripts/apply-toolkit.mjs\` |
 `;
 
@@ -221,6 +228,25 @@ function listFilesRecursively(directory, prefix = '') {
     else entries.push(relative);
   }
   return entries;
+}
+
+function countArchiveFiles(archivePath) {
+  const names = spawnSync('unzip', ['-Z1', archivePath], { encoding: 'utf8' });
+  if (names.status === 0) {
+    return (names.stdout ?? '')
+      .split(/\r?\n/)
+      .filter((name) => name.startsWith(`${ROOT_FOLDER}/`) && name.length > ROOT_FOLDER.length + 1 && !name.endsWith('/'))
+      .length;
+  }
+
+  // Older unzip implementations may not support -Z1. The long listing still
+  // gives one line per archive entry; parse only entries whose name is a file.
+  const listing = spawnSync('unzip', ['-l', archivePath], { encoding: 'utf8' });
+  return (listing.stdout ?? '')
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\s*\d+\s+\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}\s+(.+)$/)?.[1] ?? '')
+    .filter((name) => name.startsWith(`${ROOT_FOLDER}/`) && !name.endsWith('/'))
+    .length;
 }
 
 function main() {
@@ -295,11 +321,8 @@ function main() {
 
   const buffer = fs.readFileSync(outputPath);
   const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
-  const listing = spawnSync('unzip', ['-l', outputPath], { encoding: 'utf8' });
-  // Count files only: directory entries end with "/" in the listing.
-  const fileCount = (listing.stdout ?? '')
-    .split('\n')
-    .filter((line) => new RegExp(` ${ROOT_FOLDER}/\\S*[^/]$`).test(line)).length;
+  // Count payload files, not the directory entries that zip adds for parent folders.
+  const fileCount = countArchiveFiles(outputPath);
 
   process.stdout.write(
     [
