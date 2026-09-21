@@ -1,29 +1,19 @@
-# Known Issues: v1.2.10
+# Known Issues: v1.2.11
 
-## Monitor cycle overlap
+## Deployment security boundary
 
-Continuous monitoring uses interval-based scheduling. A cycle can be invoked before the previous cycle finishes when total read duration exceeds the configured interval.
+Authentication and authorization are still outside this application. Keep the gateway on a trusted local or industrial LAN and use an authenticated reverse proxy before broader deployment.
 
-## High WebSocket diagnostic volume
+## Development proxy behavior
 
-Each Modbus request can emit TX and RX/error traffic events. Large monitor lists can create many WebSocket frames.
+Under high monitoring load, a development proxy may report `write ECONNABORTED`. The v1.2.11 monitor and WebSocket bounds prevent unbounded backlog, but the deployment should still be tested with the target proxy and network topology.
 
-## No server backpressure policy
+## Environment acceptance
 
-Server broadcast sends immediately to open clients without an explicit `bufferedAmount` policy or traffic batching.
+Browser/E2E checks, Modbus simulator checks, and live hardware checks require the target environment. Local unit, typecheck, and production-build checks do not replace those acceptance environments.
 
-## No client reconnect
+## Reliability configuration
 
-The client creates one WebSocket connection and does not automatically reconnect after abnormal close, proxy failure, network interruption, or backend restart.
+The approved defaults are configurable through environment variables parsed in `server/src/reliability.ts`: monitor queue 32 jobs/device, one in-flight plus one pending scan/list, WebSocket 256 messages or 1 MiB/client, and reconnect backoff 250 ms–30 s with jitter. Changing limits should be recorded as deployment configuration and validated under representative load.
 
-## No post-reconnect resynchronization
-
-Live workflow runtime, device state, monitor values, traffic, and audit updates may remain stale until page refresh after a lost WebSocket connection.
-
-## Development proxy error
-
-Under high monitoring load, Vite may report `write ECONNABORTED` when the proxied WebSocket is aborted.
-
-## v1.2.11 proposal: Monitor Scheduler & WebSocket Reliability
-
-The planning scope is approved, but implementation remains outside the current release. Overlapping monitor rounds can enqueue work into the shared device FIFO without a backlog bound or stop cancellation. Latency can therefore grow without bound and may starve workflow reads. The proposal also covers the WebSocket reliability issues listed above. See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md); this planning/documentation change does not alter scheduler or WebSocket behavior.
+See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md) for the remaining simulator, hardware, browser, and release evidence requirements.

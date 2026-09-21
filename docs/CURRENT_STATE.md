@@ -2,15 +2,16 @@
 
 ## Current working version
 
-`v1.2.10`
+`v1.2.11` local follow-up implementation on the session branch.
+
+The v1.2.10 publication and the documentation-only v1.2.11 planning change remain the baseline. v1.2.11 source changes are being developed locally; no follow-up pull request has been opened in this closed session.
 
 ## Publication and history state
 
 - v1.2.10 has been published.
-- The repository was created again as a clean repository with exactly one commit.
-- Default branch: `main`
-- Default branch commit SHA: `aea05e2be99461f0f5bc3b133278841f3763c4d3`
-- Publication date recorded for this baseline: `2026-09-21`
+- The repository was created again as a clean repository with exactly one commit before the publication workflow.
+- The documentation-only v1.2.11 planning change was merged through PR #1; its merge commit is `9004125b8c9047136807d2d84b648135bb96e38e`.
+- Publication date recorded for this baseline: `2026-09-21`.
 - History remediation is complete for this repository; no further history rewrite is required.
 - Operational backup material, if retained, must stay outside Git in access-controlled storage.
 - Thai operational procedure: [docs/CLEAN_HISTORY_PUSH_RUNBOOK_TH.md](CLEAN_HISTORY_PUSH_RUNBOOK_TH.md)
@@ -31,27 +32,36 @@
 - Reliable auto-save and revision recovery
 - Audit Viewer, Runtime Monitor, Traffic Monitor, and Validation
 - Read-only Modbus Monitor with lists, Add Item, Add Range, continuous monitoring, and CSV export
+- Single-flight monitor scans with one pending scan/list, generation invalidation, cancellation, queue diagnostics, and bounded per-device admission
+- Bounded WebSocket client queues with telemetry coalescing/drop behavior and control/state resync signaling
+- Client duplicate-socket prevention, jittered reconnect, status transitions, and revision-safe resynchronization
 - Output ownership conflict protection
 
-## Validation status
+## Local validation status
 
-Validation evidence is recorded in [docs/ACCEPTANCE_TESTS/v1.2.10.md](ACCEPTANCE_TESTS/v1.2.10.md). The record distinguishes commands actually run from browser checks or operational checks that were not run in this environment.
+Observed during this local implementation session:
 
-## Known issues
+- `npm run typecheck` passed for server and client.
+- `npm test` passed: server 3 test files/13 tests and client 2 test files/3 tests.
 
-1. Continuous monitor cycles may overlap.
-2. Monitor traffic can create high WebSocket event volume.
-3. Server WebSocket broadcast has no explicit backpressure policy.
-4. Traffic events are not batched.
-5. Client WebSocket has no automatic reconnect.
-6. State is not resynchronized automatically after WebSocket loss.
-7. Vite may log `write ECONNABORTED` under high monitor/proxy load.
+Still required before calling the implementation release-ready:
 
-## Next proposed target
+- Full `npm run check` including client tests and production builds.
+- Browser/E2E reconnect, queue pressure, and revision-resync checks.
+- Modbus simulator and live hardware acceptance with read-only monitor and write-safety verification.
+- Hygiene and release evidence for the follow-up change.
 
-`v1.2.11`, Monitor Scheduler and WebSocket Reliability. The planning scope is approved, but implementation is not included in this release. See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md).
+## Resolved v1.2.11 reliability issues
 
-The plan includes bounded handling for overlapping monitor cycles that currently enqueue work into a shared device FIFO without a backlog bound or stop cancellation. Without those controls, latency can grow without bound and workflow reads may starve. It also covers WebSocket reliability; no scheduler, WebSocket, React Flow, workflow runtime, Modbus semantics, or safety behavior was changed in the planning/documentation update.
+1. Monitor cycles no longer overlap for a list: one scan is in flight and one follow-up scan is pending; additional requests coalesce.
+2. Stop, delete, disconnect, update, and restart paths invalidate monitor generations and cancel queued/active monitor work without publishing stale values.
+3. Monitor admission is bounded per device with coalescing/drop diagnostics; workflow reads and priority writes retain queue priority.
+4. WebSocket delivery now has per-client message and byte bounds, telemetry coalescing/drop handling, and control-event resync signaling.
+5. The browser reconnects with bounded jitter, prevents duplicate sockets, reports status transitions, and reloads revisioned REST state after reconnect.
+
+## Remaining operational boundary
+
+Authentication remains outside the application. Keep deployment on a trusted local or industrial LAN and follow [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md) for local/CI, browser/E2E, simulator, hardware, and release evidence.
 
 ## Publishing controls
 

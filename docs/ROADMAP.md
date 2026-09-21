@@ -2,17 +2,18 @@
 
 ## v1.2.11: Monitor Scheduler & WebSocket Reliability
 
-Proposed planning scope approved; implementation is not included in the current release. See [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md):
+The implementation is in progress locally on the follow-up session branch. The approved scope and acceptance matrix remain the source of truth: [docs/PHASE_PLAN_v1.2.11.md](PHASE_PLAN_v1.2.11.md) and [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md).
 
-- Overlapping monitor rounds currently enqueue work into the shared device FIFO without a backlog bound or stop cancellation. Latency can grow without bound and workflow reads may be starved.
-- Non-overlapping monitor scheduler
-- Idempotent Start/Stop and generation guard
-- Cycle/request diagnostics
-- WebSocket backpressure handling
-- Traffic batching or throttling
-- Client automatic reconnect with bounded backoff
-- State resynchronization without resetting React Flow
-- LIVE, RECONNECTING, and OFFLINE indicator
+Implemented locally so far:
+
+- Single-flight monitor scheduling with one in-flight scan and one pending scan per list
+- Idempotent Start/Stop, generation guards, cancellation, disconnect invalidation, and stale-publication suppression
+- Bounded per-device monitor admission with coalescing/drop diagnostics
+- Workflow-read and priority-write ordering ahead of monitor pressure
+- Per-client WebSocket message/byte bounds, telemetry coalescing/drop handling, and state resync signaling
+- Client duplicate-socket prevention, jittered reconnect, status transitions, and revision-safe REST resynchronization
+
+Local validation has covered server/client typechecks, server reliability/unit tests, client baseline tests, production builds, API health, and a basic WebSocket snapshot exchange. Browser/E2E, Modbus simulator, live hardware, and release-gate evidence remain required before release readiness is claimed.
 
 ## v1.3.0: Cross-workflow published signals
 
