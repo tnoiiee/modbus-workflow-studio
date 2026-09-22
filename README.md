@@ -1,11 +1,13 @@
-# MODBUS WORKFLOW STUDIO v1.2.10 
+# MODBUS WORKFLOW STUDIO v1.2.11
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current working version: `v1.2.10`
-- Next proposed stabilization version: `v1.2.11`
+- Current source baseline: `v1.2.11`
+- Release disposition: source/CI closure complete; no standalone v1.2.11 tag or ZIP; remaining acceptance carries into v1.2.12
+- Next planned version: `v1.2.12` behavior-preserving UI/UX modernization
+- Reliability defaults: monitor queue 32 jobs/device, one in-flight plus one pending scan/list, WebSocket 256 messages or 1 MiB/client, reconnect backoff 250 ms–30 s with jitter
 - Intended environment: trusted local or industrial LAN
 - Authentication: not included
 - Modbus writes: disabled by default
@@ -83,6 +85,15 @@ FC15 is intentionally unavailable. (Will be added later)
 - Boolean status lamps, numeric values, raw values, quality, response time, and engineering units
 - CSV export with CRLF rows and UTF-8 BOM
 - No Modbus write operation is available from the monitor
+- Single-flight scheduling prevents overlapping scans; Stop, delete, disconnect, and restart invalidate stale scans
+- Monitor admission is bounded per device with coalescing/drop diagnostics while workflow reads and safety-critical writes retain priority
+
+### WebSocket reliability
+
+- Per-client queues are bounded at 256 messages or 1 MiB by default
+- Telemetry may be coalesced or dropped under pressure; control/state events trigger a revision-safe resync instead of silent loss
+- The browser prevents duplicate sockets, reconnects with jittered 250 ms–30 s backoff, and reloads REST state after reconnect
+- Server limits can be tuned with `MONITOR_QUEUE_LIMIT`, `WS_CLIENT_MAX_MESSAGES`, `WS_CLIENT_MAX_BYTES`, `WS_TELEMETRY_COALESCE_MS`, `WS_RECONNECT_BASE_MS`, `WS_RECONNECT_MAX_MS`, and `WS_RECONNECT_JITTER`
 
 ### Diagnostics
 
@@ -189,15 +200,12 @@ npm run check
 
 It runs server/client typecheck, tests, and production build in sequence.
 
-## Known issues in v1.2.9
+## Operational boundaries in v1.2.11
 
-- Continuous Modbus Monitor uses interval-based scheduling, so monitor cycles may overlap when a cycle takes longer than its configured interval.
-- High monitor traffic can produce many WebSocket traffic events.
-- Server WebSocket broadcast has no explicit backpressure or traffic batching policy.
-- Client WebSocket has no automatic reconnect or post-reconnect state resynchronization.
-- Under high monitoring load, the Vite development proxy may report `write ECONNABORTED`.
-
-These backend reliability issues are deferred to v1.2.10.
+- Authentication is still outside this application and the deployment must remain on a trusted local or industrial LAN.
+- The monitor and WebSocket bounds are configurable, but sustained pressure is reported through diagnostics and resync rather than allowed to grow without limit.
+- Under high monitoring load, a development proxy may still report `write ECONNABORTED`; use the bounded queues and server logs to diagnose the environment.
+- Live Modbus hardware and browser/E2E acceptance must be run in the target deployment environment; local unit tests do not replace those checks.
 
 ## Documentation
 

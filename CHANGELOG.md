@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.2.11] - Monitor scheduler and WebSocket reliability
+
+### Added
+
+- Single-flight monitor scheduling with one pending scan per list, generation guards, cancellation, restart invalidation, and diagnostics.
+- Configurable per-device monitor queue admission with a default bound of 32 jobs and priority protection for workflow reads and safety-critical writes.
+- Bounded per-client WebSocket queues with telemetry coalescing/drop handling and control-event resync signaling.
+- Jittered client reconnect from 250 ms to 30 s, duplicate-socket prevention, connection status transitions, and revision-safe REST resynchronization.
+- Server reliability defaults and environment parsing for monitor, transport, and reconnect limits.
+
+### Preserved
+
+- Modbus protocol operations, workflow runtime, React Flow editing, output safety, read-only monitor semantics, and ownership protection.
+
+### Acceptance disposition
+
+- Automated, CI, and selected local reliability scenarios passed against implementation commit `a393cf3`.
+- Remaining frontend, write-safety, mixed-load, soak, slow-consumer, frame-capture, hardware, and security-disposition gates move to v1.2.12.
+- v1.2.11 is a source baseline for v1.2.12 and is not authorized for a standalone release tag or ZIP.
+
 ## [1.2.10] - Google Sans loading and override hotfix
 
 ### Fixed
