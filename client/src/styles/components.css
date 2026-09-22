@@ -1078,6 +1078,35 @@ button:disabled {
   right: var(--space-2);
 }
 
+/* --- port documentation help disclosure --------------------------------- */
+
+.port-docs__help:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  color: var(--color-text);
+}
+
+.port-docs__content {
+  animation: port-docs-reveal var(--motion-fast) var(--ease-standard);
+}
+
+@keyframes port-docs-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .port-docs__content {
+    animation: none;
+  }
+}
+
 /* --- inspector / panels / forms ----------------------------------------- */
 
 .inspector label,
@@ -2542,7 +2571,8 @@ tbody tr:hover {
   background: rgba(7, 16, 23, 0.82);
   border-radius: 3px;
   white-space: nowrap;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: help;
 }
 
 .port-label.in {
