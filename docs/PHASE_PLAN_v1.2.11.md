@@ -1,8 +1,8 @@
 # แผน Phase v1.2.11 — Monitor Scheduler & WebSocket Reliability
 
-สถานะ: **approved planning scope; implementation ยังไม่เริ่ม**
+สถานะ: **implementation complete; source/CI closure passed; standalone release acceptance not granted**
 
-เอกสารนี้เป็น planning scope ที่ได้รับอนุมัติสำหรับ v1.2.11 เท่านั้น ไม่ใช่ผลการทดสอบและไม่ใช่การอนุมัติให้เปลี่ยน behavior นอกขอบเขต
+เอกสารนี้เป็น planning scope ที่ได้รับอนุมัติและถูกนำไป implement ใน follow-up PR #2 สำหรับ v1.2.11 ผลการทดสอบจริงอยู่ใน [Acceptance Test](ACCEPTANCE_TESTS/v1.2.11.md) และ [Local Acceptance Evidence](ACCEPTANCE_EVIDENCE/v1.2.11-local-matrix.md) เอกสารนี้ไม่อนุมัติให้เปลี่ยน behavior นอกขอบเขต
 
 - Acceptance matrix: [docs/ACCEPTANCE_TESTS/v1.2.11.md](ACCEPTANCE_TESTS/v1.2.11.md)
 - Governance: [AGENTS.md](../AGENTS.md)
@@ -190,3 +190,14 @@ Implementation v1.2.11 ต้องเป็น follow-up PR ที่มี:
 - รายการ protected-area regression และ explicit exclusions
 
 หาก implementation พบว่าต้องเปลี่ยน queue policy, write safety, Modbus semantics หรือ React Flow behavior ให้หยุดและขอ scope approval ใหม่ เพราะเป็น material scope change ตาม `AGENTS.md`
+
+## 8. Closure disposition — 2026-09-22
+
+- Implementation ส่งมอบผ่าน PR #2 จาก source commit `a393cf3f2521abc41d21c13e5e6db02a481aa56a`
+- Local automated gates, GitHub Check/Hygiene และ selected simulator/browser reliability scenarios ผ่าน
+- Monitor single-flight, bounded pending/coalescing, Stop/Restart, disconnect/reconnect, persistence และ browser resync มี evidence ตามไฟล์ acceptance
+- General UI regression, write-disabled/write-enabled safety, mixed load, slow consumer, soak, frame capture และ hardware checks ยังไม่ผ่านการรับรองครบ
+- เจ้าของโครงการตัดสินใจย้ายรายการที่เหลือไปทดสอบหลัง v1.2.12 UI/UX Modernization เพื่อทดสอบ frontend เพียงรอบเดียวกับ UI ใหม่
+- v1.2.11 จึงเป็น source baseline สำหรับ v1.2.12 และไม่มี standalone release tag หรือ release ZIP
+- Security audit findings ยังไม่ resolved และเป็น mandatory pre-release gate ของ v1.2.12
+- v1.2.12 ห้ามเปลี่ยน reliability/runtime/Modbus/write-safety behavior โดยไม่มี scope approval ใหม่

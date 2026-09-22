@@ -14,6 +14,12 @@
 
 - Modbus protocol operations, workflow runtime, React Flow editing, output safety, read-only monitor semantics, and ownership protection.
 
+### Acceptance disposition
+
+- Automated, CI, and selected local reliability scenarios passed against implementation commit `a393cf3`.
+- Remaining frontend, write-safety, mixed-load, soak, slow-consumer, frame-capture, hardware, and security-disposition gates move to v1.2.12.
+- v1.2.11 is a source baseline for v1.2.12 and is not authorized for a standalone release tag or ZIP.
+
 ## [1.2.10] - Google Sans loading and override hotfix
 
 ### Fixed

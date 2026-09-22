@@ -4,7 +4,9 @@ Full-stack TypeScript application for designing and operating Modbus TCP workflo
 
 ## Current status
 
-- Current working version: `v1.2.11`
+- Current source baseline: `v1.2.11`
+- Release disposition: source/CI closure complete; no standalone v1.2.11 tag or ZIP; remaining acceptance carries into v1.2.12
+- Next planned version: `v1.2.12` behavior-preserving UI/UX modernization
 - Reliability defaults: monitor queue 32 jobs/device, one in-flight plus one pending scan/list, WebSocket 256 messages or 1 MiB/client, reconnect backoff 250 ms–30 s with jitter
 - Intended environment: trusted local or industrial LAN
 - Authentication: not included
