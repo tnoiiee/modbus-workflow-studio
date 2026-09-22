@@ -1,0 +1,232 @@
+/* ---------------------------------------------------------------------------
+ * MODBUS WORKFLOW STUDIO v1.2.12 — responsive foundation
+ * Targets: desktop 1366x768 up to large displays, tablet landscape from
+ * about 1024 px. Mobile-portrait workflow editing is out of scope, but the
+ * baseline phone rules are preserved so nothing collapses unexpectedly.
+ * ------------------------------------------------------------------------- */
+
+/* --- large desktop (1600 px and up) ------------------------------------- */
+
+@media (min-width: 1600px) {
+  :root {
+    --shell-page-padding: 18px;
+    --shell-inspector-width: 360px;
+  }
+
+  .audit-page {
+    grid-template-columns: minmax(0, 1fr) 400px;
+  }
+}
+
+/* --- desktop comfort (1440 px and below) -------------------------------- */
+
+@media (max-width: 1440px) {
+  .devices {
+    grid-template-columns: 240px minmax(380px, 1fr) 320px;
+  }
+}
+
+/* --- small desktop / large tablet landscape (1280 px and below) --------- */
+
+@media (max-width: 1280px) {
+  :root {
+    --shell-library-width: 200px;
+    --shell-inspector-width: 300px;
+  }
+
+  .page-header {
+    padding: 0 var(--space-4);
+  }
+
+  .devices {
+    grid-template-columns: 220px minmax(340px, 1fr);
+  }
+
+  .diagnostics {
+    grid-column: 2;
+  }
+}
+
+/* --- baseline breakpoint carried from v1.2.11 (1200 px) ----------------- */
+
+@media (max-width: 1200px) {
+  .workflow {
+    grid-template-columns: 194px minmax(0, 1fr);
+  }
+
+  .inspector {
+    position: absolute;
+    right: 0;
+    top: var(--shell-header-height);
+    bottom: 0;
+    width: var(--shell-inspector-width);
+    z-index: 4;
+    box-shadow: var(--shadow-panel);
+  }
+}
+
+/* --- tablet landscape (1100 px and below) ------------------------------- */
+
+@media (max-width: 1100px) {
+  :root {
+    --shell-sidebar-width: var(--shell-sidebar-width-compact);
+    --shell-header-height: 76px;
+  }
+
+  .sidebar-brand__text,
+  .sidebar-nav__label,
+  .nav-item__label,
+  .sidebar-foot__row span:not(.sidebar-foot__version) {
+    display: none;
+  }
+
+  .app-sidebar {
+    padding: var(--space-3) var(--space-2);
+    align-items: center;
+  }
+
+  .sidebar-brand {
+    justify-content: center;
+    padding: var(--space-2) 0;
+  }
+
+  .nav-item {
+    justify-content: center;
+    padding: var(--space-2);
+    gap: 0;
+  }
+
+  .nav-item[aria-current="page"]::before {
+    left: -8px;
+  }
+
+  .sidebar-foot {
+    padding: var(--space-2) 0;
+    align-items: center;
+    text-align: center;
+  }
+
+  .page-header__context {
+    display: none;
+  }
+
+  .runtime-controls .workflow-selector {
+    max-width: 180px;
+  }
+
+  .runtime-controls button[title="Rename Workflow"],
+  .runtime-controls button[title="Duplicate Workflow"] {
+    display: none;
+  }
+
+  .audit-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audit-detail {
+    display: none;
+  }
+
+  .devices {
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+  }
+
+  .diagnostics {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- minimum supported tablet landscape (1024 px) ----------------------- */
+
+@media (max-width: 1024px) {
+  .page-header {
+    gap: var(--space-3);
+    padding: 0 var(--space-3);
+  }
+
+  .page-header__title {
+    font-size: 18px;
+  }
+
+  .page-header__actions {
+    gap: var(--space-2);
+  }
+
+  .conn-pill__detail {
+    display: none;
+  }
+
+  .notice-banner {
+    max-width: 220px;
+  }
+
+  .workflow {
+    grid-template-columns: 180px minmax(0, 1fr);
+  }
+
+  .devices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audit-toolbar input {
+    min-width: 180px;
+  }
+}
+
+/* --- baseline phone rules carried from v1.2.11 (out of scope) ----------- */
+
+@media (max-width: 760px) {
+  .app,
+  .app-shell {
+    grid-template-columns: var(--shell-sidebar-width-compact) minmax(0, 1fr);
+  }
+
+  .workflow {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .library {
+    display: flex;
+    overflow-x: auto;
+    padding: 5px;
+  }
+
+  .library h3 {
+    display: none;
+  }
+
+  .library details {
+    min-width: 150px;
+  }
+
+  .canvas {
+    min-height: 500px;
+  }
+
+  .page-header {
+    padding: 0 var(--space-2);
+  }
+
+  .runtime-controls {
+    gap: 3px;
+  }
+
+  .runtime-controls button {
+    font-size: 0;
+  }
+
+  .runtime-controls button svg {
+    font-size: initial;
+  }
+
+  .logic-block .logic-symbol {
+    width: 46px;
+    height: 46px;
+  }
+
+  .logic-block .logic-symbol svg {
+    width: 46px;
+    height: 46px;
+  }
+}
