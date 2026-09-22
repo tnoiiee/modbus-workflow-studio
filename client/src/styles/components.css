@@ -3545,3 +3545,681 @@ body,
 .notice-banner {
   color: var(--color-text-secondary);
 }
+
+/* ===========================================================================
+ * PASS 1 PUNCHLIST 2 — card/panel separation, +2px type scale, function block
+ * zone proportions, library UX (tools + compact rail), and the parameters
+ * panel width / auto-hide behavior. Appended last so these rules win.
+ * ========================================================================= */
+
+/* --- 1. workflow grid: columns follow their panels ------------------------ */
+
+.workflow {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.block-library {
+  width: var(--shell-library-width);
+  transition: width var(--motion-normal) var(--ease-standard);
+}
+
+.block-library--compact {
+  width: var(--shell-library-width-compact);
+}
+
+.inspector {
+  width: var(--shell-inspector-width);
+  visibility: visible;
+  transition: width var(--motion-normal) var(--ease-standard),
+    opacity var(--motion-normal) var(--ease-standard),
+    padding var(--motion-normal) var(--ease-standard),
+    border-width var(--motion-normal) var(--ease-standard),
+    visibility 0s linear 0s;
+}
+
+.workflow--inspector-hidden .inspector {
+  width: 0;
+  opacity: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-width: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  transition: width var(--motion-normal) var(--ease-standard),
+    opacity var(--motion-normal) var(--ease-standard),
+    padding var(--motion-normal) var(--ease-standard),
+    border-width var(--motion-normal) var(--ease-standard),
+    visibility 0s linear var(--motion-normal);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .block-library,
+  .inspector,
+  .workflow--inspector-hidden .inspector {
+    transition: none;
+  }
+}
+
+/* --- 2. card and panel separation ----------------------------------------- */
+
+.library,
+.inspector {
+  background-color: var(--color-surface-panel);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 34%);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card), var(--highlight-inner-soft);
+}
+
+.canvas {
+  background-color: var(--color-canvas-deep);
+  border-color: var(--color-border);
+}
+
+.block-category {
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.block-category__summary {
+  padding: 11px 12px;
+  font-size: var(--text-title-sm);
+  letter-spacing: 0.08em;
+  color: var(--color-text);
+  background-color: var(--color-surface-2);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 72%);
+  border-bottom: 1px solid transparent;
+}
+
+.block-category[open] > .block-category__summary {
+  border-bottom-color: var(--color-border);
+}
+
+.block-category__summary:hover {
+  background-color: var(--color-surface-3);
+}
+
+.block-category__count {
+  padding: 1px 8px;
+  font-size: var(--text-micro);
+  color: var(--color-text);
+  background: rgba(47, 214, 255, 0.12);
+  border: 1px solid var(--color-border-accent);
+}
+
+.block-card {
+  padding: var(--space-2);
+  background-color: var(--color-surface-card);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 58%);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card), var(--highlight-card);
+}
+
+.block-card:hover {
+  background-color: var(--color-surface-card-raised);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-raised), var(--highlight-card);
+}
+
+.block-card__icon {
+  width: 30px;
+  height: 30px;
+  color: var(--color-accent);
+  background: rgba(47, 214, 255, 0.12);
+  border: 1px solid var(--color-border-accent);
+}
+
+.inspector-block {
+  background-color: var(--color-surface-card);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 62%);
+  border: 1px solid var(--color-border-strong);
+  border-left: 3px solid var(--color-accent);
+  box-shadow: var(--shadow-card), var(--highlight-inner);
+}
+
+.command-group {
+  padding: var(--space-2) var(--space-3);
+  background-color: rgba(255, 255, 255, 0.028);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent 70%);
+  border: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--highlight-inner-soft);
+}
+
+.command-group:last-child {
+  border-right: 1px solid var(--color-border-subtle);
+}
+
+.command-divider,
+.command-divider--danger {
+  display: none;
+}
+
+.block {
+  width: var(--shell-block-width);
+  background-color: var(--color-surface-solid-fallback);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 40%);
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow-raised), var(--highlight-inner);
+}
+
+/* --- 3. type scale applied through tokens --------------------------------- */
+
+.sidebar-nav__label {
+  font-size: var(--text-micro);
+}
+
+.nav-item {
+  min-height: 42px;
+  font-size: var(--text-nav);
+}
+
+.nav-item__icon {
+  width: 28px;
+  height: 28px;
+}
+
+.sidebar-brand__name {
+  font-size: var(--text-body);
+}
+
+.sidebar-brand__kicker {
+  font-size: var(--text-micro);
+}
+
+.sidebar-foot {
+  font-size: var(--text-caption);
+}
+
+.page-header__title {
+  font-size: var(--text-display);
+}
+
+.page-header__context {
+  font-size: var(--text-body);
+}
+
+.command-group__label {
+  font-size: var(--text-command-label);
+}
+
+.command-bar .workflow-selector,
+.command-bar .mode-selector {
+  min-height: var(--control-hit);
+  font-size: var(--text-label);
+}
+
+.command-bar .mode-selector {
+  font-size: var(--text-status);
+}
+
+.btn {
+  font-size: var(--text-label);
+}
+
+.btn--sm {
+  min-height: 32px;
+  font-size: var(--text-caption);
+}
+
+.pill {
+  font-size: var(--text-micro);
+}
+
+.save-indicator {
+  font-size: var(--text-caption);
+}
+
+.conn-pill {
+  font-size: var(--text-status);
+}
+
+.block-library__title {
+  font-size: var(--text-title-sm);
+}
+
+.block-library__hint {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.block-card__title {
+  font-size: var(--text-title-sm);
+}
+
+.block-card__summary {
+  font-size: var(--text-caption);
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  display: block;
+  overflow: visible;
+  -webkit-line-clamp: unset;
+  white-space: normal;
+}
+
+.block-card__summary--th {
+  color: var(--color-text-secondary);
+}
+
+.block-card__badge {
+  font-size: var(--text-micro);
+  padding: 0 6px;
+}
+
+.inspector h3,
+.library h3,
+.panel h3,
+.device-list h3 {
+  font-size: var(--text-title-sm);
+}
+
+.inspector-block__title {
+  font-size: var(--text-numeric);
+}
+
+.inspector-block__name {
+  font-size: var(--text-caption);
+}
+
+.inspector-block__summary {
+  font-size: var(--text-label);
+  line-height: 1.55;
+}
+
+.inspector-block__badges .pill {
+  font-size: var(--text-micro);
+}
+
+.inspector label,
+.panel label {
+  font-size: var(--text-caption);
+}
+
+.inspector label input,
+.inspector label select,
+.panel input,
+.panel select,
+.inspector input,
+.inspector select {
+  min-height: 40px;
+  font-size: var(--text-label);
+}
+
+.description-en {
+  font-size: var(--text-caption);
+  color: var(--color-text-secondary);
+}
+
+.description-th {
+  font-size: var(--text-caption);
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+/* --- 4. function block zones ---------------------------------------------- */
+
+.block {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  align-content: start;
+}
+
+.block.logic-block {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.block__head {
+  grid-row: 1;
+  min-height: var(--block-head-height);
+  padding: 10px 68px 8px 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.block__title {
+  font-size: var(--text-node-title);
+  letter-spacing: 0.06em;
+}
+
+.block__name {
+  font-size: var(--text-node-meta);
+  color: var(--color-text-secondary);
+}
+
+.block__badge {
+  font-size: var(--text-micro);
+}
+
+.block__status {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px var(--block-port-gutter-out) 8px var(--block-port-gutter-in);
+  background: var(--color-surface-sunken);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.block__status-label {
+  font-size: var(--text-micro);
+  letter-spacing: 0.12em;
+  color: var(--color-text-muted);
+}
+
+.block__status strong {
+  font-size: var(--text-node-value);
+  line-height: var(--line-height-tight);
+  font-variant-numeric: tabular-nums;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.block__body {
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  padding: 8px var(--block-port-gutter-out) 8px var(--block-port-gutter-in);
+  font-size: var(--text-node-meta);
+  color: var(--color-text-secondary);
+}
+
+.block__body-text {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.block__foot {
+  grid-row: 4;
+  padding: 7px var(--block-port-gutter-out) 7px var(--block-port-gutter-in);
+  font-size: var(--text-micro);
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  background: var(--color-surface-1);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.multi-input-rows.block__body {
+  display: block;
+  grid-row: 2 / span 3;
+  padding: 6px var(--block-port-gutter-out) 6px 10px;
+}
+
+.multi-input-row {
+  height: var(--block-multi-row);
+  min-height: var(--block-multi-row);
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.multi-input-meta b {
+  font-size: var(--text-caption);
+}
+
+.multi-input-meta small {
+  font-size: var(--text-micro);
+}
+
+.multi-input-live strong {
+  font-size: var(--text-numeric);
+  font-variant-numeric: tabular-nums;
+}
+
+.multi-input-live small {
+  font-size: var(--text-micro);
+}
+
+.port-label {
+  padding: 0 4px;
+  font-size: var(--text-micro);
+  line-height: 16px;
+  color: var(--color-text-secondary);
+  background: rgba(4, 10, 17, 0.92);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.port-label.in {
+  left: 6px;
+}
+
+.port-label.out {
+  right: 6px;
+}
+
+.block__actions {
+  top: 6px;
+  right: 6px;
+  gap: 5px;
+}
+
+.node-action {
+  width: 28px;
+  height: 28px;
+}
+
+.status-lamp {
+  font-size: var(--text-micro);
+}
+
+.logic-block .logic-symbol {
+  width: 52px;
+  height: 52px;
+}
+
+.logic-block .logic-symbol svg {
+  width: 52px;
+  height: 52px;
+}
+
+/* --- 5. library header tools, compact rail, compact add action ------------ */
+
+.block-library__head {
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.block-library__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.block-library__tools {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.block-library__tools .btn-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.block-library__scroll {
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-4);
+}
+
+.block-card__add {
+  min-height: 30px;
+  padding: 2px 9px;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-semibold);
+  color: var(--color-accent);
+  background-color: rgba(47, 214, 255, 0.1);
+  background-image: none;
+  border: 1px solid var(--color-border-accent);
+  box-shadow: none;
+}
+
+.block-card__add:hover:not(:disabled) {
+  color: var(--color-text-inverse);
+  background-color: var(--color-accent);
+  background-image: none;
+  border-color: var(--color-accent-hover);
+  transform: none;
+  box-shadow: var(--shadow-sm);
+}
+
+/* compact rail */
+.block-library--compact {
+  padding: 0;
+}
+
+.block-library__head--rail {
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.block-rail__marker {
+  writing-mode: vertical-rl;
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.block-library__scroll--rail {
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-3);
+}
+
+.block-rail__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 42px;
+  min-height: 46px;
+  padding: 4px 2px;
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: var(--highlight-inner-soft);
+}
+
+.block-rail__item:hover {
+  color: var(--color-accent);
+  background-color: var(--color-surface-card-raised);
+  border-color: var(--color-border-accent);
+}
+
+.block-rail__item:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.block-rail__count {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- PASS 1 PUNCHLIST 2: deterministic function block zones ---------------
+   Zone order: 1 header · 2 status/value · 3 runtime body · 4 port gutters ·
+   5 footer. Heights come from the tokens above; the footer is always the last
+   row in normal flow, so it is never pushed off the block or clipped. */
+
+/* Ports and their labels sit in reserved gutters and are never clipped. */
+.block {
+  overflow: visible;
+}
+
+.block__ports > div {
+  display: contents;
+}
+
+/* 1 — header: icon, title, instance name, badge, quick actions. */
+.block__head {
+  min-height: var(--block-head-height);
+  padding: 8px 64px 6px 12px;
+  align-content: center;
+}
+
+/* 2 — main status/value: sized to its content, no dead vertical space. */
+.block__status {
+  height: auto;
+  min-height: var(--block-status-height);
+  gap: 2px;
+  padding: 6px var(--block-port-gutter-out) 6px var(--block-port-gutter-in);
+}
+
+.block__status-label {
+  display: block;
+  overflow: hidden;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.block__status strong {
+  line-height: var(--line-height-tight);
+}
+
+/* 3 — runtime body: quality, manual trigger, logic status. */
+.block__body {
+  height: auto;
+  min-height: var(--block-body-height);
+  padding: 6px var(--block-port-gutter-out) 6px var(--block-port-gutter-in);
+}
+
+/* 5 — footer: last row, fully visible on every block type. */
+.block__foot {
+  min-height: var(--block-foot-height);
+  padding: 5px var(--block-port-gutter-out) 5px var(--block-port-gutter-in);
+  line-height: 1.3;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+}
+
+/* MODBUS_MULTI_INPUT: the per-output rows are the value zone (rows 2-3) and
+   the footer keeps row 4, so this type ends like every other block. */
+.multi-input-rows.block__body {
+  grid-row: 2 / span 2;
+  padding: 6px var(--block-multi-gutter-out) 6px var(--block-port-gutter-in);
+}
+
+.multi-input-row {
+  height: var(--block-multi-row);
+  min-height: var(--block-multi-row);
+  padding-right: 0;
+}
+
+/* 4 — ports: gate blocks drop the legacy 42px nudge and use the same offsets
+   as every other block, so handles stay centred on the node border. */
+.logic-block .react-flow__handle-left {
+  transform: translate(-50%, -50%);
+}
+
+.logic-block .react-flow__handle-right {
+  transform: translate(50%, -50%);
+}
+
+.logic-block .port-label.out {
+  transform: none;
+}
+
+.port-label {
+  line-height: 16px;
+}

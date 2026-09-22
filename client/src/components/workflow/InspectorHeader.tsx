@@ -1,6 +1,15 @@
 import { GATE_SYMBOL_TYPES, blockMeta } from '../../lib/blockMetadata.js';
 import { LogicSymbol } from './LogicSymbol.js';
 
+/**
+ * Inspector visibility rule: the parameters panel is rendered only while a
+ * block or a connection is selected. Pure UI state — it never changes node
+ * positions, revisions, or undo history.
+ */
+export function isInspectorVisible(selected: string | undefined): boolean {
+  return Boolean(selected && selected.trim());
+}
+
 export interface InspectorHeaderProps {
   /** Block type and instance name of the selected node. */
   type: string;

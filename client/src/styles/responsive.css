@@ -423,3 +423,84 @@
     grid-template-columns: 26px minmax(0, 1fr);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * PASS 1 PUNCHLIST 2 — panel widths per breakpoint, auto columns kept intact
+ * ------------------------------------------------------------------------- */
+
+@media (min-width: 1920px) {
+  :root {
+    --shell-library-width: 320px;
+    --shell-inspector-width: 340px;
+    --shell-block-width: 264px;
+  }
+}
+
+@media (max-width: 1366px) {
+  :root {
+    --shell-library-width: 284px;
+    --shell-inspector-width: 292px;
+    --shell-block-width: 250px;
+  }
+
+  .page-header__title {
+    font-size: var(--text-page-title);
+  }
+}
+
+@media (max-width: 1200px) {
+  .workflow {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .inspector {
+    width: var(--shell-inspector-width);
+  }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --shell-library-width: 268px;
+    --shell-inspector-width: 284px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --shell-library-width: 252px;
+    --shell-inspector-width: 272px;
+    --shell-block-width: 244px;
+    --shell-header-height: 84px;
+  }
+
+  .page-header__title {
+    font-size: var(--text-page-title);
+  }
+
+  .page-header__context {
+    font-size: var(--text-label);
+  }
+
+  .block-library__hint {
+    display: none;
+  }
+
+  .block-card {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .block-card__summary {
+    font-size: var(--text-caption);
+  }
+
+  .command-group {
+    padding: var(--space-1) var(--space-2);
+  }
+}
+
+@media (max-width: 760px) {
+  .block-library,
+  .block-library--compact {
+    width: 100%;
+  }
+}

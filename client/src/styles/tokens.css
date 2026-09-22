@@ -215,3 +215,105 @@
   --shell-canvas-inset: var(--space-3);
   --control-hit: 34px;
 }
+
+/* ---------------------------------------------------------------------------
+ * PASS 1 PUNCHLIST 2 — card/panel separation + global type scale (+2px)
+ * Appended last so these values win.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  /* --- type scale: every step raised by ~2px ----------------------------- */
+  --font-size-root: 17px;
+  --text-display: 28px;
+  --text-page-title: 24px;
+  --text-section: 15px;
+  --text-body: 16px;
+  --text-label: 14px;
+  --text-meta: 13px;
+  --text-status: 13px;
+  --text-numeric: 18px;
+  --text-node-value: 24px;
+  --line-height-tight: 1.25;
+  --line-height-body: 1.5;
+
+  /* --- surface brightness: card lifts off the panel, panel off the canvas - */
+  --color-canvas: #040a11;
+  --color-canvas-deep: #03080e;
+  --color-surface-sunken: #07111a;
+  --color-surface-1: #0c1a26;
+  --color-surface-2: #142636;
+  --color-surface-3: #1c3446;
+  --color-surface-4: #244056;
+  --color-surface-panel: #0b1824;
+  --color-surface-card: #16293a;
+  --color-surface-card-raised: #1d3549;
+  --color-surface-nav: #081420;
+  --color-surface-nav-raised: #14293a;
+  --color-surface-modal: #15283a;
+  --color-surface-solid-fallback: #101f2c;
+
+  /* --- border contrast ---------------------------------------------------- */
+  --color-border-subtle: rgba(146, 196, 226, 0.16);
+  --color-border: rgba(150, 202, 232, 0.26);
+  --color-border-strong: rgba(166, 214, 244, 0.4);
+  --color-border-accent: rgba(47, 214, 255, 0.55);
+  --color-border-editing: rgba(169, 139, 255, 0.5);
+
+  /* --- highlights and elevation ------------------------------------------- */
+  --highlight-inner: inset 0 1px 0 rgba(255, 255, 255, 0.09);
+  --highlight-inner-soft: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  --highlight-card: inset 0 1px 0 rgba(255, 255, 255, 0.075),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.022);
+  --shadow-card: 0 2px 5px rgba(0, 0, 0, 0.4), 0 10px 24px rgba(0, 0, 0, 0.32);
+  --shadow-raised: 0 4px 10px rgba(0, 0, 0, 0.45), 0 14px 30px rgba(0, 0, 0, 0.4);
+
+  /* --- text contrast for descriptions (Thai included) --------------------- */
+  --color-text-secondary: #c3d7e5;
+  --color-text-muted: #9fb6c7;
+  --color-text-dim: #869daf;
+
+  /* --- workflow layout metrics -------------------------------------------- */
+  --shell-library-width: 292px;
+  --shell-library-width-compact: 58px;
+  --shell-inspector-width: 300px;
+  --shell-block-width: 254px;
+  --block-port-gutter-in: 54px;
+  --block-port-gutter-out: 58px;
+  --block-row-pitch: 26px;
+  --control-hit: 36px;
+}
+
+/* PASS 1 PUNCHLIST 2 — micro type scale tokens (no hardcoded sizes in rules) */
+:root {
+  --text-micro: 12px;
+  --text-caption: 13px;
+  --text-title-sm: 14px;
+  --text-nav: 15px;
+  --text-node-title: 14px;
+  --text-node-meta: 13px;
+  --text-command-label: 12px;
+  --shell-header-height: 92px;
+  --shell-header-pad-y: var(--space-4);
+  --block-head-height: 86px;
+  --block-multi-row: 62px;
+}
+
+/* PASS 1 PUNCHLIST 2 — function block zone metrics.
+   Header / status / body / footer heights, port gutters, and port pitch live
+   here so the five-zone block layout is tuned from one place. The numbers are
+   mirrored by `blockZoneGeometry` in `App.tsx`, which converts them into the
+   inline `min-height` and port offsets React Flow measures. */
+:root {
+  --text-node-value: 22px;
+  --block-port-gutter-in: 44px;
+  --block-port-gutter-out: 54px;
+  --block-multi-gutter-out: 66px;
+  --block-head-height: 68px;
+  --block-head-height-gate: 94px;
+  --block-status-height: 58px;
+  --block-body-height: 32px;
+  --block-foot-height: 27px;
+  --block-port-pitch: 26px;
+  --block-multi-row: 62px;
+  --block-multi-pitch: 63px;
+}
