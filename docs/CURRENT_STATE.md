@@ -77,16 +77,36 @@ The findings are unresolved and do not receive implicit acceptance. Because v1.2
 
 ## Next planned version
 
+v1.2.12 planning is complete and approved (owner decisions 2026-09-22). Source of truth:
+[SCOPE_v1.2.12.md](SCOPE_v1.2.12.md), [UI_DESIGN_SYSTEM_v1.2.12.md](UI_DESIGN_SYSTEM_v1.2.12.md),
+[PHASE_PLAN_v1.2.12.md](PHASE_PLAN_v1.2.12.md),
+[SCOPE_TRACEABILITY_v1.2.12.md](SCOPE_TRACEABILITY_v1.2.12.md),
+[UI_INVENTORY_v1.2.12.md](UI_INVENTORY_v1.2.12.md), and
+[ACCEPTANCE_TESTS/v1.2.12.md](ACCEPTANCE_TESTS/v1.2.12.md). Implementation has not started; no
+source code has been modified yet.
+
 v1.2.12 is a behavior-preserving UI/UX modernization:
 
-- restrained dark-first Industrial Cyberpunk design system
+- restrained dark-first Industrial Cyberpunk design system with shared tokens and reusable primitives
 - desktop and tablet-landscape support with WCAG AA targets
-- segmented Workflow command bar
-- application modals/toasts replacing native browser prompts
-- redesigned Block Library, parameter descriptions, block duplication, Device page, and all operational tabs
+- segmented Workflow command bar (management / editing / mode-safety / runtime)
+- visible Undo, Redo, and Fit View controls built on the existing history and viewport logic, with
+  shortcuts, history semantics, and React Flow state ownership preserved
+- application modals/toasts/inline validation replacing all 15 native browser dialog sites
+- redesigned Block Library, central bilingual (EN + TH) block metadata, block duplication, Device
+  page, and all operational tabs
+- Project Settings redesigned UI-only: no settings API, no persistence, no false successful-save state
+- Traffic Monitor keeps the baseline behavior: no Traffic Clear action is added
+- Block Library search/filter is an optional, non-blocking enhancement and not a release gate
+- visible `LIVE`, `RECONNECTING`, and `OFFLINE` connection status derived from the existing reconnect state
+- version bumped to `1.2.12` in the first implementation commit and kept synchronized across
+  root/client/server/lockfile/UI/startup banner/health API; no tag or release ZIP before the final gate
+- every acceptance row classified as mandatory-for-merge, mandatory-for-release,
+  conditional-on-environment, or non-blocking evidence
 - no cross-workflow variables and no runtime, Modbus, queue, or write-safety semantic changes
 
-Cross-workflow `Publish Variable` / `Read Variable` behavior remains a separate v1.3.0 scope.
+Cross-workflow `Publish Variable` / `Read Variable` behavior remains a separate v1.3.0 scope. The
+requirement is **deferred, not cancelled**.
 
 ## Remaining operational boundary
 

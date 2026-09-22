@@ -1,0 +1,281 @@
+/* ---------------------------------------------------------------------------
+ * MODBUS WORKFLOW STUDIO v1.2.12 — theme and typography
+ * Base document theme, typographic hierarchy, form control baseline, focus and
+ * reduced-motion behavior. Consumes tokens.css only.
+ * ------------------------------------------------------------------------- */
+
+:root {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-canvas);
+  font-size: var(--font-size-root);
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 620px at 12% -8%, rgba(47, 210, 255, 0.07), transparent 62%),
+    radial-gradient(900px 520px at 96% 4%, rgba(157, 123, 255, 0.06), transparent 58%),
+    var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea,
+table {
+  font-family: inherit;
+}
+
+/* --- typographic hierarchy --------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+}
+
+h1 {
+  font-size: var(--text-page-title);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.01em;
+}
+
+h2 {
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-text-secondary);
+}
+
+h3 {
+  font-size: var(--text-section);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--color-text-muted);
+}
+
+h4 {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+p {
+  margin: 0;
+  line-height: var(--line-height-body);
+}
+
+small {
+  font-size: var(--text-meta);
+  line-height: var(--line-height-body);
+}
+
+.text-body {
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+}
+
+.text-label {
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.text-meta {
+  font-size: var(--text-meta);
+  color: var(--color-text-dim);
+}
+
+.text-numeric,
+.numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.truncate {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- form control baseline --------------------------------------------- */
+
+input,
+select,
+textarea {
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  font-size: var(--text-body);
+  transition: border-color var(--motion-fast) var(--ease-standard),
+    box-shadow var(--motion-fast) var(--ease-standard),
+    background-color var(--motion-fast) var(--ease-standard);
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--color-border-strong);
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  border-color: var(--color-border-accent);
+  box-shadow: var(--focus-ring);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: var(--state-disabled-opacity);
+  cursor: not-allowed;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-dim);
+}
+
+option {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+}
+
+/* --- focus visibility (global contract) -------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: 2px;
+}
+
+/* --- scrollbars --------------------------------------------------------- */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-canvas-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-4);
+  border: 2px solid var(--color-canvas-deep);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+* {
+  scrollbar-color: var(--color-surface-4) var(--color-canvas-deep);
+  scrollbar-width: thin;
+}
+
+/* --- selection ---------------------------------------------------------- */
+
+::selection {
+  background: rgba(47, 210, 255, 0.28);
+  color: var(--color-text);
+}
+
+/* --- reduced motion ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- font enforcement (carried from the v1.2.10 hotfix, extended) ------- */
+
+html,
+body,
+#root,
+#root .app,
+#root .app-shell,
+#root .app main,
+#root .app-main,
+#root .app aside,
+#root .app-sidebar,
+#root .app header,
+#root .page-header,
+#root .app .workflow,
+#root .app .canvas,
+#root .app .library,
+#root .app .inspector,
+#root .app .panel,
+#root .app button,
+#root .app .btn,
+#root .app input,
+#root .app select,
+#root .app option,
+#root .app textarea,
+#root .app table,
+#root .app thead,
+#root .app tbody,
+#root .app th,
+#root .app td,
+#root .app .react-flow,
+#root .app .react-flow__renderer,
+#root .app .react-flow__container,
+#root .app .react-flow__pane,
+#root .app .react-flow__viewport,
+#root .app .react-flow__node,
+#root .app .react-flow__edge,
+#root .app .react-flow__edge-text,
+#root .app .react-flow__panel,
+#root .app .react-flow__controls,
+#root .app .react-flow__controls-button,
+#root .app .react-flow__minimap,
+#root .app .react-flow__attribution {
+  font-family: var(--font-sans) !important;
+}
