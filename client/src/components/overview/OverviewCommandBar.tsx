@@ -4,7 +4,10 @@ import { Button } from '../ui/Button.js';
 import { IconButton } from '../ui/IconButton.js';
 import { saveIndicatorClass } from '../../lib/saveStatus.js';
 import {
+  overviewRevisionLabel,
   overviewSaveLabel,
+  pageCrudDisabledInMode,
+  pageCrudTooltip,
   type OverviewMode,
   type OverviewSaveState,
 } from '../../lib/overviewState.js';
@@ -27,6 +30,8 @@ export interface OverviewCommandBarProps {
 
   mode: OverviewMode;
   saveState: OverviewSaveState;
+  /** Last known persisted revision of the active Overview page. */
+  revision: number;
   onEdit: () => void;
   onSaveAndExit: () => void;
   onCancelChanges: () => void;
@@ -44,9 +49,13 @@ export interface OverviewCommandBarProps {
 }
 
 /**
- * Overview Command Bar — single combined bar (O1-B).
+ * Overview Command Bar — single combined bar (O1-B polish).
  *
- * Groups in order: PAGE, MODE, EDIT ACTIONS (Edit mode only), SAVE STATUS.
+ * Groups in order: PAGE, MODE, EDIT ACTIONS (Edit mode only), SAVE STATUS
+ * (always logically last, pushed to the far right when space allows).
+ *
+ * Page CRUD is locked in Edit Mode (disabled + Edit-priority tooltip) so a
+ * draft session cannot open page modals or issue page API requests.
  * Presentation only: every control forwards to the Overview page owner.
  */
 export function OverviewCommandBar({
@@ -60,6 +69,7 @@ export function OverviewCommandBar({
   canDeletePage,
   mode,
   saveState,
+  revision,
   onEdit,
   onSaveAndExit,
   onCancelChanges,
@@ -76,10 +86,12 @@ export function OverviewCommandBar({
 }: OverviewCommandBarProps) {
   const saveLabel = overviewSaveLabel(saveState);
   const edit = mode === 'EDIT';
+  const crudLocked = pageCrudDisabledInMode(mode);
+  const noPages = pages.length === 0;
 
   return (
     <div className="command-bar overview-command-bar" aria-label="Overview Command Bar">
-      <div className="command-group">
+      <div className="command-group overview-command-bar__group" data-overview-group="PAGE">
         <span className="command-group__label">Page</span>
         <div className="command-group__controls">
           <select
@@ -94,34 +106,40 @@ export function OverviewCommandBar({
               </option>
             ))}
           </select>
-          <IconButton label="New page" tooltip="New Overview page" icon={<Plus size={15} />} onClick={onNewPage} />
+          <IconButton
+            label="New page"
+            tooltip={pageCrudTooltip(mode, 'new', canDeletePage)}
+            icon={<Plus size={15} />}
+            disabled={crudLocked}
+            onClick={onNewPage}
+          />
           <IconButton
             label="Rename page"
-            tooltip="Rename Overview page"
+            tooltip={pageCrudTooltip(mode, 'rename', canDeletePage)}
             icon={<Pencil size={15} />}
-            disabled={pages.length === 0}
+            disabled={crudLocked || noPages}
             onClick={onRenamePage}
           />
           <IconButton
             label="Duplicate page"
-            tooltip="Duplicate Overview page"
+            tooltip={pageCrudTooltip(mode, 'duplicate', canDeletePage)}
             icon={<Copy size={15} />}
-            disabled={pages.length === 0}
+            disabled={crudLocked || noPages}
             onClick={onDuplicatePage}
           />
           <span className="command-divider command-divider--danger" aria-hidden="true" />
           <IconButton
             label="Delete page"
-            tooltip={canDeletePage ? 'Delete Overview page' : 'The last Overview page cannot be deleted'}
+            tooltip={pageCrudTooltip(mode, 'delete', canDeletePage)}
             variant="danger"
             icon={<Trash2 size={15} />}
-            disabled={!canDeletePage}
+            disabled={crudLocked || !canDeletePage}
             onClick={onDeletePage}
           />
         </div>
       </div>
 
-      <div className="command-group">
+      <div className="command-group overview-command-bar__group" data-overview-group="MODE">
         <span className="command-group__label">Mode</span>
         <div className="command-group__controls">
           <span className={`pill ${edit ? 'pill--warning' : 'pill--accent'}`} aria-label={`Overview mode: ${mode}`}>
@@ -145,7 +163,7 @@ export function OverviewCommandBar({
       </div>
 
       {edit ? (
-        <div className="command-group">
+        <div className="command-group overview-command-bar__group" data-overview-group="EDIT ACTIONS">
           <span className="command-group__label">Edit Actions</span>
           <div className="command-group__controls">
             <IconButton
@@ -204,11 +222,17 @@ export function OverviewCommandBar({
         </div>
       ) : null}
 
-      <div className="command-group">
+      <div
+        className="command-group overview-command-bar__group overview-command-bar__group--save-status"
+        data-overview-group="SAVE STATUS"
+      >
         <span className="command-group__label">Save Status</span>
         <div className="command-group__controls">
           <span className={saveIndicatorClass(saveLabel)} role="status" aria-live="polite">
             {saveLabel}
+          </span>
+          <span className="pill pill--neutral" aria-label={`Overview page revision ${revision}`}>
+            {overviewRevisionLabel(revision)}
           </span>
         </div>
       </div>

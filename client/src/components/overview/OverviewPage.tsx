@@ -11,6 +11,7 @@ import {
   OVERVIEW_DEFAULT_BACKGROUND,
   OVERVIEW_DEFAULT_HEIGHT,
   OVERVIEW_DEFAULT_WIDTH,
+  OVERVIEW_PANEL_TOGGLE_CLASS,
   applyOverviewDraftPatch,
   beginOverviewEdit,
   buildDeleteConfirmFacts,
@@ -18,9 +19,12 @@ import {
   buildSaveConfirmFacts,
   cancelOverviewEdit,
   classifySaveFailure,
+  displayedOverviewRevision,
   finishOverviewSave,
   getSessionPanelCollapsed,
+  isSaveStatusLastGroup,
   overviewCommandBarGroups,
+  overviewDraftMatchesBaseline,
   requiresPageSwitchConfirm,
   setSessionPanelCollapsed,
   shouldConfirmCancel,
@@ -99,6 +103,7 @@ export function OverviewPage() {
   const groups = overviewCommandBarGroups(mode);
   const workingPage = draft ?? activePage;
   const dirty = shouldConfirmCancel(saveState);
+  const revision = displayedOverviewRevision(baseline?.revision ?? activePage?.revision);
 
   /* ---- page list loading ------------------------------------------------ */
 
@@ -155,6 +160,18 @@ export function OverviewPage() {
     if (!workingPage || saveConfirmPending) return;
     setSaveConfirmPending(true);
     setSaveConfirmError(undefined);
+    // Unchanged draft: exit without a PUT so the persisted revision stays put.
+    if (overviewDraftMatchesBaseline(baseline, draft) && baseline) {
+      const finished = finishOverviewSave(baseline);
+      setActivePage(finished.baseline);
+      setBaseline(finished.baseline);
+      setDraft(finished.draft);
+      setSaveState(finished.saveState);
+      setMode(finished.mode);
+      setSaveConfirmOpen(false);
+      setSaveConfirmPending(false);
+      return;
+    }
     setSaveState('SAVING');
     try {
       const saved = await updateOverviewPage(workingPage.id, baseline?.revision ?? workingPage.revision, {
@@ -227,6 +244,7 @@ export function OverviewPage() {
   /* ---- page CRUD -------------------------------------------------------- */
 
   const openCreateDialog = useCallback(() => {
+    if (mode === 'EDIT') return;
     setNameDialogError(undefined);
     setNameDialogPending(false);
     setNameDialog({
@@ -237,9 +255,10 @@ export function OverviewPage() {
       height: String(OVERVIEW_DEFAULT_HEIGHT),
       background: OVERVIEW_DEFAULT_BACKGROUND,
     });
-  }, []);
+  }, [mode]);
 
   const openRenameDialog = useCallback(() => {
+    if (mode === 'EDIT') return;
     const source = workingPage;
     if (!source) return;
     setNameDialogError(undefined);
@@ -252,9 +271,10 @@ export function OverviewPage() {
       height: String(source.designHeight),
       background: source.backgroundColor,
     });
-  }, [workingPage]);
+  }, [mode, workingPage]);
 
   const openDuplicateDialog = useCallback(() => {
+    if (mode === 'EDIT') return;
     const source = workingPage;
     if (!source) return;
     setNameDialogError(undefined);
@@ -267,7 +287,7 @@ export function OverviewPage() {
       height: String(source.designHeight),
       background: source.backgroundColor,
     });
-  }, [pages, workingPage]);
+  }, [mode, pages, workingPage]);
 
   const closeNameDialog = useCallback(() => {
     if (nameDialogPending) return;
@@ -352,11 +372,12 @@ export function OverviewPage() {
   }, [baseline, draft, loadPages, mode, nameDialog, nameDialogPending, pages, workingPage]);
 
   const requestDelete = useCallback(() => {
+    if (mode === 'EDIT') return;
     if (pages.length <= 1 || !workingPage) return;
     setDeleteError(undefined);
     setDeletePending(false);
     setDeleteOpen(true);
-  }, [pages.length, workingPage]);
+  }, [mode, pages.length, workingPage]);
 
   const confirmDelete = useCallback(async () => {
     if (!workingPage || deletePending) return;
@@ -465,6 +486,7 @@ export function OverviewPage() {
       className={`overview${mode === 'VIEW' ? ' overview--view' : ' overview--edit'}`}
       aria-label="Overview"
       data-command-groups={groups.join(',')}
+      data-save-status-last={isSaveStatusLastGroup(mode) ? 'true' : 'false'}
     >
       <div className="overview-bars">
         <OverviewCommandBar
@@ -478,6 +500,7 @@ export function OverviewPage() {
           canDeletePage={canDeletePage}
           mode={mode}
           saveState={saveState}
+          revision={revision}
           onEdit={enterEdit}
           onSaveAndExit={openSaveConfirm}
           onCancelChanges={requestCancelChanges}
@@ -505,7 +528,7 @@ export function OverviewPage() {
           <div className="overview-rail overview-rail--library">
             <button
               type="button"
-              className="btn-icon btn-icon--sm"
+              className={OVERVIEW_PANEL_TOGGLE_CLASS}
               aria-label="Expand Element Library"
               title="Expand Element Library"
               aria-expanded={false}
@@ -524,7 +547,7 @@ export function OverviewPage() {
               {mode === 'EDIT' ? (
                 <button
                   type="button"
-                  className="btn-icon btn-icon--sm"
+                  className={OVERVIEW_PANEL_TOGGLE_CLASS}
                   aria-label="Collapse Element Library"
                   title="Collapse Element Library"
                   aria-expanded={true}
@@ -550,7 +573,7 @@ export function OverviewPage() {
           <div className="overview-rail overview-rail--inspector">
             <button
               type="button"
-              className="btn-icon btn-icon--sm"
+              className={OVERVIEW_PANEL_TOGGLE_CLASS}
               aria-label="Expand Element Inspector"
               title="Expand Element Inspector"
               aria-expanded={false}
@@ -569,7 +592,7 @@ export function OverviewPage() {
               {mode === 'EDIT' ? (
                 <button
                   type="button"
-                  className="btn-icon btn-icon--sm"
+                  className={OVERVIEW_PANEL_TOGGLE_CLASS}
                   aria-label="Collapse Element Inspector"
                   title="Collapse Element Inspector"
                   aria-expanded={true}

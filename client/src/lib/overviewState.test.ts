@@ -1,9 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   OVERVIEW_DEFAULT_BACKGROUND,
   OVERVIEW_DEFAULT_HEIGHT,
   OVERVIEW_DEFAULT_WIDTH,
+  OVERVIEW_CRUD_EDIT_TOOLTIP,
+  OVERVIEW_CRUD_LAST_PAGE_TOOLTIP,
+  OVERVIEW_PANEL_TOGGLE_CLASS,
   applyOverviewDraftPatch,
   beginOverviewEdit,
   buildDeleteConfirmFacts,
@@ -12,14 +17,22 @@ import {
   cancelOverviewEdit,
   classifySaveFailure,
   countOverviewElements,
+  displayedOverviewRevision,
   finishOverviewSave,
   getSessionPanelCollapsed,
   isDraftDirty,
+  isSaveStatusLastGroup,
   overviewCommandBarGroups,
+  overviewDraftMatchesBaseline,
+  overviewRevisionLabel,
   overviewSaveLabel,
+  pageCrudDisabledInMode,
+  pageCrudTooltip,
   requiresPageSwitchConfirm,
   resetOverviewPanelSession,
   setSessionPanelCollapsed,
+  showOverviewShell,
+  showWorkflowCommandBar,
   shouldConfirmCancel,
   toggleOverviewPanel,
   uniqueOverviewPageName,
@@ -254,5 +267,131 @@ describe('library and inspector collapse state', () => {
     setSessionPanelCollapsed('library', toggleOverviewPanel(true));
     expect(getSessionPanelCollapsed('library')).toBe(false);
     expect(getSessionPanelCollapsed('inspector')).toBe(true);
+  });
+});
+
+describe('Edit Mode page CRUD lock', () => {
+  it('disables New in Edit Mode', () => {
+    expect(pageCrudDisabledInMode('EDIT')).toBe(true);
+  });
+
+  it('disables Rename in Edit Mode', () => {
+    expect(pageCrudDisabledInMode('EDIT')).toBe(true);
+    expect(pageCrudTooltip('EDIT', 'rename', true)).toBe(OVERVIEW_CRUD_EDIT_TOOLTIP);
+  });
+
+  it('disables Duplicate in Edit Mode', () => {
+    expect(pageCrudDisabledInMode('EDIT')).toBe(true);
+    expect(pageCrudTooltip('EDIT', 'duplicate', true)).toBe(OVERVIEW_CRUD_EDIT_TOOLTIP);
+  });
+
+  it('disables Delete in Edit Mode', () => {
+    expect(pageCrudDisabledInMode('EDIT')).toBe(true);
+    expect(pageCrudTooltip('EDIT', 'delete', false)).toBe(OVERVIEW_CRUD_EDIT_TOOLTIP);
+  });
+
+  it('uses the Edit Mode tooltip for every CRUD control', () => {
+    expect(OVERVIEW_CRUD_EDIT_TOOLTIP).toBe('Exit Edit Mode to manage pages');
+    for (const action of ['new', 'rename', 'duplicate', 'delete'] as const) {
+      expect(pageCrudTooltip('EDIT', action, true)).toBe('Exit Edit Mode to manage pages');
+      expect(pageCrudTooltip('EDIT', action, false)).toBe('Exit Edit Mode to manage pages');
+    }
+  });
+
+  it('shows the last-page tooltip for Delete in View Mode', () => {
+    expect(OVERVIEW_CRUD_LAST_PAGE_TOOLTIP).toBe('The last Overview page cannot be deleted');
+    expect(pageCrudTooltip('VIEW', 'delete', false)).toBe('The last Overview page cannot be deleted');
+    expect(pageCrudTooltip('VIEW', 'delete', true)).toBe('Delete Overview page');
+  });
+
+  it('keeps CRUD enabled in View Mode', () => {
+    expect(pageCrudDisabledInMode('VIEW')).toBe(false);
+    expect(pageCrudTooltip('VIEW', 'new', false)).toBe('New Overview page');
+    expect(pageCrudTooltip('VIEW', 'rename', false)).toBe('Rename Overview page');
+    expect(pageCrudTooltip('VIEW', 'duplicate', false)).toBe('Duplicate Overview page');
+    expect(pageCrudTooltip('VIEW', 'delete', true)).toBe('Delete Overview page');
+  });
+});
+
+describe('revision indicator', () => {
+  it('labels REV from the active persisted page revision', () => {
+    expect(overviewRevisionLabel(7)).toBe('REV 7');
+    expect(displayedOverviewRevision(7)).toBe(7);
+    expect(displayedOverviewRevision(makePage({ revision: 12 }).revision)).toBe(12);
+    expect(overviewRevisionLabel(displayedOverviewRevision(12))).toBe('REV 12');
+  });
+
+  it('keeps the revision when panel collapse toggles', () => {
+    expect(OVERVIEW_PANEL_TOGGLE_CLASS).toBe('overview-panel-toggle');
+    const baselineRevision = 5;
+    setSessionPanelCollapsed('library', toggleOverviewPanel(false));
+    setSessionPanelCollapsed('inspector', toggleOverviewPanel(false));
+    expect(getSessionPanelCollapsed('library')).toBe(true);
+    expect(getSessionPanelCollapsed('inspector')).toBe(true);
+    expect(displayedOverviewRevision(baselineRevision)).toBe(5);
+    expect(overviewRevisionLabel(displayedOverviewRevision(baselineRevision))).toBe('REV 5');
+  });
+
+  it('keeps the save state when panel collapse toggles', () => {
+    const session = beginOverviewEdit(makePage());
+    expect(session.saveState).toBe('SAVED');
+    setSessionPanelCollapsed('library', toggleOverviewPanel(false));
+    setSessionPanelCollapsed('library', toggleOverviewPanel(true));
+    expect(session.saveState).toBe('SAVED');
+    expect(session.mode).toBe('EDIT');
+    expect(session.baseline.revision).toBe(1);
+  });
+
+  it('keeps the same revision for a no-change save', () => {
+    const page = makePage({ revision: 4 });
+    const session = beginOverviewEdit(page);
+    expect(overviewDraftMatchesBaseline(session.baseline, session.draft)).toBe(true);
+    const finished = finishOverviewSave(session.baseline);
+    expect(finished.saveState).toBe('SAVED');
+    expect(finished.baseline.revision).toBe(4);
+    expect(displayedOverviewRevision(finished.baseline.revision)).toBe(4);
+    expect(overviewRevisionLabel(finished.baseline.revision)).toBe('REV 4');
+  });
+});
+
+describe('command bar contract', () => {
+  it('keeps Save Status as the last command bar group', () => {
+    expect(isSaveStatusLastGroup('VIEW')).toBe(true);
+    expect(isSaveStatusLastGroup('EDIT')).toBe(true);
+    expect(overviewCommandBarGroups('VIEW').at(-1)).toBe('SAVE STATUS');
+    expect(overviewCommandBarGroups('EDIT').at(-1)).toBe('SAVE STATUS');
+  });
+});
+
+describe('Workflow Command Bar page scope', () => {
+  const appSource = fs.readFileSync(path.join(process.cwd(), 'src', 'App.tsx'), 'utf8');
+  const otherPages = [
+    'Overview',
+    'Devices',
+    'Modbus Monitor',
+    'Runtime Monitor',
+    'Traffic Monitor',
+    'Audit Log',
+    'Validation',
+    'Project Settings',
+  ] as const;
+
+  it('mounts only on Workflow', () => {
+    expect(showWorkflowCommandBar('Workflow')).toBe(true);
+    expect(appSource).toContain('showWorkflowCommandBar(page)?');
+    expect(appSource).not.toContain("page==='Overview'?null:<CommandBar");
+  });
+
+  it('stays unmounted on every other page', () => {
+    for (const pageName of otherPages) {
+      expect(showWorkflowCommandBar(pageName)).toBe(false);
+    }
+  });
+
+  it('keeps the Overview Command Bar on Overview', () => {
+    expect(showOverviewShell('Overview')).toBe(true);
+    for (const pageName of ['Workflow', ...otherPages.slice(1)] as const) {
+      expect(showOverviewShell(pageName)).toBe(false);
+    }
   });
 });

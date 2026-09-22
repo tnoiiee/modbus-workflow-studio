@@ -117,6 +117,92 @@ export function overviewCommandBarGroups(mode: OverviewMode): readonly string[] 
     : ['PAGE', 'MODE', 'SAVE STATUS'];
 }
 
+/** SAVE STATUS must remain the logically last group in both modes. */
+export function isSaveStatusLastGroup(mode: OverviewMode): boolean {
+  const groups = overviewCommandBarGroups(mode);
+  return groups[groups.length - 1] === 'SAVE STATUS';
+}
+
+/**
+ * Workflow Command Bar mounts only on the Workflow page.
+ * Every other page (Overview, Devices, monitors, assurance, settings)
+ * must not mount the Workflow chrome at all — no CSS hiding.
+ */
+export function showWorkflowCommandBar(page: string): boolean {
+  return page === 'Workflow';
+}
+
+/** Overview page shell (and its Overview Command Bar) mounts only on Overview. */
+export function showOverviewShell(page: string): boolean {
+  return page === 'Overview';
+}
+
+/** Highest-priority tooltip while Overview Edit Mode is active. */
+export const OVERVIEW_CRUD_EDIT_TOOLTIP = 'Exit Edit Mode to manage pages';
+
+export const OVERVIEW_CRUD_LAST_PAGE_TOOLTIP = 'The last Overview page cannot be deleted';
+
+/**
+ * Page CRUD actions are locked while Edit Mode owns the draft:
+ * disabled buttons must not open modals, fire keyboard clicks, or call APIs.
+ */
+export function pageCrudDisabledInMode(mode: OverviewMode): boolean {
+  return mode === 'EDIT';
+}
+
+export type OverviewCrudAction = 'new' | 'rename' | 'duplicate' | 'delete';
+
+/**
+ * Tooltip priority for page CRUD controls:
+ * 1. Edit Mode lock (highest)
+ * 2. Last-page delete guard
+ * 3. Default action label
+ */
+export function pageCrudTooltip(
+  mode: OverviewMode,
+  action: OverviewCrudAction,
+  canDeletePage: boolean,
+): string {
+  if (pageCrudDisabledInMode(mode)) return OVERVIEW_CRUD_EDIT_TOOLTIP;
+  if (action === 'delete' && !canDeletePage) return OVERVIEW_CRUD_LAST_PAGE_TOOLTIP;
+  switch (action) {
+    case 'new':
+      return 'New Overview page';
+    case 'rename':
+      return 'Rename Overview page';
+    case 'duplicate':
+      return 'Duplicate Overview page';
+    case 'delete':
+      return 'Delete Overview page';
+  }
+}
+
+/** Read-only revision pill text for the SAVE STATUS group. */
+export function overviewRevisionLabel(revision: number): string {
+  return `REV ${revision}`;
+}
+
+/**
+ * Last known persisted revision shown by the indicator.
+ * Baseline is only replaced by a successful load/create/rename/save —
+ * never by entering/exiting Edit Mode, panel toggles, or a conflict.
+ */
+export function displayedOverviewRevision(baselineRevision: number | undefined): number {
+  return Math.max(1, Math.trunc(baselineRevision ?? 1));
+}
+
+/** True when the local draft equals the baseline (Save & Exit is a no-op). */
+export function overviewDraftMatchesBaseline(
+  baseline: OverviewPageRecord | null,
+  draft: OverviewPageRecord | null,
+): boolean {
+  if (!baseline || !draft) return false;
+  return JSON.stringify(draft) === JSON.stringify(baseline);
+}
+
+/** Shared Overview-scoped class for every Library/Inspector collapse/expand control. */
+export const OVERVIEW_PANEL_TOGGLE_CLASS = 'overview-panel-toggle';
+
 export interface OverviewEditSession {
   mode: OverviewMode;
   saveState: OverviewSaveState;

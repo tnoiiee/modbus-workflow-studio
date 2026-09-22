@@ -25,25 +25,59 @@
 }
 
 .overview-command-bar {
-  gap: var(--space-3) var(--space-5);
+  display: flex;
   flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-3);
   min-width: 0;
   max-width: 100%;
 }
 
-.overview-command-bar .command-group {
+/* Selective glassmorphism group cards — equal height, one control baseline. */
+.overview-command-bar .command-group,
+.overview-command-bar .overview-command-bar__group {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 64px;
   min-width: 0;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.overview-command-bar .command-group__label {
+  display: flex;
+  align-items: center;
+  min-height: 14px;
+  flex: 0 0 auto;
 }
 
 .overview-command-bar .command-group__controls {
+  display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  min-height: 34px;
   min-width: 0;
   max-width: 100%;
+}
+
+/* SAVE STATUS stays logically last and hugs the far right when space allows. */
+.overview-command-bar .overview-command-bar__group--save-status {
+  margin-inline-start: auto;
 }
 
 .overview-page-select {
   min-width: 180px;
   max-width: 260px;
+  min-height: 34px;
 }
 
 .overview-bars .pill {
@@ -108,6 +142,44 @@
 
 .overview-panel__head h3 {
   margin: 0;
+}
+
+/* One shared Overview-scoped class for every Library/Inspector toggle. */
+.overview-panel-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  flex: 0 0 auto;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.overview-panel-toggle:hover:not(:disabled) {
+  background: var(--color-surface-4);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.overview-panel-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.overview-panel-toggle svg {
+  width: 16px;
+  height: 16px;
 }
 
 .overview-panel .empty {
@@ -189,7 +261,7 @@
   }
 
   .overview-command-bar {
-    gap: var(--space-2) var(--space-4);
+    gap: var(--space-2);
   }
 }
 
@@ -198,8 +270,13 @@
     padding: var(--space-3) var(--space-4) var(--space-2);
   }
 
-  .overview-command-bar .command-group {
-    padding-right: var(--space-4);
+  .overview-command-bar .overview-command-bar__group {
+    padding: var(--space-2);
+  }
+
+  /* Groups wrap; SAVE STATUS stays logically last via source order. */
+  .overview-command-bar .overview-command-bar__group--save-status {
+    margin-inline-start: auto;
   }
 }
 
@@ -243,6 +320,10 @@
   .overview-page-select {
     min-width: 140px;
     max-width: 180px;
+  }
+
+  .overview-command-bar .overview-command-bar__group--save-status {
+    margin-inline-start: 0;
   }
 }
 
