@@ -109,7 +109,11 @@ is requested on open; `resync-required` triggers a REST reload. Handled message 
   `Ctrl|Cmd+Y` redo, `Escape` deselects; input/textarea/select/contentEditable are excluded
 - Undo/Redo implementation: `undoHistoryRef` / `redoHistoryRef` snapshot stacks + `restoreSnapshot()`
 - **No Undo, Redo, or Fit View buttons exist**; Fit View is reachable only through the React Flow
-  `<Controls/>` widget; `fitView`, `snapToGrid`, `snapGrid=[16,16]`, `Background`, `MiniMap` are on
+  `<Controls/>` widget; `fitView`, `snapToGrid`, `snapGrid=[16,16]`, `Background`, `MiniMap` are on.
+  *Owner decision C (2026-09-22): visible Undo, Redo, and Fit View controls are added to the v1.2.12
+  scope on top of the existing logic only — keyboard shortcuts, history semantics, and React Flow
+  state ownership are preserved, and Fit View must not mutate persisted node positions. Acceptance
+  rows v1.2.12-D14 to D18 cover enabled/disabled states and button/shortcut parity.*
 - Auto-save: debounced `persist()` with per-workflow promise chaining, revision conflict detection
   and reload, `parameterSaveTimerRef` (500 ms) for inspector edits
 
@@ -172,7 +176,15 @@ drag-to-canvas.
    (`Require Live Armed confirmation`), and a `SAVE SETTINGS` button with **no handler and no API
    call**. Nothing loads and nothing persists. `PUT /api/workflow` accepts a `settings` object, but
    the UI never calls it.
+   *Owner decision A (2026-09-22): this is the accepted baseline. v1.2.12 redesigns the page
+   UI-only, preserves the displayed fields/defaults, adds no settings API, no persistence schema,
+   migration, or backend storage, shows no false successful-save state, and clearly communicates the
+   non-persistent behavior. Acceptance row v1.2.12-E11 was rewritten to match.*
 2. **Traffic Monitor has no clear action** in the UI even though `DELETE /api/traffic` exists.
+   *Owner decision B (2026-09-22): the absence of Traffic Clear is the accepted baseline and adding
+   a Clear button is not approved for v1.2.12. Acceptance row v1.2.12-E08 was corrected to drop the
+   "clear behavior" criterion; existing events, ordering, columns, values, timestamps, filters,
+   links, and display behavior must be preserved.*
 3. **Runtime Monitor** uses the generic `Table` (first 10 keys of the first row become columns) and
    polls every second regardless of page visibility.
 4. **Devices form is generated from `Object.entries(form)`**, so labels are raw field names
