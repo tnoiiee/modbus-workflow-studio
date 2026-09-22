@@ -1,0 +1,177 @@
+/* ---------------------------------------------------------------------------
+ * MODBUS WORKFLOW STUDIO — Overview (checkpoint O1-A) styles
+ * Loaded after responsive.css so scaffold rules win the cascade.
+ * Fixed design resolution: 1920 x 1080. VIEW mode renders a locked,
+ * control-free operator surface; EDIT mode restores the three-pane editor.
+ * ------------------------------------------------------------------------- */
+
+.overview {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--color-canvas);
+}
+
+/* --- bars: page management + mode controls ------------------------------- */
+
+.overview-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--shell-canvas-inset) var(--shell-canvas-inset) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.overview-page-bar,
+.overview-mode-bar {
+  gap: var(--space-3) var(--space-5);
+}
+
+.overview-page-select {
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.overview-bars .pill {
+  white-space: nowrap;
+}
+
+/* --- workspace: library | canvas | inspector ----------------------------- */
+
+.overview__workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--shell-library-width) minmax(0, 1fr) var(--shell-inspector-width);
+  gap: var(--shell-canvas-inset);
+  padding: 0 var(--shell-canvas-inset) var(--shell-canvas-inset);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* VIEW mode: hide editor panels and give the canvas the space back. */
+.overview--view .overview__workspace {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.overview--view .overview-library,
+.overview--view .overview-inspector {
+  display: none;
+}
+
+.overview-panel {
+  min-height: 0;
+  overflow: auto;
+}
+
+.overview-panel .empty {
+  color: var(--color-text-dim);
+  font-size: var(--text-label);
+  line-height: 1.5;
+}
+
+/* --- canvas --------------------------------------------------------------- */
+
+.overview-canvas {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.overview-canvas__badges {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.overview-canvas__badges .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+/* VIEW mode: keep the surface visually quiet for operators. */
+.overview-canvas--locked .react-flow__pane {
+  cursor: default;
+}
+
+.overview-canvas--locked .react-flow__minimap,
+.overview-canvas--locked .react-flow__controls {
+  display: none;
+}
+
+/* --- responsive: 1920 -> 1366 -> 1024 ------------------------------------ */
+
+@media (max-width: 1440px) {
+  .overview-page-select {
+    min-width: 170px;
+    max-width: 230px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .overview-bars {
+    gap: var(--space-2);
+  }
+
+  .overview-page-bar,
+  .overview-mode-bar {
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .command-group {
+    padding-right: var(--space-4);
+  }
+}
+
+@media (max-width: 1200px) {
+  .overview__workspace {
+    grid-template-columns: 194px minmax(0, 1fr);
+  }
+
+  .overview-inspector {
+    position: absolute;
+    top: 0;
+    right: var(--shell-canvas-inset);
+    bottom: var(--shell-canvas-inset);
+    width: var(--shell-inspector-width);
+    z-index: 4;
+    box-shadow: var(--shadow-panel);
+  }
+
+  .overview--view .overview__workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .overview-bars .pill--warning {
+    display: none;
+  }
+
+  .overview-inspector {
+    width: var(--shell-inspector-width);
+  }
+}
+
+/* --- accessibility: prefers-reduced-motion ------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .overview,
+  .overview * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
