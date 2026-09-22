@@ -13,20 +13,12 @@ export interface AppShellProps {
   context?: string;
   connectionState: ConnectionState;
   connectionDetail?: string;
-  /** Existing save/revision indicator text. */
-  saved?: string;
   /** Existing notice text; connection notices are shown by the pill instead. */
   notice?: string;
   actions?: ReactNode;
+  /** Full-width command row rendered under the title zone. */
+  commands?: ReactNode;
   children: ReactNode;
-}
-
-function saveTone(saved: string): string {
-  const value = saved.toLowerCase();
-  if (value.includes('fail') || value.includes('not saved')) return 'save-indicator--error';
-  if (value.includes('saved')) return 'save-indicator--saved';
-  if (value.includes('pending')) return 'save-indicator--pending';
-  return 'save-indicator--saving';
 }
 
 /**
@@ -44,9 +36,9 @@ export function AppShell({
   context,
   connectionState,
   connectionDetail,
-  saved,
   notice,
   actions,
+  commands,
   children,
 }: AppShellProps) {
   const showNotice = Boolean(notice) && !isConnectionNotice(notice);
@@ -61,7 +53,6 @@ export function AppShell({
           status={
             <>
               <ConnectionStatus state={connectionState} detail={connectionDetail} />
-              {saved ? <span className={`save-indicator ${saveTone(saved)}`}>{saved}</span> : null}
               {showNotice ? (
                 <span className="notice-banner" role="alert" title={notice}>
                   {notice}
@@ -70,6 +61,7 @@ export function AppShell({
             </>
           }
           actions={actions}
+          commands={commands}
         />
         {children}
       </main>

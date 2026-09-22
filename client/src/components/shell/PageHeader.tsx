@@ -7,6 +7,8 @@ export interface PageHeaderProps {
   status?: ReactNode;
   /** Action zone: the page or workflow controls rendered by the caller. */
   actions?: ReactNode;
+  /** Full-width second row, used by the workflow command bar. */
+  commands?: ReactNode;
 }
 
 /**
@@ -14,7 +16,7 @@ export interface PageHeaderProps {
  * It renders whatever the caller passes, so control behavior stays with the
  * existing state owner.
  */
-export function PageHeader({ title, context, status, actions }: PageHeaderProps) {
+export function PageHeader({ title, context, status, actions, commands }: PageHeaderProps) {
   return (
     <header className="page-header">
       <div className="page-header__leading">
@@ -27,6 +29,7 @@ export function PageHeader({ title, context, status, actions }: PageHeaderProps)
         {status ? <div className="page-header__status">{status}</div> : null}
         {actions ? <div className="page-header__actions">{actions}</div> : null}
       </div>
+      {commands ? <div className="page-header__commands">{commands}</div> : null}
     </header>
   );
 }
