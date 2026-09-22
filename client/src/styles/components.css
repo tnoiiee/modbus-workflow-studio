@@ -1086,6 +1086,43 @@ button:disabled {
   color: var(--color-text);
 }
 
+/* Keep the INPUTS & OUTPUTS documentation inside the panel width. */
+.port-docs,
+.port-docs__content,
+.port-doc,
+.port-doc__head,
+.port-doc__names {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.port-docs,
+.port-docs__content,
+.port-doc,
+.port-doc__head,
+.port-doc__names,
+.port-doc small,
+.port-docs small,
+.port-docs b,
+.port-docs span {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.port-doc > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.port-docs .pill {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .port-docs__content {
   animation: port-docs-reveal var(--motion-fast) var(--ease-standard);
 }
