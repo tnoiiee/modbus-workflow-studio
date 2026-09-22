@@ -1,44 +1,70 @@
 /**
- * Overview O1-A scaffold state helpers (pure).
+ * Overview state helpers (pure) — checkpoints O1-A/O1-B.
  *
- * The page list is a local editor scaffold only — it is NOT persisted
- * production data. Persistence arrives with checkpoint O1-B.
+ * Drafts stay client-side until Save & Exit. Persistence and revision
+ * handling live in `/api/overview-pages`; element editing arrives in O1-C.
  */
 
 export type OverviewMode = 'VIEW' | 'EDIT';
 
 /** Save pipeline states required by the Overview product contract. */
-export type OverviewSaveState = 'SAVED' | 'UNSAVED' | 'SAVING' | 'ERROR';
+export type OverviewSaveState = 'SAVED' | 'UNSAVED' | 'SAVING' | 'ERROR' | 'CONFLICT';
 
-export interface OverviewScaffoldPage {
+/** Monitoring element Type IDs (stable identifiers, checklist 7). */
+export const OVERVIEW_MONITORING_TYPES: ReadonlySet<string> = new Set([
+  'NUMERIC_LABEL',
+  'TEXT_LABEL',
+  'STATUS_LIGHT',
+  'VALUE_BADGE',
+  'PICTURE_BOX',
+]);
+
+/** Control element Type IDs (stable identifiers, checklist 7). */
+export const OVERVIEW_CONTROL_TYPES: ReadonlySet<string> = new Set([
+  'SWITCH',
+  'PUSH_BUTTON',
+  'NAVIGATION_LINK',
+]);
+
+export interface OverviewElementStub {
+  id: string;
+  type: string;
+  [key: string]: unknown;
+}
+
+export interface OverviewPageRecord {
   id: string;
   name: string;
   description: string;
   designWidth: number;
   designHeight: number;
   backgroundColor: string;
+  backgroundImage: string | null;
+  elements: OverviewElementStub[];
+  layerOrder: string[];
+  revision: number;
+  createdAt: string;
+  modifiedAt: string;
 }
 
-/** Local placeholder page list for O1-A — editor scaffold, never persisted. */
-export const OVERVIEW_SCAFFOLD_PAGES: readonly OverviewScaffoldPage[] = [
-  {
-    id: 'overview-main',
-    name: 'Main Overview',
-    description: 'Local editor scaffold page — not persisted',
-    designWidth: 1920,
-    designHeight: 1080,
-    backgroundColor: '#050b12',
-  },
-];
-
-export const OVERVIEW_DEFAULT_PAGE_ID = 'overview-main';
-
-/** Badge text marking the scaffold page list as non-production data. */
-export const OVERVIEW_SCAFFOLD_BADGE = 'EDITOR SCAFFOLD · NOT PERSISTED';
+export interface OverviewPageSummary {
+  id: string;
+  name: string;
+  description: string;
+  designWidth: number;
+  designHeight: number;
+  backgroundColor: string;
+  revision: number;
+  elementCount: number;
+  createdAt: string;
+  modifiedAt: string;
+}
 
 /** Default fixed design resolution for new Overview pages. */
 export const OVERVIEW_DEFAULT_WIDTH = 1920;
 export const OVERVIEW_DEFAULT_HEIGHT = 1080;
+/** Matches the `--color-canvas` design token. */
+export const OVERVIEW_DEFAULT_BACKGROUND = '#050b12';
 
 /** Label rendered by the save indicator for each save pipeline state. */
 export function overviewSaveLabel(state: OverviewSaveState): string {
@@ -51,29 +77,24 @@ export function overviewSaveLabel(state: OverviewSaveState): string {
       return 'SAVING…';
     case 'ERROR':
       return 'SAVE FAILED';
+    case 'CONFLICT':
+      return 'CONFLICT — NOT SAVED';
   }
 }
 
-export interface OverviewEditSession {
-  mode: OverviewMode;
-  saveState: OverviewSaveState;
-  /** Baseline snapshot id restored by Cancel Changes. */
-  baselinePageId: string;
+/** True when a local draft exists that Cancel/switch would discard. */
+export function isDraftDirty(saveState: OverviewSaveState): boolean {
+  return saveState === 'UNSAVED' || saveState === 'ERROR' || saveState === 'CONFLICT';
 }
 
-/** View -> Edit: capture the baseline snapshot before editing begins. */
-export function beginOverviewEdit(currentPageId: string): OverviewEditSession {
-  return { mode: 'EDIT', saveState: 'SAVED', baselinePageId: currentPageId };
+/** Cancel Changes opens the confirm dialog only when a draft must be discarded. */
+export function shouldConfirmCancel(saveState: OverviewSaveState): boolean {
+  return isDraftDirty(saveState);
 }
 
-/** Save & Exit succeeds: draft is flushed (O1-A: client only) and View resumes. */
-export function finishOverviewSave(): { mode: OverviewMode; saveState: OverviewSaveState } {
-  return { mode: 'VIEW', saveState: 'SAVED' };
-}
-
-/** Cancel Changes: restore the baseline snapshot and return to View. */
-export function cancelOverviewEdit(baselinePageId: string): OverviewEditSession {
-  return { mode: 'VIEW', saveState: 'SAVED', baselinePageId };
+/** Classify a failed Save & Exit response into a save pipeline state. */
+export function classifySaveFailure(status: number): 'CONFLICT' | 'ERROR' {
+  return status === 409 ? 'CONFLICT' : 'ERROR';
 }
 
 /**
@@ -87,4 +108,185 @@ export function requiresPageSwitchConfirm(
 ): boolean {
   if (nextPageId === currentPageId) return false;
   return saveState !== 'SAVED';
+}
+
+/** Command bar group order for the combined Overview Command Bar. */
+export function overviewCommandBarGroups(mode: OverviewMode): readonly string[] {
+  return mode === 'EDIT'
+    ? ['PAGE', 'MODE', 'EDIT ACTIONS', 'SAVE STATUS']
+    : ['PAGE', 'MODE', 'SAVE STATUS'];
+}
+
+export interface OverviewEditSession {
+  mode: OverviewMode;
+  saveState: OverviewSaveState;
+  baseline: OverviewPageRecord;
+  draft: OverviewPageRecord;
+}
+
+/** View -> Edit: capture the baseline snapshot and an identical draft. */
+export function beginOverviewEdit(page: OverviewPageRecord): OverviewEditSession {
+  return {
+    mode: 'EDIT',
+    saveState: 'SAVED',
+    baseline: structuredClone(page),
+    draft: structuredClone(page),
+  };
+}
+
+/**
+ * Apply a local edit to the draft and recompute the save state.
+ * Pure: returns the next draft plus SAVED/UNSAVED.
+ */
+export function applyOverviewDraftPatch(
+  baseline: OverviewPageRecord,
+  draft: OverviewPageRecord,
+  patch: Partial<Pick<OverviewPageRecord, 'name' | 'description' | 'designWidth' | 'designHeight' | 'backgroundColor' | 'elements' | 'layerOrder'>>,
+): { draft: OverviewPageRecord; saveState: OverviewSaveState } {
+  const next: OverviewPageRecord = { ...draft, ...structuredClone(patch) };
+  const dirty = JSON.stringify(next) !== JSON.stringify(baseline);
+  return { draft: next, saveState: dirty ? 'UNSAVED' : 'SAVED' };
+}
+
+/** Save & Exit succeeded: accept the server page, replace baseline, return View. */
+export function finishOverviewSave(saved: OverviewPageRecord): {
+  mode: OverviewMode;
+  saveState: OverviewSaveState;
+  baseline: OverviewPageRecord;
+  draft: OverviewPageRecord;
+} {
+  return {
+    mode: 'VIEW',
+    saveState: 'SAVED',
+    baseline: structuredClone(saved),
+    draft: structuredClone(saved),
+  };
+}
+
+/** Cancel Changes: restore the baseline snapshot and return to View. */
+export function cancelOverviewEdit(baseline: OverviewPageRecord): {
+  mode: OverviewMode;
+  saveState: OverviewSaveState;
+  draft: OverviewPageRecord;
+} {
+  return { mode: 'VIEW', saveState: 'SAVED', draft: structuredClone(baseline) };
+}
+
+/** Facts shown by the Save Overview Page ConfirmDialog. */
+export function buildSaveConfirmDescription(pageName: string): string {
+  return `Save changes to "${pageName}" and return to View Mode?`;
+}
+
+export function buildSaveConfirmFacts(
+  page: { name: string; revision: number; elementCount?: number; elements?: readonly OverviewElementStub[] },
+  saveState: OverviewSaveState,
+): string[] {
+  const elementCount =
+    typeof page.elementCount === 'number'
+      ? page.elementCount
+      : Array.isArray(page.elements)
+        ? page.elements.length
+        : 0;
+  return [
+    `Page name: ${page.name}`,
+    `Element count: ${elementCount}`,
+    `Current revision: ${page.revision}`,
+    `Next revision: ${page.revision + 1}`,
+    `Unsaved state: ${isDraftDirty(saveState) ? 'Unsaved changes' : 'No unsaved changes'}`,
+    'Page will return to View Mode after a successful save',
+  ];
+}
+
+/** Facts shown by the Delete Overview Page ConfirmDialog. */
+export function countOverviewElements(
+  elements: readonly OverviewElementStub[],
+): { elementCount: number; monitoringCount: number; controlCount: number } {
+  let monitoringCount = 0;
+  let controlCount = 0;
+  for (const element of elements) {
+    if (OVERVIEW_MONITORING_TYPES.has(element.type)) monitoringCount += 1;
+    else if (OVERVIEW_CONTROL_TYPES.has(element.type)) controlCount += 1;
+  }
+  return { elementCount: elements.length, monitoringCount, controlCount };
+}
+
+export function buildDeleteConfirmFacts(page: {
+  name: string;
+  elements?: readonly OverviewElementStub[];
+  elementCount?: number;
+}): string[] {
+  const counts = countOverviewElements(page.elements ?? []);
+  const elementCount = typeof page.elementCount === 'number' ? page.elementCount : counts.elementCount;
+  return [
+    `Page name: ${page.name}`,
+    `Element count: ${elementCount}`,
+    `Monitoring element count: ${counts.monitoringCount}`,
+    `Control element count: ${counts.controlCount}`,
+    'This cannot be undone',
+  ];
+}
+
+/** Page name validation: required, trimmed, unique (case-insensitive). */
+export function validateOverviewPageName(
+  name: string,
+  pages: ReadonlyArray<{ id: string; name: string }>,
+  ignoreId?: string,
+): string | undefined {
+  const trimmed = name.trim();
+  if (!trimmed) return 'Page name is required';
+  if (trimmed.length > 100) return 'Page name must be 100 characters or fewer';
+  if (pages.some(page => page.id !== ignoreId && page.name.trim().toLowerCase() === trimmed.toLowerCase())) {
+    return 'An Overview page with this name already exists';
+  }
+  return undefined;
+}
+
+/** Design size validation: integers greater than zero. */
+export function validateOverviewDimensions(
+  width: number,
+  height: number,
+): string | undefined {
+  if (!Number.isFinite(width) || !Number.isFinite(height)) return 'Design size must be a number';
+  if (width <= 0 || height <= 0) return 'Design Width and Design Height must be greater than 0';
+  if (!Number.isInteger(width) || !Number.isInteger(height)) return 'Design size must be whole pixels';
+  if (width > 16384 || height > 16384) return 'Design size must be 16384 pixels or less';
+  return undefined;
+}
+
+/** Unique name for Duplicate: "<base>", "<base> 2", "<base> 3", … */
+export function uniqueOverviewPageName(
+  base: string,
+  pages: ReadonlyArray<{ name: string }>,
+): string {
+  const trimmed = base.trim() || 'Overview Page';
+  const taken = new Set(pages.map(page => page.name.trim().toLowerCase()));
+  if (!taken.has(trimmed.toLowerCase())) return trimmed;
+  for (let suffix = 2; suffix < 10_000; suffix += 1) {
+    const candidate = `${trimmed} ${suffix}`;
+    if (!taken.has(candidate.toLowerCase())) return candidate;
+  }
+  return `${trimmed} ${Date.now()}`;
+}
+
+/** Session-scoped panel collapse (in-memory only — never server/localStorage). */
+let sessionLibraryCollapsed = false;
+let sessionInspectorCollapsed = false;
+
+export function getSessionPanelCollapsed(panel: 'library' | 'inspector'): boolean {
+  return panel === 'library' ? sessionLibraryCollapsed : sessionInspectorCollapsed;
+}
+
+export function setSessionPanelCollapsed(panel: 'library' | 'inspector', collapsed: boolean): void {
+  if (panel === 'library') sessionLibraryCollapsed = collapsed;
+  else sessionInspectorCollapsed = collapsed;
+}
+
+export function toggleOverviewPanel(collapsed: boolean): boolean {
+  return !collapsed;
+}
+
+/** Reset session panel state (tests). */
+export function resetOverviewPanelSession(): void {
+  sessionLibraryCollapsed = false;
+  sessionInspectorCollapsed = false;
 }

@@ -27,24 +27,23 @@ export interface OverviewCanvasProps {
   mode: OverviewMode;
   designWidth: number;
   designHeight: number;
-  scaffoldBadge: string;
+  backgroundColor: string;
   onInstanceReady: (instance: ReactFlowInstance) => void;
 }
 
 /**
  * Overview Canvas: React Flow reused as infrastructure only.
  *
- * Element and persistence models are Overview-specific and arrive with O1-C;
- * this checkpoint renders an empty fixed-resolution design surface. EDIT mode
- * enables pan, zoom, fit, selection, drag, grid and snap. VIEW mode locks the
- * canvas into a clean operator-style surface: no controls, no minimap, no
- * pan, no zoom, no selection.
+ * Element model is Overview-specific and arrives with O1-C. The surface uses
+ * the page's fixed design resolution and background color. EDIT mode enables
+ * pan, zoom, fit, selection, drag, grid and snap. VIEW mode locks the canvas
+ * into a clean operator-style surface: no controls, no minimap, no pan/zoom.
  */
 function OverviewCanvasBase({
   mode,
   designWidth,
   designHeight,
-  scaffoldBadge,
+  backgroundColor,
   onInstanceReady,
 }: OverviewCanvasProps) {
   const [nodes, , onNodesChange] = useNodesState<Node>([]);
@@ -62,7 +61,11 @@ function OverviewCanvasBase({
   const edit = mode === 'EDIT';
 
   return (
-    <div className={`canvas overview-canvas${edit ? '' : ' overview-canvas--locked'}`} data-mode={mode}>
+    <div
+      className={`canvas overview-canvas${edit ? '' : ' overview-canvas--locked'}`}
+      data-mode={mode}
+      style={{ backgroundColor }}
+    >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -97,9 +100,6 @@ function OverviewCanvasBase({
       <div className="overview-canvas__badges">
         <span className="pill pill--neutral" title="Fixed design resolution">
           {designWidth} × {designHeight}
-        </span>
-        <span className="pill pill--warning" title="Local editor scaffold — not persisted production data">
-          {scaffoldBadge}
         </span>
         {edit ? (
           <span className="pill pill--accent">

@@ -1,8 +1,9 @@
 /* ---------------------------------------------------------------------------
- * MODBUS WORKFLOW STUDIO — Overview (checkpoint O1-A) styles
+ * MODBUS WORKFLOW STUDIO — Overview (checkpoints O1-A + O1-B) styles
  * Loaded after responsive.css so scaffold rules win the cascade.
- * Fixed design resolution: 1920 x 1080. VIEW mode renders a locked,
- * control-free operator surface; EDIT mode restores the three-pane editor.
+ * Fixed design resolution: 1920 x 1080. One combined Overview Command Bar.
+ * VIEW mode renders a locked, control-free operator surface; EDIT mode
+ * restores the three-pane editor with collapsible library/inspector rails.
  * ------------------------------------------------------------------------- */
 
 .overview {
@@ -15,30 +16,42 @@
   background: var(--color-canvas);
 }
 
-/* --- bars: page management + mode controls ------------------------------- */
+/* --- single combined command bar ----------------------------------------- */
 
 .overview-bars {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--shell-canvas-inset) var(--shell-canvas-inset) 0;
+  min-width: 0;
+  padding: var(--shell-canvas-inset) var(--shell-canvas-inset) var(--space-3);
   border-bottom: 1px solid var(--color-border-subtle);
-  padding-bottom: var(--space-3);
-  margin-bottom: var(--space-3);
 }
 
-.overview-page-bar,
-.overview-mode-bar {
+.overview-command-bar {
   gap: var(--space-3) var(--space-5);
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.overview-command-bar .command-group {
+  min-width: 0;
+}
+
+.overview-command-bar .command-group__controls {
+  flex-wrap: wrap;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .overview-page-select {
-  min-width: 200px;
-  max-width: 280px;
+  min-width: 180px;
+  max-width: 260px;
 }
 
 .overview-bars .pill {
   white-space: nowrap;
+}
+
+.overview-notice {
+  margin: var(--space-3) var(--shell-canvas-inset) 0;
 }
 
 /* --- workspace: library | canvas | inspector ----------------------------- */
@@ -48,19 +61,36 @@
   display: grid;
   grid-template-columns: var(--shell-library-width) minmax(0, 1fr) var(--shell-inspector-width);
   gap: var(--shell-canvas-inset);
-  padding: 0 var(--shell-canvas-inset) var(--shell-canvas-inset);
+  padding: var(--space-3) var(--shell-canvas-inset) var(--shell-canvas-inset);
   min-height: 0;
   min-width: 0;
 }
 
 /* VIEW mode: hide editor panels and give the canvas the space back. */
-.overview--view .overview__workspace {
+.overview--view .overview__workspace,
+.overview--view .overview__workspace--library-collapsed,
+.overview--view .overview__workspace--inspector-collapsed,
+.overview--view .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
   grid-template-columns: minmax(0, 1fr);
 }
 
 .overview--view .overview-library,
-.overview--view .overview-inspector {
+.overview--view .overview-inspector,
+.overview--view .overview-rail {
   display: none;
+}
+
+/* EDIT mode collapse: canvas expands into the recovered space. */
+.overview--edit .overview__workspace--library-collapsed {
+  grid-template-columns: 44px minmax(0, 1fr) var(--shell-inspector-width);
+}
+
+.overview--edit .overview__workspace--inspector-collapsed {
+  grid-template-columns: var(--shell-library-width) minmax(0, 1fr) 44px;
+}
+
+.overview--edit .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
 }
 
 .overview-panel {
@@ -68,10 +98,48 @@
   overflow: auto;
 }
 
+.overview-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.overview-panel__head h3 {
+  margin: 0;
+}
+
 .overview-panel .empty {
   color: var(--color-text-dim);
   font-size: var(--text-label);
   line-height: 1.5;
+}
+
+/* Compact rails when a panel is collapsed in Edit Mode. */
+.overview-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-1);
+  min-height: 0;
+  overflow: auto;
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), var(--highlight-inner-soft);
+}
+
+.overview-rail__marker {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  user-select: none;
 }
 
 /* --- canvas --------------------------------------------------------------- */
@@ -116,22 +184,21 @@
 
 @media (max-width: 1440px) {
   .overview-page-select {
-    min-width: 170px;
-    max-width: 230px;
+    min-width: 150px;
+    max-width: 220px;
+  }
+
+  .overview-command-bar {
+    gap: var(--space-2) var(--space-4);
   }
 }
 
 @media (max-width: 1280px) {
   .overview-bars {
-    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4) var(--space-2);
   }
 
-  .overview-page-bar,
-  .overview-mode-bar {
-    gap: var(--space-2) var(--space-4);
-  }
-
-  .command-group {
+  .overview-command-bar .command-group {
     padding-right: var(--space-4);
   }
 }
@@ -139,6 +206,10 @@
 @media (max-width: 1200px) {
   .overview__workspace {
     grid-template-columns: 194px minmax(0, 1fr);
+  }
+
+  .overview--edit .overview__workspace--library-collapsed {
+    grid-template-columns: 44px minmax(0, 1fr);
   }
 
   .overview-inspector {
@@ -151,18 +222,27 @@
     box-shadow: var(--shadow-panel);
   }
 
-  .overview--view .overview__workspace {
+  .overview-rail--inspector {
+    position: absolute;
+    top: 0;
+    right: var(--shell-canvas-inset);
+    bottom: var(--shell-canvas-inset);
+    width: 44px;
+    z-index: 4;
+  }
+
+  .overview--view .overview__workspace,
+  .overview--view .overview__workspace--library-collapsed,
+  .overview--view .overview__workspace--inspector-collapsed,
+  .overview--view .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 1100px) {
-  .overview-bars .pill--warning {
-    display: none;
-  }
-
-  .overview-inspector {
-    width: var(--shell-inspector-width);
+  .overview-page-select {
+    min-width: 140px;
+    max-width: 180px;
   }
 }
 
