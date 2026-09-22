@@ -1,5 +1,7 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
+import { Tooltip } from './Tooltip.js';
+
 export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** Accessible name; also used as the tooltip text when `tooltip` is omitted. */
   label: string;
@@ -11,6 +13,7 @@ export interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 
 /**
  * Icon-only button with a mandatory accessible name and a visible tooltip.
+ * The tooltip renders through the shared portal overlay (always on top).
  * Destructive icon buttons must pass `variant="danger"` plus an explicit label.
  */
 export function IconButton({
@@ -29,13 +32,10 @@ export function IconButton({
     .join(' ');
 
   return (
-    <span className="tooltip-host">
-      <button type={type} className={classes} aria-label={label} title={text} {...rest}>
+    <Tooltip label={text}>
+      <button type={type} className={classes} aria-label={label} {...rest}>
         <span aria-hidden="true">{icon}</span>
       </button>
-      <span className="tooltip-bubble" role="tooltip">
-        {text}
-      </span>
-    </span>
+    </Tooltip>
   );
 }

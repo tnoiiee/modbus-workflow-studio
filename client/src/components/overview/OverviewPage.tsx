@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactFlowInstance } from '@xyflow/react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 
 import { ConfirmDialog } from '../ui/ConfirmDialog.js';
 import { Field } from '../ui/Field.js';
 import { Modal } from '../ui/Modal.js';
+import { Tooltip } from '../ui/Tooltip.js';
+import { ElementInspector } from './ElementInspector.js';
+import { ElementLibrary } from './ElementLibrary.js';
 import { OverviewCanvas, fitOverviewView } from './OverviewCanvas.js';
 import { OverviewCommandBar } from './OverviewCommandBar.js';
 import {
@@ -38,6 +41,27 @@ import {
   type OverviewSaveState,
 } from '../../lib/overviewState.js';
 import {
+  canRedoOverview,
+  canUndoOverview,
+  centerOverviewElementPosition,
+  createOverviewElement,
+  duplicateOverviewElement,
+  emptyOverviewHistory,
+  layerOrderFromElements,
+  nudgeOverviewElementToFreeSlot,
+  overviewBringForward,
+  overviewBringToFront,
+  overviewSendBackward,
+  overviewSendToBack,
+  pushOverviewHistory,
+  redoOverviewHistory,
+  undoOverviewHistory,
+  validateOverviewElements,
+  type OverviewDraftHistory,
+  type OverviewElement,
+  type OverviewElementType,
+} from '../../lib/overviewElements.js';
+import {
   createOverviewPage,
   deleteOverviewPage,
   duplicateOverviewPage,
@@ -58,14 +82,16 @@ interface NameDialogState {
   background: string;
 }
 
+function asElements(page: OverviewPageRecord | null): OverviewElement[] {
+  return (page?.elements ?? []) as unknown as OverviewElement[];
+}
+
 /**
- * Overview page shell (checkpoints O1-A + O1-B).
+ * Overview page shell (O1-A + O1-B + O1-C).
  *
- * Owns VIEW/EDIT mode, the manual revision-aware Save & Exit pipeline,
- * page CRUD dialogs, and session-scoped panel collapse. Persistence goes
- * through `/api/overview-pages` only — Workflow/Devices/Modbus are untouched.
- *
- * Panel collapse and element selection are UI-only and never persisted.
+ * Owns VIEW/EDIT mode, the Element draft/undo stack, the manual revision-aware
+ * Save & Exit pipeline, page CRUD dialogs, and session-scoped panel collapse.
+ * Persistence goes through `/api/overview-pages` only.
  */
 export function OverviewPage() {
   const [pages, setPages] = useState<OverviewPageSummary[]>([]);
@@ -96,14 +122,21 @@ export function OverviewPage() {
   const [libraryCollapsed, setLibraryCollapsed] = useState(() => getSessionPanelCollapsed('library'));
   const [inspectorCollapsed, setInspectorCollapsed] = useState(() => getSessionPanelCollapsed('inspector'));
 
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [history, setHistory] = useState<OverviewDraftHistory>(() => emptyOverviewHistory());
+
   const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const activePageIdRef = useRef('');
   activePageIdRef.current = activePageId;
+  // Coalesce a continuous resize gesture into a single undo entry.
+  const resizeGestureRef = useRef<string | null>(null);
 
   const groups = overviewCommandBarGroups(mode);
   const workingPage = draft ?? activePage;
   const dirty = shouldConfirmCancel(saveState);
   const revision = displayedOverviewRevision(baseline?.revision ?? activePage?.revision);
+  const draftElements = asElements(draft);
+  const selectedElement = draftElements.find(el => el.id === selectedElementId) ?? null;
 
   /* ---- page list loading ------------------------------------------------ */
 
@@ -115,7 +148,8 @@ export function OverviewPage() {
       const requested = preferId && list.some(item => item.id === preferId) ? preferId : list[0]?.id;
       if (!requested) {
         setActivePage(null);
-        setActivePage(null);
+        setBaseline(null);
+        setDraft(null);
         return;
       }
       if (requested !== activePageIdRef.current) {
@@ -124,6 +158,8 @@ export function OverviewPage() {
         setActivePage(record);
         setBaseline(record);
         setDraft(record);
+        setSelectedElementId(null);
+        setHistory(emptyOverviewHistory());
       }
       return list;
     } catch (error) {
@@ -147,6 +183,8 @@ export function OverviewPage() {
     setMode(session.mode);
     setSaveConfirmError(undefined);
     setSaveConfirmPending(false);
+    setSelectedElementId(null);
+    setHistory(emptyOverviewHistory());
   }, [activePage]);
 
   const openSaveConfirm = useCallback(() => {
@@ -158,6 +196,16 @@ export function OverviewPage() {
 
   const confirmSaveAndExit = useCallback(async () => {
     if (!workingPage || saveConfirmPending) return;
+    // Client-side element validation before any network request.
+    const validationErrors = validateOverviewElements(
+      { id: workingPage.id, layerOrder: draft?.layerOrder ?? [] },
+      asElements(draft),
+    );
+    if (validationErrors.length > 0) {
+      setSaveConfirmError(validationErrors.slice(0, 3).join(' · '));
+      setSaveConfirmPending(false);
+      return;
+    }
     setSaveConfirmPending(true);
     setSaveConfirmError(undefined);
     // Unchanged draft: exit without a PUT so the persisted revision stays put.
@@ -170,6 +218,8 @@ export function OverviewPage() {
       setMode(finished.mode);
       setSaveConfirmOpen(false);
       setSaveConfirmPending(false);
+      setSelectedElementId(null);
+      setHistory(emptyOverviewHistory());
       return;
     }
     setSaveState('SAVING');
@@ -191,6 +241,8 @@ export function OverviewPage() {
       setMode(finished.mode);
       setSaveConfirmOpen(false);
       setSaveConfirmPending(false);
+      setSelectedElementId(null);
+      setHistory(emptyOverviewHistory());
       setPages(current =>
         current.map(item =>
           item.id === saved.id
@@ -214,7 +266,7 @@ export function OverviewPage() {
       setSaveState(next);
       setSaveConfirmPending(false);
       setSaveConfirmError(error instanceof Error ? error.message : 'Unable to save Overview page');
-      // Stay in Edit Mode, keep the draft, keep the dialog open.
+      // Stay in Edit Mode, keep the draft, keep the dialog open. No auto-retry.
     }
   }, [baseline, draft, saveConfirmPending, workingPage]);
 
@@ -227,6 +279,8 @@ export function OverviewPage() {
       setSaveState(restored.saveState);
       setMode(restored.mode);
       setCancelConfirmOpen(false);
+      setSelectedElementId(null);
+      setHistory(emptyOverviewHistory());
       return;
     }
     setCancelConfirmOpen(true);
@@ -239,6 +293,8 @@ export function OverviewPage() {
     setSaveState(restored.saveState);
     setMode(restored.mode);
     setCancelConfirmOpen(false);
+    setSelectedElementId(null);
+    setHistory(emptyOverviewHistory());
   }, [baseline]);
 
   /* ---- page CRUD -------------------------------------------------------- */
@@ -329,7 +385,6 @@ export function OverviewPage() {
       } else if (dialog.kind === 'rename') {
         if (!workingPage) return;
         if (mode === 'EDIT' && draft && baseline) {
-          // Rename inside an edit session stays in the draft (Save & Exit persists).
           const next = applyOverviewDraftPatch(baseline, draft, {
             name: trimmed,
             description: dialog.description.trim(),
@@ -386,7 +441,6 @@ export function OverviewPage() {
     try {
       await deleteOverviewPage(workingPage.id);
       setDeleteOpen(false);
-      // Leaving an edit session bound to a deleted page is unsafe; discard it.
       if (mode === 'EDIT') {
         setMode('VIEW');
         setSaveState('SAVED');
@@ -395,6 +449,8 @@ export function OverviewPage() {
       setBaseline(null);
       setActivePage(null);
       setActivePageId('');
+      setSelectedElementId(null);
+      setHistory(emptyOverviewHistory());
       await loadPages();
       setDeletePending(false);
     } catch (error) {
@@ -418,6 +474,8 @@ export function OverviewPage() {
           setDraft(record);
           setSaveState('SAVED');
           setPendingPageId(null);
+          setSelectedElementId(null);
+          setHistory(emptyOverviewHistory());
         } catch (error) {
           setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
         }
@@ -430,7 +488,6 @@ export function OverviewPage() {
     if (!pendingPageId) return;
     const nextPageId = pendingPageId;
     setPendingPageId(null);
-    // Discard the local draft; no save request is sent.
     setSaveState('SAVED');
     void (async () => {
       try {
@@ -439,11 +496,238 @@ export function OverviewPage() {
         setActivePage(record);
         setBaseline(record);
         setDraft(record);
+        setSelectedElementId(null);
+        setHistory(emptyOverviewHistory());
       } catch (error) {
         setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
       }
     })();
   }, [pendingPageId]);
+
+  /* ---- element draft mutations ------------------------------------------ */
+
+  const applyElementMutation = useCallback(
+    (
+      mutate: (elements: OverviewElement[]) => OverviewElement[],
+      options?: { select?: string | null; pushHistory?: boolean },
+    ) => {
+      if (!draft || mode !== 'EDIT') return;
+      const current = asElements(draft);
+      const nextElements = mutate(current.map(el => ({ ...el })));
+      if (options && 'select' in options) {
+        setSelectedElementId(options.select ?? null);
+      }
+      // No-op mutations never enter the undo stack or dirty the draft.
+      if (JSON.stringify(nextElements) === JSON.stringify(current)) return;
+      const nextLayer = layerOrderFromElements(nextElements);
+      const nextDraft: OverviewPageRecord = {
+        ...draft,
+        elements: nextElements as unknown as OverviewPageRecord['elements'],
+        layerOrder: nextLayer,
+      };
+      if (options?.pushHistory !== false) {
+        setHistory(hist => pushOverviewHistory(hist, current));
+      }
+      setDraft(nextDraft);
+      setSaveState(overviewDraftMatchesBaseline(baseline, nextDraft) ? 'SAVED' : 'UNSAVED');
+    },
+    [baseline, draft, mode],
+  );
+
+  const handleAddElement = useCallback(
+    (type: OverviewElementType) => {
+      if (!draft || mode !== 'EDIT') return;
+      const instance = flowInstanceRef.current;
+      const canvasEl = document.querySelector('.overview-canvas');
+      if (!instance || !canvasEl) return;
+      const rect = canvasEl.getBoundingClientRect();
+      const center = instance.screenToFlowPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+      const id = crypto.randomUUID();
+      const existing = asElements(draft);
+      const probe = createOverviewElement(type, { id, x: 0, y: 0, existing });
+      const base = centerOverviewElementPosition(center, probe);
+      const position = nudgeOverviewElementToFreeSlot(base, probe, existing);
+      const element = createOverviewElement(type, {
+        id,
+        x: position.x,
+        y: position.y,
+        zIndex: existing.length + 1,
+        existing,
+      });
+      applyElementMutation(elements => [...elements, element], { select: id });
+    },
+    [applyElementMutation, draft, mode],
+  );
+
+  const handleMoveElement = useCallback(
+    (id: string, x: number, y: number) => {
+      applyElementMutation(elements =>
+        elements.map(el => (el.id === id && !el.locked ? { ...el, x, y } : el)),
+      );
+    },
+    [applyElementMutation],
+  );
+
+  const handleResizeElement = useCallback(
+    (id: string, width: number, height: number) => {
+      const firstFrame = resizeGestureRef.current !== id;
+      resizeGestureRef.current = id;
+      applyElementMutation(
+        elements =>
+          elements.map(el =>
+            el.id === id && !el.locked && width > 0 && height > 0 ? { ...el, width, height } : el,
+          ),
+        { pushHistory: firstFrame },
+      );
+    },
+    [applyElementMutation],
+  );
+
+  // End the resize coalescing window when the pointer is released.
+  useEffect(() => {
+    const endGesture = () => {
+      resizeGestureRef.current = null;
+    };
+    window.addEventListener('pointerup', endGesture);
+    return () => window.removeEventListener('pointerup', endGesture);
+  }, []);
+
+  const patchSelectedElement = useCallback(
+    (patch: Partial<OverviewElement>) => {
+      if (!selectedElementId) return;
+      applyElementMutation(elements =>
+        elements.map(el =>
+          el.id === selectedElementId && !el.locked
+            ? { ...el, ...patch, id: el.id, type: el.type, category: el.category }
+            : el,
+        ),
+      );
+    },
+    [applyElementMutation, selectedElementId],
+  );
+
+  const patchSelectedStyle = useCallback(
+    (patch: Partial<OverviewElement['style']>) => {
+      if (!selectedElementId) return;
+      applyElementMutation(elements =>
+        elements.map(el =>
+          el.id === selectedElementId && !el.locked ? { ...el, style: { ...el.style, ...patch } } : el,
+        ),
+      );
+    },
+    [applyElementMutation, selectedElementId],
+  );
+
+  const patchSelectedBinding = useCallback(
+    (patch: Partial<OverviewElement['binding']>) => {
+      if (!selectedElementId) return;
+      applyElementMutation(elements =>
+        elements.map(el =>
+          el.id === selectedElementId && !el.locked ? { ...el, binding: { ...el.binding, ...patch } } : el,
+        ),
+      );
+    },
+    [applyElementMutation, selectedElementId],
+  );
+
+  const handleToggleLock = useCallback(() => {
+    if (!selectedElementId) return;
+    applyElementMutation(elements =>
+      elements.map(el => (el.id === selectedElementId ? { ...el, locked: !el.locked } : el)),
+    );
+  }, [applyElementMutation, selectedElementId]);
+
+  const handleToggleVisible = useCallback(() => {
+    if (!selectedElementId) return;
+    applyElementMutation(elements =>
+      elements.map(el => (el.id === selectedElementId ? { ...el, visible: !el.visible } : el)),
+    );
+  }, [applyElementMutation, selectedElementId]);
+
+  const handleDeleteElement = useCallback(() => {
+    if (!selectedElementId) return;
+    const target = asElements(draft).find(el => el.id === selectedElementId);
+    if (!target || target.locked) return;
+    applyElementMutation(
+      elements => elements.filter(el => el.id !== selectedElementId),
+      { select: null },
+    );
+  }, [applyElementMutation, draft, selectedElementId]);
+
+  const handleDuplicateElement = useCallback(() => {
+    if (!selectedElementId) return;
+    const newId = crypto.randomUUID();
+    applyElementMutation(
+      elements => {
+        const result = duplicateOverviewElement(elements, selectedElementId, newId);
+        return result ? result.elements : elements;
+      },
+      { select: newId },
+    );
+  }, [applyElementMutation, selectedElementId]);
+
+  const applyLayerOp = useCallback(
+    (op: (elements: OverviewElement[], id: string) => OverviewElement[]) => {
+      if (!selectedElementId) return;
+      applyElementMutation(elements => op(elements, selectedElementId));
+    },
+    [applyElementMutation, selectedElementId],
+  );
+
+  const handleUndo = useCallback(() => {
+    if (!draft) return;
+    const result = undoOverviewHistory(history, asElements(draft));
+    if (!result) return;
+    const nextDraft: OverviewPageRecord = {
+      ...draft,
+      elements: result.value as unknown as OverviewPageRecord['elements'],
+      layerOrder: layerOrderFromElements(result.value),
+    };
+    setHistory(result.history);
+    setDraft(nextDraft);
+    setSaveState(overviewDraftMatchesBaseline(baseline, nextDraft) ? 'SAVED' : 'UNSAVED');
+    if (selectedElementId && !result.value.some(el => el.id === selectedElementId)) {
+      setSelectedElementId(null);
+    }
+  }, [baseline, draft, history, selectedElementId]);
+
+  const handleRedo = useCallback(() => {
+    if (!draft) return;
+    const result = redoOverviewHistory(history, asElements(draft));
+    if (!result) return;
+    const nextDraft: OverviewPageRecord = {
+      ...draft,
+      elements: result.value as unknown as OverviewPageRecord['elements'],
+      layerOrder: layerOrderFromElements(result.value),
+    };
+    setHistory(result.history);
+    setDraft(nextDraft);
+    setSaveState(overviewDraftMatchesBaseline(baseline, nextDraft) ? 'SAVED' : 'UNSAVED');
+    if (selectedElementId && !result.value.some(el => el.id === selectedElementId)) {
+      setSelectedElementId(null);
+    }
+  }, [baseline, draft, history, selectedElementId]);
+
+  // Canvas keyboard delete — locked elements are never removed.
+  useEffect(() => {
+    if (mode !== 'EDIT' || !selectedElementId) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      if (target?.isContentEditable) return;
+      if (event.key === 'Delete' || event.key === 'Backspace') {
+        const el = asElements(draft).find(item => item.id === selectedElementId);
+        if (!el || el.locked) return;
+        event.preventDefault();
+        handleDeleteElement();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [draft, handleDeleteElement, mode, selectedElementId]);
 
   /* ---- canvas controls -------------------------------------------------- */
 
@@ -469,8 +753,7 @@ export function OverviewPage() {
     });
   }, []);
 
-  const noop = useCallback(() => undefined, []);
-  const hasSelection = false;
+  const hasSelection = Boolean(selectedElementId);
   const canDeletePage = pages.length > 1 && Boolean(workingPage);
 
   const workspaceClass = [
@@ -480,6 +763,32 @@ export function OverviewPage() {
   ]
     .filter(Boolean)
     .join(' ');
+
+  const inspectorHandlers = useMemo(
+    () => ({
+      onPatch: patchSelectedElement,
+      onPatchStyle: patchSelectedStyle,
+      onPatchBinding: patchSelectedBinding,
+      onToggleLock: handleToggleLock,
+      onToggleVisible: handleToggleVisible,
+      onDuplicate: handleDuplicateElement,
+      onDelete: handleDeleteElement,
+      onBringForward: () => applyLayerOp(overviewBringForward),
+      onBringToFront: () => applyLayerOp(overviewBringToFront),
+      onSendBackward: () => applyLayerOp(overviewSendBackward),
+      onSendToBack: () => applyLayerOp(overviewSendToBack),
+    }),
+    [
+      applyLayerOp,
+      handleDeleteElement,
+      handleDuplicateElement,
+      handleToggleLock,
+      handleToggleVisible,
+      patchSelectedBinding,
+      patchSelectedElement,
+      patchSelectedStyle,
+    ],
+  );
 
   return (
     <section
@@ -504,16 +813,20 @@ export function OverviewPage() {
           onEdit={enterEdit}
           onSaveAndExit={openSaveConfirm}
           onCancelChanges={requestCancelChanges}
-          canUndo={false}
-          canRedo={false}
+          canUndo={canUndoOverview(history)}
+          canRedo={canRedoOverview(history)}
           hasSelection={hasSelection}
-          onUndo={noop}
-          onRedo={noop}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
           onFitView={handleFitView}
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
-          onLockSelected={noop}
-          onUnlockSelected={noop}
+          onLockSelected={() => {
+            if (selectedElement && !selectedElement.locked) handleToggleLock();
+          }}
+          onUnlockSelected={() => {
+            if (selectedElement?.locked) handleToggleLock();
+          }}
         />
       </div>
 
@@ -526,16 +839,17 @@ export function OverviewPage() {
       <div className={workspaceClass}>
         {mode === 'EDIT' && libraryCollapsed ? (
           <div className="overview-rail overview-rail--library">
-            <button
-              type="button"
-              className={OVERVIEW_PANEL_TOGGLE_CLASS}
-              aria-label="Expand Element Library"
-              title="Expand Element Library"
-              aria-expanded={false}
-              onClick={handleToggleLibrary}
-            >
-              <PanelLeftOpen size={16} />
-            </button>
+            <Tooltip label="Expand Element Library">
+              <button
+                type="button"
+                className={OVERVIEW_PANEL_TOGGLE_CLASS}
+                aria-label="Expand Element Library"
+                aria-expanded={false}
+                onClick={handleToggleLibrary}
+              >
+                <PanelLeftOpen size={16} />
+              </button>
+            </Tooltip>
             <span className="overview-rail__marker" aria-hidden="true">
               Elements
             </span>
@@ -545,19 +859,24 @@ export function OverviewPage() {
             <div className="overview-panel__head">
               <h3>Element Library</h3>
               {mode === 'EDIT' ? (
-                <button
-                  type="button"
-                  className={OVERVIEW_PANEL_TOGGLE_CLASS}
-                  aria-label="Collapse Element Library"
-                  title="Collapse Element Library"
-                  aria-expanded={true}
-                  onClick={handleToggleLibrary}
-                >
-                  <PanelLeftClose size={16} />
-                </button>
+                <Tooltip label="Collapse Element Library">
+                  <button
+                    type="button"
+                    className={OVERVIEW_PANEL_TOGGLE_CLASS}
+                    aria-label="Collapse Element Library"
+                    aria-expanded={true}
+                    onClick={handleToggleLibrary}
+                  >
+                    <PanelLeftClose size={16} />
+                  </button>
+                </Tooltip>
               ) : null}
             </div>
-            <p className="empty">Element Library will be implemented in O1-C</p>
+            {mode === 'EDIT' ? (
+              <ElementLibrary onAddElement={handleAddElement} />
+            ) : (
+              <p className="empty">Element Library is available in Edit Mode</p>
+            )}
           </aside>
         )}
 
@@ -566,21 +885,27 @@ export function OverviewPage() {
           designWidth={workingPage?.designWidth ?? OVERVIEW_DEFAULT_WIDTH}
           designHeight={workingPage?.designHeight ?? OVERVIEW_DEFAULT_HEIGHT}
           backgroundColor={workingPage?.backgroundColor ?? OVERVIEW_DEFAULT_BACKGROUND}
+          elements={draftElements}
+          selectedElementId={selectedElementId}
+          onSelectElement={setSelectedElementId}
+          onMoveElement={handleMoveElement}
+          onResizeElement={handleResizeElement}
           onInstanceReady={handleInstanceReady}
         />
 
         {mode === 'EDIT' && inspectorCollapsed ? (
           <div className="overview-rail overview-rail--inspector">
-            <button
-              type="button"
-              className={OVERVIEW_PANEL_TOGGLE_CLASS}
-              aria-label="Expand Element Inspector"
-              title="Expand Element Inspector"
-              aria-expanded={false}
-              onClick={handleToggleInspector}
-            >
-              <PanelLeftOpen size={16} />
-            </button>
+            <Tooltip label="Expand Element Inspector">
+              <button
+                type="button"
+                className={OVERVIEW_PANEL_TOGGLE_CLASS}
+                aria-label="Expand Element Inspector"
+                aria-expanded={false}
+                onClick={handleToggleInspector}
+              >
+                <PanelLeftOpen size={16} />
+              </button>
+            </Tooltip>
             <span className="overview-rail__marker" aria-hidden="true">
               Inspector
             </span>
@@ -590,19 +915,24 @@ export function OverviewPage() {
             <div className="overview-panel__head">
               <h3>Element Inspector</h3>
               {mode === 'EDIT' ? (
-                <button
-                  type="button"
-                  className={OVERVIEW_PANEL_TOGGLE_CLASS}
-                  aria-label="Collapse Element Inspector"
-                  title="Collapse Element Inspector"
-                  aria-expanded={true}
-                  onClick={handleToggleInspector}
-                >
-                  <PanelLeftClose size={16} />
-                </button>
+                <Tooltip label="Collapse Element Inspector">
+                  <button
+                    type="button"
+                    className={OVERVIEW_PANEL_TOGGLE_CLASS}
+                    aria-label="Collapse Element Inspector"
+                    aria-expanded={true}
+                    onClick={handleToggleInspector}
+                  >
+                    <PanelLeftClose size={16} />
+                  </button>
+                </Tooltip>
               ) : null}
             </div>
-            <p className="empty">Element Inspector will be implemented in O1-C</p>
+            {mode === 'EDIT' ? (
+              <ElementInspector element={selectedElement} {...inspectorHandlers} />
+            ) : (
+              <p className="empty">Element Inspector is available in Edit Mode</p>
+            )}
           </aside>
         )}
       </div>
@@ -746,7 +1076,7 @@ export function OverviewPage() {
         title="Delete Overview Page"
         description={
           workingPage
-            ? `Delete "${workingPage.name}" from this machine. This cannot be undone.`
+            ? `Delete \"${workingPage.name}\" from this machine. This cannot be undone.`
             : ''
         }
         facts={workingPage ? buildDeleteConfirmFacts({ name: workingPage.name, elements: workingPage.elements }) : []}
@@ -789,7 +1119,6 @@ export function OverviewPage() {
           if (saveConfirmPending) return;
           setSaveConfirmOpen(false);
           setSaveConfirmError(undefined);
-          // Closing the dialog keeps Edit Mode, keeps the draft; no request.
         }}
       />
 
@@ -797,7 +1126,7 @@ export function OverviewPage() {
       <ConfirmDialog
         open={cancelConfirmOpen}
         title="Discard Overview Changes"
-        description={workingPage ? `Discard unsaved changes to "${draft?.name ?? workingPage.name}"?` : ''}
+        description={workingPage ? `Discard unsaved changes to \"${draft?.name ?? workingPage.name}\"?` : ''}
         facts={[
           'The page returns to View Mode',
           'The local draft is restored from the baseline snapshot',
@@ -816,7 +1145,7 @@ export function OverviewPage() {
         title="Switch Overview page?"
         description={
           workingPage
-            ? `"${draft?.name ?? workingPage.name}" has unsaved local changes. Switching pages discards the draft.`
+            ? `\"${draft?.name ?? workingPage.name}\" has unsaved local changes. Switching pages discards the draft.`
             : ''
         }
         facts={[

@@ -1,23 +1,23 @@
-import { memo, useCallback, useRef } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import {
   Background,
   Controls,
   MiniMap,
   ReactFlow,
-  useEdgesState,
-  useNodesState,
-  type Edge,
   type Node,
+  type NodeChange,
   type ReactFlowInstance,
 } from '@xyflow/react';
 import { Lock, Pencil } from 'lucide-react';
 
+import type { OverviewElement } from '../../lib/overviewElements.js';
 import type { OverviewMode } from '../../lib/overviewState.js';
+import { ElementNode, type OverviewElementNodeData } from './ElementNode.js';
 
 /** Canvas snap grid — matches the Workflow canvas and the design tokens. */
 export const OVERVIEW_SNAP_GRID = 16;
 
-const overviewNodeTypes = {};
+const overviewNodeTypes = { overviewElement: ElementNode };
 
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -28,37 +28,87 @@ export interface OverviewCanvasProps {
   designWidth: number;
   designHeight: number;
   backgroundColor: string;
+  elements: readonly OverviewElement[];
+  selectedElementId: string | null;
+  onSelectElement: (id: string | null) => void;
+  onMoveElement: (id: string, x: number, y: number) => void;
+  onResizeElement: (id: string, width: number, height: number) => void;
   onInstanceReady: (instance: ReactFlowInstance) => void;
 }
 
 /**
  * Overview Canvas: React Flow reused as infrastructure only.
  *
- * Element model is Overview-specific and arrives with O1-C. The surface uses
- * the page's fixed design resolution and background color. EDIT mode enables
- * pan, zoom, fit, selection, drag, grid and snap. VIEW mode locks the canvas
- * into a clean operator-style surface: no controls, no minimap, no pan/zoom.
+ * EDIT mode enables pan, zoom, fit, selection, drag, resize, grid and snap.
+ * VIEW mode locks the surface: no controls, no minimap, no pan/zoom, no
+ * selection handles. Element geometry lives in the Overview Draft only.
  */
 function OverviewCanvasBase({
   mode,
   designWidth,
   designHeight,
   backgroundColor,
+  elements,
+  selectedElementId,
+  onSelectElement,
+  onMoveElement,
+  onResizeElement,
   onInstanceReady,
 }: OverviewCanvasProps) {
-  const [nodes, , onNodesChange] = useNodesState<Node>([]);
-  const [edges, , onEdgesChange] = useEdgesState<Edge>([]);
-  const instanceRef = useRef<ReactFlowInstance | null>(null);
+  const edit = mode === 'EDIT';
+
+  const nodes = useMemo<Node<OverviewElementNodeData>[]>(
+    () =>
+      elements.map(element => ({
+        id: element.id,
+        type: 'overviewElement',
+        position: { x: element.x, y: element.y },
+        style: { width: element.width, height: element.height, zIndex: element.zIndex },
+        selected: edit && element.id === selectedElementId,
+        draggable: edit && !element.locked,
+        resizable: edit && !element.locked,
+        connectable: false,
+        data: {
+          element,
+          mode,
+          selected: edit && element.id === selectedElementId,
+        },
+      })),
+    [elements, edit, mode, selectedElementId],
+  );
 
   const handleInit = useCallback(
-    (instance: ReactFlowInstance) => {
-      instanceRef.current = instance;
-      onInstanceReady(instance);
+    (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {
+      onInstanceReady(instance as unknown as ReactFlowInstance);
     },
     [onInstanceReady],
   );
 
-  const edit = mode === 'EDIT';
+  const handleNodesChange = useCallback(
+    (changes: NodeChange<Node<OverviewElementNodeData>>[]) => {
+      if (!edit) return;
+      for (const change of changes) {
+        if (change.type === 'select') {
+          onSelectElement(change.selected ? change.id : null);
+        }
+        if (change.type === 'position' && change.position && change.dragging === false) {
+          onMoveElement(change.id, change.position.x, change.position.y);
+        }
+        if (change.type === 'dimensions' && change.dimensions) {
+          const width = change.dimensions.width;
+          const height = change.dimensions.height;
+          if (width > 0 && height > 0) {
+            onResizeElement(change.id, width, height);
+          }
+        }
+      }
+    },
+    [edit, onMoveElement, onResizeElement, onSelectElement],
+  );
+
+  const handlePaneClick = useCallback(() => {
+    if (edit) onSelectElement(null);
+  }, [edit, onSelectElement]);
 
   return (
     <div
@@ -68,11 +118,11 @@ function OverviewCanvasBase({
     >
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={[]}
         nodeTypes={overviewNodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onNodesChange={handleNodesChange}
         onInit={handleInit}
+        onPaneClick={handlePaneClick}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         snapToGrid={edit}
@@ -89,6 +139,7 @@ function OverviewCanvasBase({
         nodesFocusable={edit}
         edgesFocusable={false}
         disableKeyboardA11y={!edit}
+        deleteKeyCode={null}
         selectNodesOnDrag={false}
         proOptions={{ hideAttribution: false }}
       >

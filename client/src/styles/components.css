@@ -326,13 +326,20 @@
   }
 }
 
-/* --- tooltip (CSS-only host wrapper) ------------------------------------ */
+/* --- tooltip (shared portal host + fixed overlay bubble) ----------------- */
 
 .tooltip-host {
   position: relative;
   display: inline-flex;
+  max-width: 100%;
 }
 
+.tooltip-host .tooltip-anchor {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+/* Legacy in-flow bubble (unused by the portal path, kept as a safe fallback). */
 .tooltip-host .tooltip-bubble {
   position: absolute;
   bottom: calc(100% + 6px);
@@ -359,6 +366,30 @@
 .tooltip-host:focus-within .tooltip-bubble {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
+}
+
+/* Portal overlay: always on top of panels, canvas, chrome, and modals. */
+.tooltip-portal {
+  --tooltip-overlay-z: 10000;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-glass-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-meta);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  text-transform: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  z-index: var(--tooltip-overlay-z);
 }
 
 /* --- glass utility ------------------------------------------------------ */
