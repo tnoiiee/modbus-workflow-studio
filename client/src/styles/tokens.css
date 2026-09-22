@@ -134,3 +134,84 @@
   --shell-block-width: 230px;
   --shell-page-padding: 14px;
 }
+
+/* ---------------------------------------------------------------------------
+ * PASS 1 PUNCHLIST — surface hierarchy, accent semantics, elevation
+ * Appended so these values win over the Round 1 declarations above.
+ * Layer order (darkest -> most elevated):
+ *   canvas < navigation < panel < command bar < card < page header glass < modal
+ * ------------------------------------------------------------------------- */
+
+:root {
+  /* --- base surfaces ---------------------------------------------------- */
+  --color-canvas: #050b12;
+  --color-canvas-deep: #040910;
+  --color-surface-sunken: #071019;
+  --color-surface-1: #0a151f;
+  --color-surface-2: #0f1e2b;
+  --color-surface-3: #15293a;
+  --color-surface-4: #1b3348;
+  --color-surface-solid-fallback: #0b1721;
+
+  /* --- role surfaces (new) ---------------------------------------------- */
+  --color-surface-nav: #08111a;
+  --color-surface-nav-raised: #102534;
+  --color-surface-panel: #0a151f;
+  --color-surface-card: #10202d;
+  --color-surface-command: rgba(11, 22, 32, 0.72);
+  --color-surface-header: rgba(13, 26, 37, 0.78);
+  --color-surface-modal: #12222f;
+  --color-surface-float: rgba(10, 20, 29, 0.82);
+
+  /* --- glass ------------------------------------------------------------ */
+  --color-surface-glass: rgba(16, 32, 45, 0.62);
+  --color-surface-glass-strong: rgba(13, 26, 37, 0.82);
+  --glass-blur: blur(10px) saturate(140%);
+  --glass-blur-strong: blur(16px) saturate(150%);
+  --highlight-inner: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --highlight-inner-soft: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+
+  /* --- borders ---------------------------------------------------------- */
+  --color-border-subtle: rgba(122, 172, 202, 0.1);
+  --color-border: rgba(126, 178, 208, 0.18);
+  --color-border-strong: rgba(142, 198, 228, 0.3);
+  --color-border-accent: rgba(47, 214, 255, 0.45);
+  --color-border-editing: rgba(169, 139, 255, 0.42);
+
+  /* --- text ------------------------------------------------------------- */
+  --color-text: #e9f5fc;
+  --color-text-secondary: #b9cddb;
+  --color-text-muted: #93abbc;
+  --color-text-dim: #7b95a8;
+  --color-text-inverse: #06121a;
+
+  /* --- accents ---------------------------------------------------------- */
+  --color-accent: #2fd6ff;
+  --color-accent-hover: #67e6ff;
+  --color-accent-soft: rgba(47, 214, 255, 0.13);
+  --color-accent-secondary: #a98bff;
+  --color-accent-secondary-hover: #c0a8ff;
+  --color-accent-secondary-soft: rgba(169, 139, 255, 0.15);
+
+  /* --- state colors ----------------------------------------------------- */
+  --color-success: #3ddc84;
+  --color-success-soft: rgba(61, 220, 132, 0.14);
+  --color-warning: #f5b942;
+  --color-warning-soft: rgba(245, 185, 66, 0.15);
+  --color-danger: #ff5c6c;
+  --color-danger-hover: #ff7f8b;
+  --color-danger-soft: rgba(255, 92, 108, 0.14);
+
+  /* --- elevation -------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.42);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.46);
+  --shadow-panel: 0 18px 44px rgba(0, 0, 0, 0.55);
+  --shadow-raised: 0 10px 26px rgba(0, 0, 0, 0.5);
+  --shadow-glow-accent: 0 0 0 1px rgba(47, 214, 255, 0.22), 0 8px 22px rgba(47, 214, 255, 0.1);
+
+  /* --- header / layout metrics ------------------------------------------ */
+  --shell-header-pad-y: var(--space-4);
+  --shell-header-gap: var(--space-3);
+  --shell-canvas-inset: var(--space-3);
+  --control-hit: 34px;
+}

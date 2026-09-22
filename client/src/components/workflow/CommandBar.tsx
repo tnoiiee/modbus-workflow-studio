@@ -137,15 +137,23 @@ export function CommandBar({
       <div className="command-group">
         <span className="command-group__label">Editing</span>
         <div className="command-group__controls">
-          <IconButton label="Undo" tooltip="Undo (Ctrl+Z)" icon={<Undo2 size={15} />} onClick={onUndo} disabled={!canUndo} />
+          <IconButton
+            label="Undo"
+            tooltip="Undo (Ctrl+Z)"
+            className="btn-icon--editing"
+            icon={<Undo2 size={15} />}
+            onClick={onUndo}
+            disabled={!canUndo}
+          />
           <IconButton
             label="Redo"
             tooltip="Redo (Ctrl+Shift+Z)"
+            className="btn-icon--editing"
             icon={<Redo2 size={15} />}
             onClick={onRedo}
             disabled={!canRedo}
           />
-          <IconButton label="Fit View" tooltip="Fit View" icon={<Maximize size={15} />} onClick={onFitView} />
+          <IconButton label="Fit View" tooltip="Fit View" className="btn-icon--editing" icon={<Maximize size={15} />} onClick={onFitView} />
           <span className="command-divider" aria-hidden="true" />
           {saved ? <span className={saveIndicatorClass(saved)}>{saved}</span> : null}
           {typeof revision === 'number' ? <span className="pill pill--neutral">Rev {revision}</span> : null}

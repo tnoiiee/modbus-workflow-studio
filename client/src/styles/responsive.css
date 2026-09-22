@@ -330,3 +330,96 @@
     bottom: var(--space-3);
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * PASS 1 PUNCHLIST — header/canvas breathing room, library scroll, and the
+ * inspector overlay inside the inset workflow grid.
+ * ------------------------------------------------------------------------- */
+
+@media (min-width: 1920px) {
+  :root {
+    --shell-header-pad-y: var(--space-5);
+    --shell-canvas-inset: var(--space-4);
+    --shell-library-width: 300px;
+    --shell-inspector-width: 380px;
+  }
+
+  .page-header {
+    padding-left: var(--space-7);
+    padding-right: var(--space-7);
+  }
+}
+
+@media (max-width: 1366px) {
+  :root {
+    --shell-header-pad-y: var(--space-4);
+    --shell-canvas-inset: var(--space-3);
+  }
+
+  .page-header {
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
+  }
+
+  .page-header__title {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .inspector {
+    top: var(--shell-canvas-inset);
+    right: var(--shell-canvas-inset);
+    bottom: var(--shell-canvas-inset);
+  }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --shell-header-pad-y: var(--space-3);
+  }
+
+  .command-bar {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .command-group {
+    padding-right: var(--space-3);
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --shell-canvas-inset: var(--space-2);
+    --shell-library-width: 216px;
+  }
+
+  .page-header {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .page-header__title {
+    font-size: 20px;
+  }
+
+  .page-header__context {
+    font-size: var(--text-label);
+  }
+
+  .command-bar {
+    gap: var(--space-2) var(--space-3);
+  }
+
+  .command-group {
+    flex: 1 1 auto;
+    padding-right: var(--space-2);
+  }
+
+  .block-library__scroll {
+    padding: var(--space-2) var(--space-2) var(--space-3);
+  }
+
+  .block-card {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+}
