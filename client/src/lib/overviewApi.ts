@@ -87,24 +87,33 @@ export function updateOverviewPage(
   });
 }
 
-export interface OverviewControlState {
+export interface OverviewControlStateRecord {
+  pageId: string;
+  elementId: string;
   value: boolean;
   updatedAt: string;
 }
 
 /**
- * Dedicated View-mode control-state PATCH (partial update).
- * Never sends the full Elements array.
+ * Independent View-mode Control-state list for one Overview Page.
+ * Revision-free — does not touch Page configuration or page.revision.
  */
-export function patchOverviewElementControlState(
+export function fetchOverviewControlStates(pageId: string): Promise<OverviewControlStateRecord[]> {
+  return overviewApi(`/api/overview-control-states/${pageId}`);
+}
+
+/**
+ * Dedicated revision-free Control-state PATCH.
+ * Body is `{ value }` only — no expectedRevision, no elements array.
+ */
+export function patchOverviewControlState(
   pageId: string,
   elementId: string,
-  expectedRevision: number,
-  controlState: OverviewControlState,
-): Promise<{ elementId: string; controlState: OverviewControlState; revision: number }> {
-  return overviewApi(`/api/overview-pages/${pageId}/elements/${elementId}/control-state`, {
+  value: boolean,
+): Promise<OverviewControlStateRecord> {
+  return overviewApi(`/api/overview-control-states/${pageId}/${elementId}`, {
     method: 'PATCH',
-    body: JSON.stringify({ expectedRevision, controlState }),
+    body: JSON.stringify({ value }),
   });
 }
 

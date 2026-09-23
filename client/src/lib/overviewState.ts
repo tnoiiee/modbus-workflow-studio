@@ -114,13 +114,15 @@ export function requiresPageSwitchConfirm(
 
 /** Command bar group order for the combined Overview Command Bar. */
 export function overviewCommandBarGroups(mode: OverviewMode): readonly string[] {
+  // View Mode is operational — no Save Status / REV group is rendered.
   return mode === 'EDIT'
     ? ['PAGE', 'MODE', 'EDIT ACTIONS', 'SAVE STATUS']
-    : ['PAGE', 'MODE', 'SAVE STATUS'];
+    : ['PAGE', 'MODE'];
 }
 
-/** SAVE STATUS must remain the logically last group in both modes. */
+/** SAVE STATUS is the last group in Edit Mode; View Mode has no Save Status. */
 export function isSaveStatusLastGroup(mode: OverviewMode): boolean {
+  if (mode !== 'EDIT') return false;
   const groups = overviewCommandBarGroups(mode);
   return groups[groups.length - 1] === 'SAVE STATUS';
 }

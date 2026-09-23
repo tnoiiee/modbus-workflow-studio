@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0-dev.1] - O1-C Stabilization
+
+- View Mode omits Save Status and Page REV; Edit Mode retains configuration save semantics.
+- Switch state persists independently through revision-free GET/PATCH APIs with read-only legacy fallback.
+- Application version surfaces synchronized without dependency changes.
+- No Tag Runtime, Modbus writes, or O1-D changes.
+
 ## [1.2.11] - Monitor scheduler and WebSocket reliability
 
 ### Added

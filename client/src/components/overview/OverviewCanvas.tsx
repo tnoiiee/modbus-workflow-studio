@@ -62,11 +62,13 @@ export interface OverviewCanvasProps {
   /** Full resize result: position + dimensions (top/left handles must move x/y). */
   onResizeElement: (id: string, geometry: { x: number; y: number; width: number; height: number }) => void;
   onInstanceReady: (instance: ReactFlowInstance) => void;
-  /** VIEW-mode control preview persistence (dedicated PATCH). */
+  /** VIEW-mode control preview persistence (independent Control-state PATCH). */
   onControlStateChange?: (
     id: string,
     value: boolean,
   ) => Promise<{ ok: true } | { ok: false; conflict: boolean; message: string }>;
+  /** Confirmed independent Control-state records keyed by Element id (View Mode). */
+  controlStates?: Readonly<Record<string, { value: boolean; updatedAt: string }>>;
 }
 
 /**
@@ -97,6 +99,7 @@ function OverviewCanvasBase({
   onResizeElement,
   onInstanceReady,
   onControlStateChange,
+  controlStates,
 }: OverviewCanvasProps) {
   const edit = mode === 'EDIT';
   const instanceRef = useRef<ReactFlowInstance | null>(null);
@@ -169,9 +172,13 @@ function OverviewCanvasBase({
       const liveDrag = edit && !liveResize ? dragPositions[element.id] : undefined;
       const selected = edit && element.id === selectedElementId;
       const isActive = Boolean(liveResize || liveDrag);
-      // VIEW-mode callback must stay fresh — reusing a node that captured a
-      // stale onControlStateChange sends an old revision (409 on next click).
+      // VIEW-mode callback + confirmed control value must stay fresh — reusing a
+      // node that captured a stale callback or control value breaks Toggle UX.
       const expectedControl = edit ? undefined : onControlStateChange;
+      const controlRecord = edit ? undefined : controlStates?.[element.id];
+      const expectedControlValue =
+        controlRecord?.value ??
+        Boolean((element.controlState as { value?: boolean } | undefined)?.value);
 
       if (!isActive) {
         const previous = previousById.get(element.id);
@@ -181,7 +188,8 @@ function OverviewCanvasBase({
           previous.selected === selected &&
           previous.data.mode === mode &&
           previous.draggable === (edit && !element.locked) &&
-          previous.data.onControlStateChange === expectedControl
+          previous.data.onControlStateChange === expectedControl &&
+          (edit || previous.data.controlValue === expectedControlValue)
         ) {
           return previous;
         }
@@ -210,6 +218,7 @@ function OverviewCanvasBase({
           ...(edit
             ? {}
             : {
+                controlValue: expectedControlValue,
                 onControlStateChange: expectedControl as
                   | ((id: string, value: boolean) => Promise<unknown>)
                   | undefined,
@@ -220,7 +229,7 @@ function OverviewCanvasBase({
     previousNodesRef.current = nextNodes;
     return nextNodes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange]);
+  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange, controlStates]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {

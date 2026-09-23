@@ -79,9 +79,11 @@ import {
   duplicateOverviewPage,
   fetchOverviewPage,
   fetchOverviewPages,
-  patchOverviewElementControlState,
+  patchOverviewControlState,
+  fetchOverviewControlStates,
   renameOverviewPage,
   updateOverviewPage,
+  type OverviewControlStateRecord,
 } from '../../lib/overviewApi.js';
 
 type NameDialogKind = 'create' | 'rename' | 'duplicate';
@@ -115,6 +117,10 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const [baseline, setBaseline] = useState<OverviewPageRecord | null>(null);
   const [draft, setDraft] = useState<OverviewPageRecord | null>(null);
   const [loadError, setLoadError] = useState<string>();
+  /** Control-specific error feedback (never Editor CONFLICT / loadError). */
+  const [controlError, setControlError] = useState<string>();
+  /** Independent View-mode Control-state records keyed by Element id. */
+  const [controlStates, setControlStates] = useState<Record<string, OverviewControlStateRecord>>({});
 
   const [nameDialog, setNameDialog] = useState<NameDialogState | null>(null);
   const [nameDialogError, setNameDialogError] = useState<string>();
@@ -153,6 +159,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const resizeGestureRef = useRef<string | null>(null);
   // VIEW-mode control PATCH in-flight guard (one request per Element id).
   const controlInFlightRef = useRef<Set<string>>(new Set());
+  // Page identity for discarding Control-state responses after a page switch.
+  const controlPageIdRef = useRef<string>('');
 
   const groups = overviewCommandBarGroups(mode);
   const workingPage = draft ?? activePage;
@@ -217,6 +225,23 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   useEffect(() => {
     void loadPages();
   }, [loadPages]);
+
+  // Independent fetch on page identity changes; configuration remains untouched.
+  controlPageIdRef.current = activePageId;
+  useEffect(() => {
+    let cancelled = false;
+    setControlStates({});
+    setControlError(undefined);
+    if (activePageId) void fetchOverviewControlStates(activePageId).then(records => {
+      if (!cancelled) setControlStates(current => ({
+        ...Object.fromEntries(records.map(record => [record.elementId, record])),
+        ...current,
+      }));
+    }).catch(error => {
+      if (!cancelled) setControlError(error instanceof Error ? error.message : 'Unable to load control states');
+    });
+    return () => { cancelled = true; };
+  }, [activePageId]);
 
   // Persist only navigation identity: active Overview Page ID.
   useEffect(() => {
@@ -883,93 +908,42 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const handleZoomOut = useCallback(() => flowInstanceRef.current?.zoomOut(), []);
 
   /**
-   * VIEW-mode Control preview persistence — dedicated PATCH only.
-   * Never touches Draft, dirty, undo/redo, selection, or Edit Mode.
+   * VIEW-mode Control persistence — independent Control-state PATCH only.
+   * Never touches page.revision, Draft, dirty, undo/redo, selection, or Edit Mode.
+   * No expectedRevision; no Page 409 recovery reload.
    */
   const handleControlStateChange = useCallback(
     async (elementId: string, value: boolean): Promise<{ ok: true } | { ok: false; conflict: boolean; message: string }> => {
-      const page = activePage;
-      if (!page) return { ok: false, conflict: false, message: 'Overview page is not loaded' };
       if (mode === 'EDIT') {
-        // Edit draft path is separate — control preview persistence is VIEW-only.
         return { ok: false, conflict: false, message: 'Exit Edit Mode to use control preview' };
       }
+      const pageId = controlPageIdRef.current || activePageId;
+      if (!pageId) return { ok: false, conflict: false, message: 'Overview page is not loaded' };
       // One in-flight mutation per Element — block rapid duplicate toggles.
-      if (controlInFlightRef.current.has(elementId)) {
+      if (controlInFlightRef.current.has(`${pageId}:${elementId}`)) {
         return { ok: false, conflict: false, message: 'Control update already in progress' };
       }
-      controlInFlightRef.current.add(elementId);
+      controlInFlightRef.current.add(`${pageId}:${elementId}`);
       try {
-        const result = await patchOverviewElementControlState(
-          page.id,
-          elementId,
-          page.revision,
-          { value, updatedAt: new Date().toISOString() },
-        );
-        // Synchronize Server revision + controlState into every authoritative
-        // client copy (activePage / baseline / draft) so the next click and the
-        // rendered Switch both use the new revision and persisted value.
-        setActivePage(current => {
-          if (!current || current.id !== page.id) return current;
-          return {
-            ...current,
-            revision: result.revision,
-            elements: current.elements.map(el =>
-              el.id === elementId ? { ...el, controlState: result.controlState } : el,
-            ),
-          };
-        });
-        setBaseline(current => {
-          if (!current || current.id !== page.id) return current;
-          return {
-            ...current,
-            revision: result.revision,
-            elements: current.elements.map(el =>
-              el.id === elementId ? { ...el, controlState: result.controlState } : el,
-            ),
-          };
-        });
-        setDraft(current => {
-          if (!current || current.id !== page.id) return current;
-          return {
-            ...current,
-            revision: result.revision,
-            elements: current.elements.map(el =>
-              el.id === elementId ? { ...el, controlState: result.controlState } : el,
-            ),
-          };
-        });
-        setPages(current =>
-          current.map(item =>
-            item.id === page.id ? { ...item, revision: result.revision } : item,
-          ),
-        );
+        const result = await patchOverviewControlState(pageId, elementId, value);
+        // Discard if the user switched Overview Pages while the request was open.
+        if (controlPageIdRef.current === pageId) {
+          setControlStates(prev => ({ ...prev, [result.elementId]: result }));
+          setControlError(undefined);
+        }
         return { ok: true };
       } catch (error) {
-        const status = (error as { status?: number }).status ?? 0;
         const message = error instanceof Error ? error.message : 'Unable to persist control state';
-        if (status === 409) {
-          // Exact conflict feedback — no overwrite, no auto-retry with stale revision.
-          setLoadError(`Conflict: ${message}`);
-          // Reconcile authoritative page state (VIEW-mode control path only).
-          try {
-            const fresh = await fetchOverviewPage(page.id);
-            setActivePage(fresh);
-            setBaseline(fresh);
-            setDraft(fresh);
-            setViewport(normalizeOverviewSavedViewport(fresh.savedViewport));
-          } catch {
-            /* keep conflict message already surfaced */
-          }
-          return { ok: false, conflict: true, message };
+        // Control-specific feedback only — never Editor CONFLICT, never Page reload.
+        if (controlPageIdRef.current === pageId) {
+          setControlError(message);
         }
-        setLoadError(message);
         return { ok: false, conflict: false, message };
       } finally {
-        controlInFlightRef.current.delete(elementId);
+        controlInFlightRef.current.delete(`${pageId}:${elementId}`);
       }
     },
-    [activePage, draft, mode],
+    [activePageId, mode],
   );
 
   const handleToggleLibrary = useCallback(() => {
@@ -1072,6 +1046,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
           {loadError}
         </div>
       ) : null}
+      {controlError && mode !== 'EDIT' ? (
+        <div className="notice overview-notice" role="alert" data-control-error="true">
+          {controlError}
+        </div>
+      ) : null}
 
       <div className={workspaceClass}>
         {mode === 'EDIT' && libraryCollapsed ? (
@@ -1132,6 +1111,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
           onResizeElement={handleResizeElement}
           onInstanceReady={handleInstanceReady}
           onControlStateChange={handleControlStateChange}
+          controlStates={mode === 'EDIT' ? undefined : Object.fromEntries(Object.entries(controlStates).filter(([, record]) => record.pageId === activePageId))}
         />
 
         {mode === 'EDIT' && inspectorCollapsed ? (

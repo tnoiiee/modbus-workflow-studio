@@ -88,7 +88,7 @@ describe('overview defaults', () => {
 
 describe('combined command bar group order', () => {
   it('lists PAGE, MODE, SAVE STATUS in View Mode', () => {
-    expect(overviewCommandBarGroups('VIEW')).toEqual(['PAGE', 'MODE', 'SAVE STATUS']);
+    expect(overviewCommandBarGroups('VIEW')).toEqual(['PAGE', 'MODE']);
   });
 
   it('inserts EDIT ACTIONS between MODE and SAVE STATUS in Edit Mode', () => {
@@ -370,9 +370,9 @@ describe('revision indicator', () => {
 
 describe('command bar contract', () => {
   it('keeps Save Status as the last command bar group', () => {
-    expect(isSaveStatusLastGroup('VIEW')).toBe(true);
+    expect(isSaveStatusLastGroup('VIEW')).toBe(false);
     expect(isSaveStatusLastGroup('EDIT')).toBe(true);
-    expect(overviewCommandBarGroups('VIEW').at(-1)).toBe('SAVE STATUS');
+    expect(overviewCommandBarGroups('VIEW').at(-1)).toBe('MODE');
     expect(overviewCommandBarGroups('EDIT').at(-1)).toBe('SAVE STATUS');
   });
 });
@@ -634,13 +634,13 @@ describe('O1-C critical UX source contracts (issues 1, 2, 5, 6, 10, 13, 14)', ()
     expect(css).toMatch(/\.element-library__search\s*\{[^}]*min-width:\s*0/s);
   });
 
-  it('version is v1.3.0-dev across canonical sources (issue 13)', () => {
+  it('version is v1.3.0-dev.1 across canonical sources (issue 13)', () => {
     const version = read(['version.ts']);
-    expect(version).toContain("'1.3.0-dev'");
+    expect(version).toContain("'1.3.0-dev.1'");
     const rootPkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), '..', 'package.json'), 'utf8'));
     const clientPkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
-    expect(rootPkg.version).toBe('1.3.0-dev');
-    expect(clientPkg.version).toBe('1.3.0-dev');
+    expect(rootPkg.version).toBe('1.3.0-dev.1');
+    expect(clientPkg.version).toBe('1.3.0-dev.1');
   });
 
   it('does not touch protected Workflow/Modbus/Tag/Variable surfaces (issue 14)', () => {
@@ -715,7 +715,7 @@ describe('savedViewport + control-state client contract', () => {
     );
     expect(page).toContain('normalizeOverviewSavedViewport(record.savedViewport)');
     expect(page).toContain('savedViewport: sessionViewport');
-    expect(page).toContain('patchOverviewElementControlState');
+    expect(page).toContain('patchOverviewControlState');
   });
 
   it('control-state client uses dedicated PATCH without full elements array', () => {
@@ -723,9 +723,9 @@ describe('savedViewport + control-state client contract', () => {
       path.join(process.cwd(), 'src', 'lib', 'overviewApi.ts'),
       'utf8',
     );
-    expect(api).toContain('patchOverviewElementControlState');
+    expect(api).toContain('patchOverviewControlState');
     expect(api).toContain("method: 'PATCH'");
-    expect(api).toContain('/control-state');
+    expect(api).toContain('/api/overview-control-states');
     const page = fs.readFileSync(
       path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
       'utf8',
@@ -738,7 +738,7 @@ describe('savedViewport + control-state client contract', () => {
       'utf8',
     );
     expect(node).toContain('onControlStateChange');
-    expect(node).toContain('persistedSwitch');
+    expect(node).toContain('confirmedSwitch');
     expect(node).toContain('Released state only');
   });
 });

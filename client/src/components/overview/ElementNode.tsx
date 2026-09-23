@@ -9,6 +9,8 @@ export interface OverviewElementNodeData {
   element: OverviewElement;
   mode: OverviewMode;
   selected: boolean;
+  /** Confirmed independent Control-state value (View Mode rendering only). */
+  controlValue?: boolean;
   [key: string]: unknown;
 }
 
@@ -29,12 +31,18 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
   // Transient Push Button pressed styling — never persisted.
   const [buttonPressed, setButtonPressed] = useState(false);
   const [linkFeedback, setLinkFeedback] = useState(false);
-  // Optimistic Switch preview until PATCH confirms persisted controlState.
+  // Optimistic Switch preview until the independent Control-state PATCH confirms.
   const [switchOptimistic, setSwitchOptimistic] = useState<boolean | null>(null);
-  const persistedSwitch = Boolean(
-    type === 'SWITCH' && (element.controlState as { value?: boolean } | undefined)?.value,
+  // Confirmed value from the independent Control-state store (legacy fallback only if absent).
+  const controlValueFromData = (data as OverviewElementNodeData).controlValue;
+  const confirmedSwitch = Boolean(
+    type === 'SWITCH' &&
+      (typeof controlValueFromData === 'boolean'
+        ? controlValueFromData
+        : (element.controlState as { value?: boolean } | undefined)?.value),
   );
-  const switchOn = switchOptimistic ?? persistedSwitch;
+  const switchOn = switchOptimistic ?? confirmedSwitch;
+  const switchPending = type === 'SWITCH' && switchOptimistic !== null;
 
   const handleSwitchClick = useCallback(
     (event: React.MouseEvent) => {
@@ -42,17 +50,20 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
       // Stop only the control interaction — never the Element root select path.
       event.stopPropagation();
       if (type !== 'SWITCH') return;
-      // In-flight PATCH already open — ignore rapid duplicate toggles.
+      // One request per click — ignore while pending.
       if (switchOptimistic !== null) return;
       const next = !switchOn;
       setSwitchOptimistic(next);
-      if (!onControlStateChange) return;
+      if (!onControlStateChange) {
+        setSwitchOptimistic(null);
+        return;
+      }
       void onControlStateChange(element.id, next).then(result => {
         const outcome = result as { ok?: boolean } | undefined;
-        // Success or failure both clear optimistic — value comes from persisted controlState.
+        // Success or failure both clear pending — value comes from confirmed store.
         setSwitchOptimistic(null);
         if (!outcome?.ok) {
-          /* conflict already surfaced by parent */
+          /* control error already surfaced by parent; restores confirmed value */
         }
       });
     },
@@ -156,7 +167,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
           </span>
         ) : null}
 
-        <span className="overview-element__body">{renderPreview(element, { switchOn, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
+        <span className="overview-element__body">{renderPreview(element, { switchOn, switchPending, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
 
         {category === 'MONITORING' ? (
           <span className="overview-element__badge overview-element__badge--preview" aria-hidden="true">
@@ -178,6 +189,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
 
 interface PreviewHandlers {
   switchOn: boolean;
+  switchPending: boolean;
   buttonPressed: boolean;
   linkFeedback: boolean;
   edit: boolean;
@@ -236,6 +248,7 @@ function renderPreview(element: OverviewElement, handlers: PreviewHandlers): Rea
           data-preview-control="switch"
           aria-pressed={handlers.switchOn}
           aria-label="Toggle switch preview"
+          disabled={handlers.switchPending}
           onClick={handlers.onSwitchClick}
         >
           <i className="overview-element__switch-track" aria-hidden="true" />

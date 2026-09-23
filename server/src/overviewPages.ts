@@ -70,11 +70,6 @@ const savedViewportSchema = z.object({
   zoom: z.number().finite().min(OVERVIEW_MIN_ZOOM).max(OVERVIEW_MAX_ZOOM)
 });
 
-const controlStateSchema = z.object({
-  value: z.boolean(),
-  updatedAt: z.string().refine(value => !Number.isNaN(Date.parse(value)), 'updatedAt must be an ISO timestamp')
-});
-
 export const OVERVIEW_CONTROL_TYPES = new Set(['SWITCH', 'PUSH_BUTTON', 'NAVIGATION_LINK']);
 
 export const overviewCreateSchema = z.object({
@@ -105,15 +100,9 @@ export const overviewUpdateSchema = z.object({
   savedViewport: savedViewportSchema.optional()
 });
 
-export const overviewControlStateSchema = z.object({
-  expectedRevision: z.number().int().min(1),
-  controlState: controlStateSchema
-});
-
 export type OverviewCreateInput = z.infer<typeof overviewCreateSchema>;
 export type OverviewRenameInput = z.infer<typeof overviewRenameSchema>;
 export type OverviewUpdateInput = z.infer<typeof overviewUpdateSchema>;
-export type OverviewControlStateInput = z.infer<typeof overviewControlStateSchema>;
 
 function normalizeSavedViewport(value: OverviewSavedViewport | undefined): OverviewSavedViewport {
   if (!value) return { ...OVERVIEW_DEFAULT_VIEWPORT };
@@ -225,46 +214,6 @@ export class OverviewPageManager {
     this.pages.set(id, updated);
     this.persist(updated);
     return structuredClone(updated);
-  }
-
-  /**
-   * Dedicated View-mode control-state update (PATCH).
-   * Touches only the target Element's controlState + one revision bump.
-   */
-  updateElementControlState(
-    pageId: string,
-    elementId: string,
-    incoming: OverviewControlStateInput
-  ): { elementId: string; controlState: OverviewControlState; revision: number } {
-    const current = this.require(pageId);
-    if (incoming.expectedRevision !== current.revision) {
-      fail('Overview page revision conflict', 'REVISION_CONFLICT');
-    }
-    const index = current.elements.findIndex(element => element.id === elementId);
-    if (index < 0) fail('Overview element not found', 'ELEMENT_NOT_FOUND');
-    const element = current.elements[index]!;
-    const category = String((element as { category?: unknown }).category ?? '');
-    const type = element.type;
-    if (category !== 'CONTROL') fail('Control state is only valid on CONTROL elements', 'NOT_CONTROL');
-    if (!OVERVIEW_CONTROL_TYPES.has(type)) fail(`Unsupported control type: ${type}`, 'UNSUPPORTED_CONTROL');
-    const controlState: OverviewControlState = {
-      // PUSH_BUTTON never persists transient pressed=true — released only.
-      value: type === 'PUSH_BUTTON' ? false : incoming.controlState.value,
-      updatedAt: new Date(incoming.controlState.updatedAt).toISOString()
-    };
-    const now = new Date().toISOString();
-    const nextElements = current.elements.map((item, i) =>
-      i === index ? { ...item, controlState } : item
-    );
-    const updated: OverviewPageDefinition = {
-      ...current,
-      elements: nextElements,
-      revision: current.revision + 1,
-      modifiedAt: now
-    };
-    this.pages.set(pageId, updated);
-    this.persist(updated);
-    return { elementId, controlState, revision: updated.revision };
   }
 
   rename(id: string, input: OverviewRenameInput): OverviewPageDefinition {

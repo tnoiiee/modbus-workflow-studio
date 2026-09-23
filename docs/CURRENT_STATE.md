@@ -1,6 +1,12 @@
 # Current Project State
 
-## Current source baseline
+## Current application
+
+`v1.3.0-dev.1` — O1-C Stabilization, based on Owner-accepted `4d254fc5362599732c2875cd735c45fa0a55ba51`.
+
+View controls use independent persisted state without configuration revisions. Edit Save/Cancel and savedViewport retain their existing contract. Automated validation passed (client 253 tests, server 44 tests, typecheck/build, strict hygiene); Owner manual review remains pending. O1-D and Tag Runtime are excluded.
+
+## Historical source baseline
 
 `v1.2.11` Monitor Scheduler & WebSocket Reliability source baseline.
 
@@ -75,7 +81,7 @@ Audit observation on 2026-09-22:
 
 The findings are unresolved and do not receive implicit acceptance. Because v1.2.11 will not be released independently, remediation or explicit reviewed risk acceptance is mandatory before the v1.2.12 release.
 
-## Next planned version
+## Historical version plan
 
 v1.2.12 planning is complete and approved (owner decisions 2026-09-22). Source of truth:
 [SCOPE_v1.2.12.md](SCOPE_v1.2.12.md), [UI_DESIGN_SYSTEM_v1.2.12.md](UI_DESIGN_SYSTEM_v1.2.12.md),

@@ -53,8 +53,8 @@ export interface OverviewCommandBarProps {
 /**
  * Overview Command Bar — single combined bar (O1-B polish).
  *
- * Groups in order: PAGE, MODE, EDIT ACTIONS (Edit mode only), SAVE STATUS
- * (always logically last, pushed to the far right when space allows).
+ * Groups in order: PAGE, MODE, EDIT ACTIONS (Edit mode only),
+ * SAVE STATUS (Edit mode only — View Mode is operational and omits it).
  *
  * Page CRUD is locked in Edit Mode (disabled + Edit-priority tooltip) so a
  * draft session cannot open page modals or issue page API requests.
@@ -234,20 +234,22 @@ export function OverviewCommandBar({
         </div>
       ) : null}
 
-      <div
-        className="command-group overview-command-bar__group overview-command-bar__group--save-status"
-        data-overview-group="SAVE STATUS"
-      >
-        <span className="command-group__label">Save Status</span>
-        <div className="command-group__controls">
-          <span className={saveIndicatorClass(saveLabel)} role="status" aria-live="polite">
-            {saveLabel}
-          </span>
-          <span className="pill pill--neutral" aria-label={`Overview page revision ${revision}`}>
-            {overviewRevisionLabel(revision)}
-          </span>
+      {edit ? (
+        <div
+          className="command-group overview-command-bar__group overview-command-bar__group--save-status"
+          data-overview-group="SAVE STATUS"
+        >
+          <span className="command-group__label">Save Status</span>
+          <div className="command-group__controls">
+            <span className={saveIndicatorClass(saveLabel)} role="status" aria-live="polite">
+              {saveLabel}
+            </span>
+            <span className="pill pill--neutral" aria-label={`Overview page revision ${revision}`}>
+              {overviewRevisionLabel(revision)}
+            </span>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }
