@@ -108,6 +108,8 @@ function OverviewCanvasBase({
   // True while a NodeResizer gesture is active so position deltas are applied
   // as resize anchors (not drags).
   const resizingRef = useRef(false);
+  /** Previous node objects for stable reuse — MUST initialize before useMemo reads it. */
+  const previousNodesRef = useRef<Node<OverviewElementNodeData>[]>([]);
 
   /** Sync pure session → React state without identity churn when unchanged. */
   const syncLiveResizes = useCallback((session: ResizeSession) => {
@@ -215,8 +217,6 @@ function OverviewCanvasBase({
     return nextNodes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange]);
-
-  const previousNodesRef = useRef<Node<OverviewElementNodeData>[]>([]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {
