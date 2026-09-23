@@ -42,6 +42,8 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
       // Stop only the control interaction — never the Element root select path.
       event.stopPropagation();
       if (type !== 'SWITCH') return;
+      // In-flight PATCH already open — ignore rapid duplicate toggles.
+      if (switchOptimistic !== null) return;
       const next = !switchOn;
       setSwitchOptimistic(next);
       if (!onControlStateChange) return;
@@ -54,7 +56,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
         }
       });
     },
-    [edit, element.id, onControlStateChange, switchOn, type],
+    [edit, element.id, onControlStateChange, switchOn, switchOptimistic, type],
   );
 
   const handleButtonPointerDown = useCallback(

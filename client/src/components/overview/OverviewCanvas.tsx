@@ -169,6 +169,9 @@ function OverviewCanvasBase({
       const liveDrag = edit && !liveResize ? dragPositions[element.id] : undefined;
       const selected = edit && element.id === selectedElementId;
       const isActive = Boolean(liveResize || liveDrag);
+      // VIEW-mode callback must stay fresh — reusing a node that captured a
+      // stale onControlStateChange sends an old revision (409 on next click).
+      const expectedControl = edit ? undefined : onControlStateChange;
 
       if (!isActive) {
         const previous = previousById.get(element.id);
@@ -177,7 +180,8 @@ function OverviewCanvasBase({
           previous.data.element === element &&
           previous.selected === selected &&
           previous.data.mode === mode &&
-          previous.draggable === (edit && !element.locked)
+          previous.draggable === (edit && !element.locked) &&
+          previous.data.onControlStateChange === expectedControl
         ) {
           return previous;
         }
@@ -197,7 +201,7 @@ function OverviewCanvasBase({
         draggable: edit && !element.locked,
         resizable: edit && !element.locked,
         connectable: false,
-        data: {
+          data: {
           element: liveResize || liveDrag
             ? { ...element, x: position.x, y: position.y, width, height }
             : element,
@@ -206,7 +210,7 @@ function OverviewCanvasBase({
           ...(edit
             ? {}
             : {
-                onControlStateChange: onControlStateChange as
+                onControlStateChange: expectedControl as
                   | ((id: string, value: boolean) => Promise<unknown>)
                   | undefined,
               }),

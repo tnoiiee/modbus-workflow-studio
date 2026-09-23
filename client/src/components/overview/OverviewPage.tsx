@@ -151,6 +151,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const activeRef = useRef(active);
   // Coalesce a continuous resize gesture into a single undo entry.
   const resizeGestureRef = useRef<string | null>(null);
+  // VIEW-mode control PATCH in-flight guard (one request per Element id).
+  const controlInFlightRef = useRef<Set<string>>(new Set());
 
   const groups = overviewCommandBarGroups(mode);
   const workingPage = draft ?? activePage;
@@ -892,6 +894,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         // Edit draft path is separate — control preview persistence is VIEW-only.
         return { ok: false, conflict: false, message: 'Exit Edit Mode to use control preview' };
       }
+      // One in-flight mutation per Element — block rapid duplicate toggles.
+      if (controlInFlightRef.current.has(elementId)) {
+        return { ok: false, conflict: false, message: 'Control update already in progress' };
+      }
+      controlInFlightRef.current.add(elementId);
       try {
         const result = await patchOverviewElementControlState(
           page.id,
@@ -899,6 +906,9 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
           page.revision,
           { value, updatedAt: new Date().toISOString() },
         );
+        // Synchronize Server revision + controlState into every authoritative
+        // client copy (activePage / baseline / draft) so the next click and the
+        // rendered Switch both use the new revision and persisted value.
         setActivePage(current => {
           if (!current || current.id !== page.id) return current;
           return {
@@ -919,6 +929,16 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
             ),
           };
         });
+        setDraft(current => {
+          if (!current || current.id !== page.id) return current;
+          return {
+            ...current,
+            revision: result.revision,
+            elements: current.elements.map(el =>
+              el.id === elementId ? { ...el, controlState: result.controlState } : el,
+            ),
+          };
+        });
         setPages(current =>
           current.map(item =>
             item.id === page.id ? { ...item, revision: result.revision } : item,
@@ -929,23 +949,24 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         const status = (error as { status?: number }).status ?? 0;
         const message = error instanceof Error ? error.message : 'Unable to persist control state';
         if (status === 409) {
-          // Exact conflict feedback — no overwrite, no auto-retry.
+          // Exact conflict feedback — no overwrite, no auto-retry with stale revision.
           setLoadError(`Conflict: ${message}`);
-          if (!draft) {
-            // Refresh page data only when no Edit Draft is active.
-            try {
-              const fresh = await fetchOverviewPage(page.id);
-              setActivePage(fresh);
-              setBaseline(fresh);
-              setViewport(normalizeOverviewSavedViewport(fresh.savedViewport));
-            } catch {
-              /* keep conflict message already surfaced */
-            }
+          // Reconcile authoritative page state (VIEW-mode control path only).
+          try {
+            const fresh = await fetchOverviewPage(page.id);
+            setActivePage(fresh);
+            setBaseline(fresh);
+            setDraft(fresh);
+            setViewport(normalizeOverviewSavedViewport(fresh.savedViewport));
+          } catch {
+            /* keep conflict message already surfaced */
           }
           return { ok: false, conflict: true, message };
         }
         setLoadError(message);
         return { ok: false, conflict: false, message };
+      } finally {
+        controlInFlightRef.current.delete(elementId);
       }
     },
     [activePage, draft, mode],
