@@ -666,7 +666,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       id: string,
       geometry: { x: number; y: number; width: number; height: number },
     ) => {
-      // One gesture → one history entry (coalesced by pointer release).
+      // Parent receives ONE complete geometry at gesture end (canvas contract).
+      // Snap final values once → one Draft mutation → one Undo entry.
       const firstFrame = resizeGestureRef.current !== id;
       resizeGestureRef.current = id;
       const snappedX = snapOverviewCoordinate(geometry.x);
@@ -686,7 +687,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     [applyElementMutation],
   );
 
-  // End the resize coalescing window when the pointer is released.
+  // Clear resize gesture marker after pointer release (canvas already committed once).
   useEffect(() => {
     const endGesture = () => {
       resizeGestureRef.current = null;

@@ -13,6 +13,16 @@ import { Lock, Pencil } from 'lucide-react';
 
 import type { OverviewElement } from '../../lib/overviewElements.js';
 import type { OverviewMode } from '../../lib/overviewState.js';
+import {
+  emptyResizeSession,
+  geometryEquals,
+  resizeCancel,
+  resizeEnd,
+  resizeMove,
+  resizeStart,
+  type ResizeGeometry,
+  type ResizeSession,
+} from '../../lib/overviewResize.js';
 import { ElementNode, type OverviewElementNodeData } from './ElementNode.js';
 
 /** Canvas snap grid — matches the Workflow canvas and the design tokens. */
@@ -29,12 +39,7 @@ export interface OverviewViewportSnapshot {
 
 export const OVERVIEW_DEFAULT_VIEWPORT: OverviewViewportSnapshot = { x: 0, y: 0, zoom: 1 };
 
-interface LiveGeometry {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
+interface LiveGeometry extends ResizeGeometry {}
 
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
@@ -71,6 +76,10 @@ export interface OverviewCanvasProps {
  * VIEW mode locks the surface: no controls, no minimap, no pan/zoom, no
  * selection handles. Element geometry lives in the Overview Draft only.
  *
+ * Resize transaction (O1-C): live geometry only during the gesture; one
+ * Draft commit + one Undo entry at end; cancel/unmount clears transient state.
+ * Position events while resizing fold into the live geometry — never Drag.
+ *
  * Overview Elements are HMI components — no source/target Handles, no edges.
  */
 function OverviewCanvasBase({
@@ -92,36 +101,106 @@ function OverviewCanvasBase({
   const edit = mode === 'EDIT';
   const instanceRef = useRef<ReactFlowInstance | null>(null);
   const [dragPositions, setDragPositions] = useState<Record<string, { x: number; y: number }>>({});
+  /** Live geometry for the active resize Element only (render feedback). */
   const [liveResizes, setLiveResizes] = useState<Record<string, LiveGeometry>>({});
+  /** Single resize transaction — original captured once; cleared on end/cancel. */
+  const resizeSessionRef = useRef<ResizeSession>(emptyResizeSession());
   // True while a NodeResizer gesture is active so position deltas are applied
   // as resize anchors (not drags).
   const resizingRef = useRef(false);
 
+  /** Sync pure session → React state without identity churn when unchanged. */
+  const syncLiveResizes = useCallback((session: ResizeSession) => {
+    resizeSessionRef.current = session;
+    if (!session.activeId || !session.live) {
+      setLiveResizes(prev => (Object.keys(prev).length === 0 ? prev : {}));
+      return;
+    }
+    const activeId = session.activeId;
+    const live = session.live;
+    setLiveResizes(prev => {
+      const existing = prev[activeId];
+      const keys = Object.keys(prev);
+      if (keys.length === 1 && existing && geometryEquals(existing, live)) return prev;
+      const next: Record<string, LiveGeometry> = {};
+      if (keys.length !== 1 || !existing) {
+        for (const key of keys) {
+          if (key !== activeId) next[key] = prev[key];
+        }
+      }
+      next[activeId] = live;
+      return next;
+    });
+  }, []);
+
+  // Unmount / cancel: clear live geometry and active refs; no commit.
+  useEffect(() => {
+    return () => {
+      resizeSessionRef.current = resizeCancel(resizeSessionRef.current);
+      resizingRef.current = false;
+    };
+  }, []);
+
+  // Escape cancels an in-flight resize without committing Draft.
+  useEffect(() => {
+    if (!edit) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (!resizeSessionRef.current.activeId) return;
+      resizeSessionRef.current = resizeCancel(resizeSessionRef.current);
+      resizingRef.current = false;
+      setLiveResizes(prev => (Object.keys(prev).length === 0 ? prev : {}));
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [edit]);
+
   const nodes = useMemo<Node<OverviewElementNodeData>[]>(() => {
-    return elements.map(element => {
+    // Stable node reuse: during one Element resize only the active node is
+    // rebuilt; unrelated Element object references stay the same.
+    const previousById = new Map<string, Node<OverviewElementNodeData>>();
+    for (const node of previousNodesRef.current) {
+      previousById.set(node.id, node);
+    }
+    const nextNodes: Node<OverviewElementNodeData>[] = elements.map(element => {
       const liveResize = edit ? liveResizes[element.id] : undefined;
       const liveDrag = edit && !liveResize ? dragPositions[element.id] : undefined;
+      const selected = edit && element.id === selectedElementId;
+      const isActive = Boolean(liveResize || liveDrag);
+
+      if (!isActive) {
+        const previous = previousById.get(element.id);
+        if (
+          previous &&
+          previous.data.element === element &&
+          previous.selected === selected &&
+          previous.data.mode === mode &&
+          previous.draggable === (edit && !element.locked)
+        ) {
+          return previous;
+        }
+      }
+
       const position = liveResize
         ? { x: liveResize.x, y: liveResize.y }
         : liveDrag ?? { x: element.x, y: element.y };
-      const size = liveResize
-        ? { width: liveResize.width, height: liveResize.height }
-        : { width: element.width, height: element.height };
+      const width = liveResize ? liveResize.width : element.width;
+      const height = liveResize ? liveResize.height : element.height;
       return {
         id: element.id,
         type: 'overviewElement',
         position,
-        style: { width: size.width, height: size.height, zIndex: element.zIndex },
-        selected: edit && element.id === selectedElementId,
+        style: { width, height, zIndex: element.zIndex },
+        selected,
         draggable: edit && !element.locked,
         resizable: edit && !element.locked,
         connectable: false,
         data: {
           element: liveResize || liveDrag
-            ? { ...element, x: position.x, y: position.y, width: size.width, height: size.height }
+            ? { ...element, x: position.x, y: position.y, width, height }
             : element,
           mode,
-          selected: edit && element.id === selectedElementId,
+          selected,
           ...(edit
             ? {}
             : {
@@ -132,7 +211,12 @@ function OverviewCanvasBase({
         },
       };
     });
+    previousNodesRef.current = nextNodes;
+    return nextNodes;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange]);
+
+  const previousNodesRef = useRef<Node<OverviewElementNodeData>[]>([]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {
@@ -160,86 +244,62 @@ function OverviewCanvasBase({
     [onViewportChange],
   );
 
-  const commitResize = useCallback(
-    (id: string, geometry: LiveGeometry) => {
-      setLiveResizes(prev => {
-        if (!(id in prev)) return prev;
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-      if (geometry.width > 0 && geometry.height > 0) {
-        onResizeElement(id, geometry);
-      }
-    },
-    [onResizeElement],
-  );
-
   const handleNodesChange = useCallback(
     (changes: NodeChange<Node<OverviewElementNodeData>>[]) => {
       if (!edit) return;
 
-      // Batch pass: detect resize gestures (dimensions with resizing flag).
-      let sawResize = false;
-      for (const change of changes) {
-        if (change.type === 'dimensions' && 'resizing' in change && change.resizing) {
-          sawResize = true;
-        }
-      }
-      if (sawResize) resizingRef.current = true;
-
+      // ---- Pass 1: starts + moves (live geometry only; no Draft / History) ----
       for (const change of changes) {
         if (change.type === 'select') {
           // Select true only — clearing is reserved for Pane click alone.
           if (change.selected) onSelectElement(change.id);
+          continue;
         }
 
-        if (change.type === 'dimensions' && change.dimensions) {
-          const width = change.dimensions.width;
-          const height = change.dimensions.height;
-          if (width <= 0 || height <= 0) continue;
-          const resizing = 'resizing' in change ? Boolean(change.resizing) : resizingRef.current;
+        if (change.type === 'dimensions') {
+          const width = change.dimensions?.width;
+          const height = change.dimensions?.height;
+          if (width === undefined || height === undefined || width <= 0 || height <= 0) continue;
+          const resizing = 'resizing' in change ? Boolean(change.resizing) : false;
+          if (!resizing) continue;
+
           const element = elements.find(el => el.id === change.id);
           if (!element) continue;
 
-          if (resizing) {
-            resizingRef.current = true;
-            setLiveResizes(prev => {
-              const base = prev[change.id] ?? { x: element.x, y: element.y, width: element.width, height: element.height };
-              return { ...prev, [change.id]: { ...base, width, height } };
+          let session = resizeSessionRef.current;
+          if (session.activeId !== change.id || !session.original) {
+            // Resize start — capture original geometry once.
+            session = resizeStart(session, change.id, {
+              x: element.x,
+              y: element.y,
+              width: element.width,
+              height: element.height,
             });
-          } else if (!resizingRef.current) {
-            // Non-resize dimension sync (e.g. external) — ignore without history.
-            continue;
           }
+          resizingRef.current = true;
+          session = resizeMove(session, change.id, { width, height });
+          syncLiveResizes(session);
+          continue;
         }
 
         if (change.type === 'position' && change.position) {
           const { x, y } = change.position;
+          const session = resizeSessionRef.current;
 
-          if (resizingRef.current) {
-            // Top/left resize moves the opposite-anchored origin: apply x/y too.
-            setLiveResizes(prev => {
-              const element = elements.find(el => el.id === change.id);
-              const base = element
-                ? prev[change.id] ?? {
-                    x: element.x,
-                    y: element.y,
-                    width: element.width,
-                    height: element.height,
-                  }
-                : prev[change.id];
-              if (!base) return prev;
-              return { ...prev, [change.id]: { ...base, x, y } };
-            });
-            if (change.dragging === false) {
-              // End of gesture handled when dimensions report resizing:false.
+          if (session.activeId === change.id || resizingRef.current) {
+            // Position during Resize is an anchor update — never Drag.
+            if (session.activeId === change.id && session.original) {
+              syncLiveResizes(resizeMove(session, change.id, { x, y }));
             }
             continue;
           }
 
           if (change.dragging === true) {
-            setDragPositions(prev => ({ ...prev, [change.id]: { x, y } }));
+            setDragPositions(prev => {
+              const existing = prev[change.id];
+              if (existing && existing.x === x && existing.y === y) return prev;
+              return { ...prev, [change.id]: { x, y } };
+            });
           } else if (change.dragging === false) {
             setDragPositions(prev => {
               if (!(change.id in prev)) return prev;
@@ -252,28 +312,28 @@ function OverviewCanvasBase({
         }
       }
 
-      // Commit resize when the batch ends the gesture.
+      // ---- Pass 2: gesture end — one complete geometry, one commit ----
       for (const change of changes) {
-        if (change.type === 'dimensions' && 'resizing' in change && change.resizing === false) {
-          const element = elements.find(el => el.id === change.id);
-          if (!element) continue;
-          const width = change.dimensions?.width ?? element.width;
-          const height = change.dimensions?.height ?? element.height;
-          // Pull latest live geometry (may include position from same batch).
-          setLiveResizes(prev => {
-            const live = prev[change.id];
-            const geometry = live
-              ? { ...live, width: width > 0 ? width : live.width, height: height > 0 ? height : live.height }
-              : { x: element.x, y: element.y, width, height };
-            // Defer state clear to commitResize after this updater.
-            queueMicrotask(() => commitResize(change.id, geometry));
-            return prev;
-          });
-          resizingRef.current = false;
-        }
+        if (change.type !== 'dimensions') continue;
+        if (!('resizing' in change) || change.resizing !== false) continue;
+
+        const session = resizeSessionRef.current;
+        if (session.activeId !== change.id) continue;
+
+        const width = change.dimensions?.width;
+        const height = change.dimensions?.height;
+        const { session: cleared, commit } = resizeEnd(session, change.id, {
+          width: width !== undefined && width > 0 ? width : undefined,
+          height: height !== undefined && height > 0 ? height : undefined,
+        });
+        resizeSessionRef.current = cleared;
+        resizingRef.current = false;
+        syncLiveResizes(cleared);
+        // Draft mutation + snap + single Undo happen in the parent, once.
+        if (commit) onResizeElement(change.id, commit);
       }
     },
-    [edit, elements, onMoveElement, onSelectElement, commitResize],
+    [edit, elements, onMoveElement, onSelectElement, onResizeElement, syncLiveResizes],
   );
 
   // Single-click selection: node click is authoritative; pane click alone clears.

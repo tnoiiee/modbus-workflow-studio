@@ -113,6 +113,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
   };
 
   const showResizeHandles = edit && selected && !element.locked;
+  // Contract: locked Element → no handles; VIEW Mode → no handles (eight when editable).
 
   return (
     <>
