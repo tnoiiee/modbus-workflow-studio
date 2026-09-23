@@ -57,6 +57,11 @@ export interface OverviewCanvasProps {
   /** Full resize result: position + dimensions (top/left handles must move x/y). */
   onResizeElement: (id: string, geometry: { x: number; y: number; width: number; height: number }) => void;
   onInstanceReady: (instance: ReactFlowInstance) => void;
+  /** VIEW-mode control preview persistence (dedicated PATCH). */
+  onControlStateChange?: (
+    id: string,
+    value: boolean,
+  ) => Promise<{ ok: true } | { ok: false; conflict: boolean; message: string }>;
 }
 
 /**
@@ -82,6 +87,7 @@ function OverviewCanvasBase({
   onMoveElement,
   onResizeElement,
   onInstanceReady,
+  onControlStateChange,
 }: OverviewCanvasProps) {
   const edit = mode === 'EDIT';
   const instanceRef = useRef<ReactFlowInstance | null>(null);
@@ -116,10 +122,17 @@ function OverviewCanvasBase({
             : element,
           mode,
           selected: edit && element.id === selectedElementId,
+          ...(edit
+            ? {}
+            : {
+                onControlStateChange: onControlStateChange as
+                  | ((id: string, value: boolean) => Promise<unknown>)
+                  | undefined,
+              }),
         },
       };
     });
-  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId]);
+  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {

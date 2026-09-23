@@ -35,6 +35,8 @@ import {
   isSaveStatusLastGroup,
   overviewCommandBarGroups,
   overviewDraftMatchesBaseline,
+  normalizeOverviewSavedViewport,
+  overviewSaveNeedsViewportPut,
   requiresPageSwitchConfirm,
   setSessionPanelCollapsed,
   shouldConfirmCancel,
@@ -77,6 +79,7 @@ import {
   duplicateOverviewPage,
   fetchOverviewPage,
   fetchOverviewPages,
+  patchOverviewElementControlState,
   renameOverviewPage,
   updateOverviewPage,
 } from '../../lib/overviewApi.js';
@@ -198,6 +201,9 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         setHistory(emptyOverviewHistory());
         setSaveState('SAVED');
         setMode('VIEW');
+        // Refresh: restore persisted savedViewport with duration 0 — no Fit View.
+        setViewport(normalizeOverviewSavedViewport(record.savedViewport));
+        setRestoreViewportEpoch(token => token + 1);
       }
       return list;
     } catch (error) {
@@ -256,8 +262,12 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     }
     setSaveConfirmPending(true);
     setSaveConfirmError(undefined);
-    // Unchanged draft: exit without a PUT so the persisted revision stays put.
-    if (overviewDraftMatchesBaseline(baseline, draft) && baseline) {
+    const sessionViewport = normalizeOverviewSavedViewport(viewport);
+    const baselineViewport = normalizeOverviewSavedViewport(baseline?.savedViewport);
+    const draftUnchanged = overviewDraftMatchesBaseline(baseline, draft);
+    const needsPut = overviewSaveNeedsViewportPut(baseline, draft, sessionViewport);
+    // Unchanged draft AND viewport: no PUT, revision unchanged.
+    if (!needsPut && draftUnchanged && baseline) {
       const finished = finishOverviewSave(baseline);
       setActivePage(finished.baseline);
       setBaseline(finished.baseline);
@@ -268,6 +278,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       setSaveConfirmPending(false);
       setSelectedElementId(null);
       setHistory(emptyOverviewHistory());
+      setViewport(baselineViewport);
+      setRestoreViewportEpoch(token => token + 1);
       return;
     }
     setSaveState('SAVING');
@@ -280,6 +292,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         backgroundColor: draft?.backgroundColor,
         elements: draft?.elements,
         layerOrder: draft?.layerOrder,
+        // Viewport-only change counts as a changed page — one PUT, one bump.
+        savedViewport: sessionViewport,
       });
       const finished = finishOverviewSave(saved);
       setActivePage(saved);
@@ -291,6 +305,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       setSaveConfirmPending(false);
       setSelectedElementId(null);
       setHistory(emptyOverviewHistory());
+      setViewport(normalizeOverviewSavedViewport(saved.savedViewport));
+      setRestoreViewportEpoch(token => token + 1);
       setPages(current =>
         current.map(item =>
           item.id === saved.id
@@ -316,7 +332,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       setSaveConfirmError(error instanceof Error ? error.message : 'Unable to save Overview page');
       // Stay in Edit Mode, keep the draft, keep the dialog open. No auto-retry.
     }
-  }, [baseline, draft, saveConfirmPending, workingPage]);
+  }, [baseline, draft, saveConfirmPending, viewport, workingPage]);
 
   const requestCancelChanges = useCallback(() => {
     if (mode !== 'EDIT') return;
@@ -329,6 +345,9 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       setCancelConfirmOpen(false);
       setSelectedElementId(null);
       setHistory(emptyOverviewHistory());
+      // Cancel restores baseline savedViewport — session-only viewport never persists.
+      setViewport(normalizeOverviewSavedViewport(baseline.savedViewport));
+      setRestoreViewportEpoch(token => token + 1);
       return;
     }
     setCancelConfirmOpen(true);
@@ -343,6 +362,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     setCancelConfirmOpen(false);
     setSelectedElementId(null);
     setHistory(emptyOverviewHistory());
+    setViewport(normalizeOverviewSavedViewport(baseline.savedViewport));
+    setRestoreViewportEpoch(token => token + 1);
   }, [baseline]);
 
   /* ---- page CRUD -------------------------------------------------------- */
@@ -515,22 +536,24 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       }
       void (async () => {
         try {
-          const record = await fetchOverviewPage(nextPageId);
-          setActivePageId(nextPageId);
-          setActivePage(record);
-          setBaseline(record);
-          setDraft(record);
-          setSaveState('SAVED');
-          setPendingPageId(null);
-          setSelectedElementId(null);
-          setHistory(emptyOverviewHistory());
-        } catch (error) {
-          setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
-        }
-      })();
-    },
-    [activePageId, saveState],
-  );
+        const record = await fetchOverviewPage(nextPageId);
+        setActivePageId(nextPageId);
+        setActivePage(record);
+        setBaseline(record);
+        setDraft(record);
+        setSaveState('SAVED');
+        setPendingPageId(null);
+        setSelectedElementId(null);
+        setHistory(emptyOverviewHistory());
+        setViewport(normalizeOverviewSavedViewport(record.savedViewport));
+        setRestoreViewportEpoch(token => token + 1);
+      } catch (error) {
+        setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
+      }
+    })();
+  },
+  [activePageId, saveState],
+);
 
   const confirmPendingPageSwitch = useCallback(() => {
     if (!pendingPageId) return;
@@ -856,6 +879,77 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const handleZoomIn = useCallback(() => flowInstanceRef.current?.zoomIn(), []);
   const handleZoomOut = useCallback(() => flowInstanceRef.current?.zoomOut(), []);
 
+  /**
+   * VIEW-mode Control preview persistence — dedicated PATCH only.
+   * Never touches Draft, dirty, undo/redo, selection, or Edit Mode.
+   */
+  const handleControlStateChange = useCallback(
+    async (elementId: string, value: boolean): Promise<{ ok: true } | { ok: false; conflict: boolean; message: string }> => {
+      const page = activePage;
+      if (!page) return { ok: false, conflict: false, message: 'Overview page is not loaded' };
+      if (mode === 'EDIT') {
+        // Edit draft path is separate — control preview persistence is VIEW-only.
+        return { ok: false, conflict: false, message: 'Exit Edit Mode to use control preview' };
+      }
+      try {
+        const result = await patchOverviewElementControlState(
+          page.id,
+          elementId,
+          page.revision,
+          { value, updatedAt: new Date().toISOString() },
+        );
+        setActivePage(current => {
+          if (!current || current.id !== page.id) return current;
+          return {
+            ...current,
+            revision: result.revision,
+            elements: current.elements.map(el =>
+              el.id === elementId ? { ...el, controlState: result.controlState } : el,
+            ),
+          };
+        });
+        setBaseline(current => {
+          if (!current || current.id !== page.id) return current;
+          return {
+            ...current,
+            revision: result.revision,
+            elements: current.elements.map(el =>
+              el.id === elementId ? { ...el, controlState: result.controlState } : el,
+            ),
+          };
+        });
+        setPages(current =>
+          current.map(item =>
+            item.id === page.id ? { ...item, revision: result.revision } : item,
+          ),
+        );
+        return { ok: true };
+      } catch (error) {
+        const status = (error as { status?: number }).status ?? 0;
+        const message = error instanceof Error ? error.message : 'Unable to persist control state';
+        if (status === 409) {
+          // Exact conflict feedback — no overwrite, no auto-retry.
+          setLoadError(`Conflict: ${message}`);
+          if (!draft) {
+            // Refresh page data only when no Edit Draft is active.
+            try {
+              const fresh = await fetchOverviewPage(page.id);
+              setActivePage(fresh);
+              setBaseline(fresh);
+              setViewport(normalizeOverviewSavedViewport(fresh.savedViewport));
+            } catch {
+              /* keep conflict message already surfaced */
+            }
+          }
+          return { ok: false, conflict: true, message };
+        }
+        setLoadError(message);
+        return { ok: false, conflict: false, message };
+      }
+    },
+    [activePage, draft, mode],
+  );
+
   const handleToggleLibrary = useCallback(() => {
     setLibraryCollapsed(current => {
       const next = toggleOverviewPanel(current);
@@ -1015,6 +1109,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
           onMoveElement={handleMoveElement}
           onResizeElement={handleResizeElement}
           onInstanceReady={handleInstanceReady}
+          onControlStateChange={handleControlStateChange}
         />
 
         {mode === 'EDIT' && inspectorCollapsed ? (

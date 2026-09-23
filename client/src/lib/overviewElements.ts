@@ -60,6 +60,8 @@ export interface OverviewElement {
   visible: boolean;
   style: OverviewElementStyle;
   binding: OverviewElementBinding;
+  /** Persisted View-mode control preview state (CONTROL elements only). */
+  controlState?: { value: boolean; updatedAt: string };
 }
 
 export type OverviewElementSnapshot = readonly OverviewElement[];

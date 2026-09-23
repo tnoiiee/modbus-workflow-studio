@@ -22,20 +22,39 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
   const mode = (data as OverviewElementNodeData).mode;
   const edit = mode === 'EDIT';
   const { style, binding, category, type } = element;
+  const onControlStateChange = (data as OverviewElementNodeData).onControlStateChange as
+    | ((id: string, value: boolean) => Promise<{ ok?: boolean } | unknown>)
+    | undefined;
 
-  // UI-only VIEW preview state — not persisted, resets on remount/page switch.
-  const [switchOn, setSwitchOn] = useState(false);
+  // Transient Push Button pressed styling — never persisted.
   const [buttonPressed, setButtonPressed] = useState(false);
   const [linkFeedback, setLinkFeedback] = useState(false);
+  // Optimistic Switch preview until PATCH confirms persisted controlState.
+  const [switchOptimistic, setSwitchOptimistic] = useState<boolean | null>(null);
+  const persistedSwitch = Boolean(
+    type === 'SWITCH' && (element.controlState as { value?: boolean } | undefined)?.value,
+  );
+  const switchOn = switchOptimistic ?? persistedSwitch;
 
   const handleSwitchClick = useCallback(
     (event: React.MouseEvent) => {
       if (edit) return;
       // Stop only the control interaction — never the Element root select path.
       event.stopPropagation();
-      setSwitchOn(on => !on);
+      if (type !== 'SWITCH') return;
+      const next = !switchOn;
+      setSwitchOptimistic(next);
+      if (!onControlStateChange) return;
+      void onControlStateChange(element.id, next).then(result => {
+        const outcome = result as { ok?: boolean } | undefined;
+        // Success or failure both clear optimistic — value comes from persisted controlState.
+        setSwitchOptimistic(null);
+        if (!outcome?.ok) {
+          /* conflict already surfaced by parent */
+        }
+      });
     },
-    [edit],
+    [edit, element.id, onControlStateChange, switchOn, type],
   );
 
   const handleButtonPointerDown = useCallback(
@@ -51,6 +70,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
     (event: React.PointerEvent) => {
       if (edit) return;
       event.stopPropagation();
+      // Released state only — transient press never persists.
       setButtonPressed(false);
     },
     [edit],

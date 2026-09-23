@@ -10,6 +10,18 @@ export interface OverviewElementStub {
   [key: string]: unknown;
 }
 
+/** Persisted canvas viewport (x/y flow offset + zoom). */
+export interface OverviewSavedViewport {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export interface OverviewControlState {
+  value: boolean;
+  updatedAt: string;
+}
+
 export interface OverviewPageDefinition {
   id: string;
   name: string;
@@ -22,6 +34,8 @@ export interface OverviewPageDefinition {
   elements: OverviewElementStub[];
   /** Element ids in z-order (bottom → top). */
   layerOrder: string[];
+  /** Saved canvas viewport — default {0,0,1} when missing on legacy pages. */
+  savedViewport: OverviewSavedViewport;
   revision: number;
   createdAt: string;
   modifiedAt: string;
@@ -43,15 +57,33 @@ export interface OverviewPageSummary {
 export const OVERVIEW_DEFAULT_WIDTH = 1920;
 export const OVERVIEW_DEFAULT_HEIGHT = 1080;
 export const OVERVIEW_DEFAULT_BACKGROUND = '#050b12';
+export const OVERVIEW_DEFAULT_VIEWPORT: OverviewSavedViewport = { x: 0, y: 0, zoom: 1 };
+/** Matches Overview Canvas edit-mode zoom range. */
+export const OVERVIEW_MIN_ZOOM = 0.1;
+export const OVERVIEW_MAX_ZOOM = 2.5;
 
 const HEX_COLOR = /^#[0-9a-fA-F]{3,8}$/;
+
+const savedViewportSchema = z.object({
+  x: z.number().finite(),
+  y: z.number().finite(),
+  zoom: z.number().finite().min(OVERVIEW_MIN_ZOOM).max(OVERVIEW_MAX_ZOOM)
+});
+
+const controlStateSchema = z.object({
+  value: z.boolean(),
+  updatedAt: z.string().refine(value => !Number.isNaN(Date.parse(value)), 'updatedAt must be an ISO timestamp')
+});
+
+export const OVERVIEW_CONTROL_TYPES = new Set(['SWITCH', 'PUSH_BUTTON', 'NAVIGATION_LINK']);
 
 export const overviewCreateSchema = z.object({
   name: z.string().trim().min(1).max(100),
   description: z.string().max(500).optional(),
   designWidth: z.number().int().min(1).max(16384).optional(),
   designHeight: z.number().int().min(1).max(16384).optional(),
-  backgroundColor: z.string().regex(HEX_COLOR).optional()
+  backgroundColor: z.string().regex(HEX_COLOR).optional(),
+  savedViewport: savedViewportSchema.optional()
 });
 
 export const overviewRenameSchema = z.object({
@@ -69,12 +101,24 @@ export const overviewUpdateSchema = z.object({
   elements: z
     .array(z.object({ id: z.string().min(1), type: z.string().min(1) }).passthrough())
     .optional(),
-  layerOrder: z.array(z.string().min(1)).optional()
+  layerOrder: z.array(z.string().min(1)).optional(),
+  savedViewport: savedViewportSchema.optional()
+});
+
+export const overviewControlStateSchema = z.object({
+  expectedRevision: z.number().int().min(1),
+  controlState: controlStateSchema
 });
 
 export type OverviewCreateInput = z.infer<typeof overviewCreateSchema>;
 export type OverviewRenameInput = z.infer<typeof overviewRenameSchema>;
 export type OverviewUpdateInput = z.infer<typeof overviewUpdateSchema>;
+export type OverviewControlStateInput = z.infer<typeof overviewControlStateSchema>;
+
+function normalizeSavedViewport(value: OverviewSavedViewport | undefined): OverviewSavedViewport {
+  if (!value) return { ...OVERVIEW_DEFAULT_VIEWPORT };
+  return { x: value.x, y: value.y, zoom: value.zoom };
+}
 
 function fail(message: string, code: string): never {
   throw Object.assign(new Error(message), { code });
@@ -116,13 +160,19 @@ export class OverviewPageManager {
 
   get(id: string): OverviewPageDefinition | undefined {
     const page = this.pages.get(id);
-    return page ? structuredClone(page) : undefined;
+    if (!page) return undefined;
+    const clone = structuredClone(page);
+    // Legacy pages without savedViewport read as Default — no file rewrite.
+    clone.savedViewport = normalizeSavedViewport(clone.savedViewport);
+    return clone;
   }
 
   first(): OverviewPageDefinition {
     const page = this.pages.values().next().value as OverviewPageDefinition | undefined;
     if (!page) fail('Project must contain at least one Overview page', 'NO_PAGES');
-    return structuredClone(page);
+    const clone = structuredClone(page);
+    clone.savedViewport = normalizeSavedViewport(clone.savedViewport);
+    return clone;
   }
 
   create(input: OverviewCreateInput): OverviewPageDefinition {
@@ -139,6 +189,7 @@ export class OverviewPageManager {
       backgroundImage: null,
       elements: [],
       layerOrder: [],
+      savedViewport: normalizeSavedViewport(input.savedViewport),
       revision: 1,
       createdAt: now,
       modifiedAt: now
@@ -165,12 +216,55 @@ export class OverviewPageManager {
       backgroundColor: incoming.backgroundColor ?? current.backgroundColor,
       elements: incoming.elements ? (structuredClone(incoming.elements) as OverviewElementStub[]) : current.elements,
       layerOrder: incoming.layerOrder ? [...incoming.layerOrder] : current.layerOrder,
+      savedViewport: incoming.savedViewport
+        ? normalizeSavedViewport(incoming.savedViewport)
+        : normalizeSavedViewport(current.savedViewport),
       revision: current.revision + 1,
       modifiedAt: now
     };
     this.pages.set(id, updated);
     this.persist(updated);
     return structuredClone(updated);
+  }
+
+  /**
+   * Dedicated View-mode control-state update (PATCH).
+   * Touches only the target Element's controlState + one revision bump.
+   */
+  updateElementControlState(
+    pageId: string,
+    elementId: string,
+    incoming: OverviewControlStateInput
+  ): { elementId: string; controlState: OverviewControlState; revision: number } {
+    const current = this.require(pageId);
+    if (incoming.expectedRevision !== current.revision) {
+      fail('Overview page revision conflict', 'REVISION_CONFLICT');
+    }
+    const index = current.elements.findIndex(element => element.id === elementId);
+    if (index < 0) fail('Overview element not found', 'ELEMENT_NOT_FOUND');
+    const element = current.elements[index]!;
+    const category = String((element as { category?: unknown }).category ?? '');
+    const type = element.type;
+    if (category !== 'CONTROL') fail('Control state is only valid on CONTROL elements', 'NOT_CONTROL');
+    if (!OVERVIEW_CONTROL_TYPES.has(type)) fail(`Unsupported control type: ${type}`, 'UNSUPPORTED_CONTROL');
+    const controlState: OverviewControlState = {
+      // PUSH_BUTTON never persists transient pressed=true — released only.
+      value: type === 'PUSH_BUTTON' ? false : incoming.controlState.value,
+      updatedAt: new Date(incoming.controlState.updatedAt).toISOString()
+    };
+    const now = new Date().toISOString();
+    const nextElements = current.elements.map((item, i) =>
+      i === index ? { ...item, controlState } : item
+    );
+    const updated: OverviewPageDefinition = {
+      ...current,
+      elements: nextElements,
+      revision: current.revision + 1,
+      modifiedAt: now
+    };
+    this.pages.set(pageId, updated);
+    this.persist(updated);
+    return { elementId, controlState, revision: updated.revision };
   }
 
   rename(id: string, input: OverviewRenameInput): OverviewPageDefinition {
@@ -204,6 +298,7 @@ export class OverviewPageManager {
         id: elementMap.get(element.id)!
       })),
       layerOrder: source.layerOrder.map(elementId => elementMap.get(elementId) ?? elementId),
+      savedViewport: normalizeSavedViewport(source.savedViewport),
       revision: 1,
       createdAt: now,
       modifiedAt: now
@@ -230,6 +325,8 @@ export class OverviewPageManager {
         const file = this.fileFor(item.id);
         if (!fs.existsSync(file)) continue;
         const page = JSON.parse(fs.readFileSync(file, 'utf8')) as OverviewPageDefinition;
+        // Normalize on load so missing savedViewport becomes Default in memory.
+        page.savedViewport = normalizeSavedViewport(page.savedViewport);
         this.pages.set(page.id, page);
       }
     } catch {

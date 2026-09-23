@@ -87,6 +87,27 @@ export function updateOverviewPage(
   });
 }
 
+export interface OverviewControlState {
+  value: boolean;
+  updatedAt: string;
+}
+
+/**
+ * Dedicated View-mode control-state PATCH (partial update).
+ * Never sends the full Elements array.
+ */
+export function patchOverviewElementControlState(
+  pageId: string,
+  elementId: string,
+  expectedRevision: number,
+  controlState: OverviewControlState,
+): Promise<{ elementId: string; controlState: OverviewControlState; revision: number }> {
+  return overviewApi(`/api/overview-pages/${pageId}/elements/${elementId}/control-state`, {
+    method: 'PATCH',
+    body: JSON.stringify({ expectedRevision, controlState }),
+  });
+}
+
 export function deleteOverviewPage(id: string): Promise<{ ok: boolean }> {
   return overviewApi<{ ok: boolean }>(`/api/overview-pages/${id}`, { method: 'DELETE' });
 }

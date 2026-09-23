@@ -42,6 +42,8 @@ export interface OverviewPageRecord {
   backgroundImage: string | null;
   elements: OverviewElementStub[];
   layerOrder: string[];
+  /** Persisted canvas viewport — defaults to {0,0,1} when absent. */
+  savedViewport?: OverviewViewportMemory;
   revision: number;
   createdAt: string;
   modifiedAt: string;
@@ -379,9 +381,8 @@ export function resetOverviewPanelSession(): void {
 
 /* ---- O1-C critical UX helpers (pure) ---------------------------------- */
 
-/**
- * Session viewport memory (not Local Storage).
- * Survives App page navigation while Overview stays mounted.
+/** Session viewport memory (not Local Storage for draft state).
+ * SavedViewport itself is persisted on the Overview Page via PUT.
  */
 export interface OverviewViewportMemory {
   x: number;
@@ -390,6 +391,40 @@ export interface OverviewViewportMemory {
 }
 
 export const OVERVIEW_HOME_VIEWPORT: OverviewViewportMemory = { x: 0, y: 0, zoom: 1 };
+
+/** Server/default viewport mapping — missing field becomes Default. */
+export function normalizeOverviewSavedViewport(
+  value: OverviewViewportMemory | null | undefined,
+): OverviewViewportMemory {
+  if (!value) return { ...OVERVIEW_HOME_VIEWPORT };
+  const x = Number(value.x);
+  const y = Number(value.y);
+  const zoom = Number(value.zoom);
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(zoom) || zoom <= 0) {
+    return { ...OVERVIEW_HOME_VIEWPORT };
+  }
+  return { x, y, zoom };
+}
+
+export function overviewViewportsEqual(
+  a: OverviewViewportMemory | null | undefined,
+  b: OverviewViewportMemory | null | undefined,
+): boolean {
+  const left = normalizeOverviewSavedViewport(a);
+  const right = normalizeOverviewSavedViewport(b);
+  return left.x === right.x && left.y === right.y && left.zoom === right.zoom;
+}
+
+/** Save needs a PUT when the draft differs OR the session viewport differs from baseline. */
+export function overviewSaveNeedsViewportPut(
+  baseline: OverviewPageRecord | null,
+  draft: OverviewPageRecord | null,
+  sessionViewport: OverviewViewportMemory,
+): boolean {
+  if (!baseline || !draft) return false;
+  if (!overviewDraftMatchesBaseline(baseline, draft)) return true;
+  return !overviewViewportsEqual(baseline.savedViewport, sessionViewport);
+}
 
 export function rememberOverviewViewport(
   _current: OverviewViewportMemory,

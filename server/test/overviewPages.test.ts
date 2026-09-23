@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   OverviewPageManager,
+  overviewControlStateSchema,
   overviewCreateSchema,
   overviewRenameSchema,
   overviewUpdateSchema
@@ -196,5 +197,297 @@ describe('Overview vs Workflow isolation', () => {
     expect(fs.existsSync(path.join(dataDir, 'workflow.json'))).toBe(false);
     expect(fs.existsSync(path.join(dataDir, 'workflows.json'))).toBe(false);
     expect(fs.existsSync(path.join(dataDir, 'overview-pages.json'))).toBe(true);
+  });
+});
+
+describe('savedViewport persistence', () => {
+  it('initializes default savedViewport on create', () => {
+    const page = manager.create({ name: 'Viewport Page' });
+    expect(page.savedViewport).toEqual({ x: 0, y: 0, zoom: 1 });
+  });
+
+  it('existing page without savedViewport reads as default (no rewrite required)', () => {
+    const page = manager.create({ name: 'Legacy' });
+    const file = path.join(dataDir, 'overview-pages', `${page.id}.json`);
+    const raw = JSON.parse(fs.readFileSync(file, 'utf8')) as Record<string, unknown>;
+    delete raw.savedViewport;
+    fs.writeFileSync(file, JSON.stringify(raw, null, 2));
+    const reloaded = new OverviewPageManager(dataDir);
+    const fetched = reloaded.get(page.id);
+    expect(fetched?.savedViewport).toEqual({ x: 0, y: 0, zoom: 1 });
+  });
+
+  it('valid update persists x/y/zoom and increments revision once', () => {
+    const page = manager.create({ name: 'Pan Zoom' });
+    const updated = manager.update(page.id, {
+      expectedRevision: page.revision,
+      savedViewport: { x: -120.5, y: 40, zoom: 1.35 }
+    });
+    expect(updated.savedViewport).toEqual({ x: -120.5, y: 40, zoom: 1.35 });
+    expect(updated.revision).toBe(page.revision + 1);
+  });
+
+  it('rejects invalid savedViewport payloads', () => {
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 'a', y: 0, zoom: 1 } })
+        .success
+    ).toBe(false);
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 0, y: 'b', zoom: 1 } })
+        .success
+    ).toBe(false);
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 0, y: 0, zoom: 'c' } })
+        .success
+    ).toBe(false);
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 0, y: 0, zoom: 0 } })
+        .success
+    ).toBe(false);
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 0, y: 0, zoom: -1 } })
+        .success
+    ).toBe(false);
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 0, y: 0, zoom: 999 } })
+        .success
+    ).toBe(false);
+    expect(
+      overviewUpdateSchema.safeParse({ expectedRevision: 1, savedViewport: { x: 0, y: 0, zoom: 1 } })
+        .success
+    ).toBe(true);
+  });
+
+  it('viewport-only update is a single revision bump; stale revision returns conflict', () => {
+    const page = manager.create({ name: 'Viewport Only' });
+    const first = manager.update(page.id, {
+      expectedRevision: page.revision,
+      savedViewport: { x: 10, y: 20, zoom: 1.1 }
+    });
+    expect(first.revision).toBe(page.revision + 1);
+    expect(
+      codeOf(() =>
+        manager.update(page.id, {
+          expectedRevision: page.revision,
+          savedViewport: { x: 30, y: 40, zoom: 1.2 }
+        })
+      )
+    ).toBe('REVISION_CONFLICT');
+    expect(manager.get(page.id)?.savedViewport).toEqual({ x: 10, y: 20, zoom: 1.1 });
+  });
+
+  it('duplicate copies savedViewport', () => {
+    const page = manager.create({ name: 'Copy View' });
+    manager.update(page.id, {
+      expectedRevision: page.revision,
+      savedViewport: { x: 5, y: 6, zoom: 1.05 }
+    });
+    const copy = manager.duplicate(page.id);
+    expect(copy.savedViewport).toEqual({ x: 5, y: 6, zoom: 1.05 });
+  });
+
+  it('atomic persistence preserves savedViewport on reload', () => {
+    const page = manager.create({ name: 'Atomic View' });
+    manager.update(page.id, {
+      expectedRevision: page.revision,
+      savedViewport: { x: -8, y: 16, zoom: 0.9 }
+    });
+    const file = path.join(dataDir, 'overview-pages', `${page.id}.json`);
+    expect(fs.existsSync(`${file}.tmp`)).toBe(false);
+    expect(JSON.parse(fs.readFileSync(file, 'utf8')).savedViewport).toEqual({
+      x: -8,
+      y: 16,
+      zoom: 0.9
+    });
+    const reloaded = new OverviewPageManager(dataDir);
+    expect(reloaded.get(page.id)?.savedViewport).toEqual({ x: -8, y: 16, zoom: 0.9 });
+  });
+});
+
+describe('control-state endpoint contract', () => {
+  function seedControlPage() {
+    const page = manager.create({ name: 'Controls' });
+    const updated = manager.update(page.id, {
+      expectedRevision: page.revision,
+      elements: [
+        {
+          id: 'sw-1',
+          type: 'SWITCH',
+          category: 'CONTROL',
+          name: 'Switch A',
+          x: 0,
+          y: 0,
+          width: 72,
+          height: 40
+        },
+        {
+          id: 'lbl-1',
+          type: 'TEXT_LABEL',
+          category: 'MONITORING',
+          name: 'Label',
+          x: 100,
+          y: 0,
+          width: 100,
+          height: 32
+        },
+        {
+          id: 'btn-1',
+          type: 'PUSH_BUTTON',
+          category: 'CONTROL',
+          name: 'Push',
+          x: 200,
+          y: 0,
+          width: 128,
+          height: 44
+        }
+      ],
+      layerOrder: ['sw-1', 'lbl-1', 'btn-1']
+    });
+    return updated;
+  }
+
+  it('updates only the target Switch controlState and bumps revision once', () => {
+    const page = seedControlPage();
+    const result = manager.updateElementControlState(page.id, 'sw-1', {
+      expectedRevision: page.revision,
+      controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+    });
+    expect(result.elementId).toBe('sw-1');
+    expect(result.controlState.value).toBe(true);
+    expect(result.revision).toBe(page.revision + 1);
+    const after = manager.get(page.id)!;
+    expect(after.revision).toBe(page.revision + 1);
+    const target = after.elements.find(el => el.id === 'sw-1')!;
+    expect(target.controlState).toEqual({
+      value: true,
+      updatedAt: '2026-09-23T00:00:00.000Z'
+    });
+    const other = after.elements.find(el => el.id === 'lbl-1')!;
+    expect(other.controlState).toBeUndefined();
+    expect(other.x).toBe(100);
+    expect(after.name).toBe(page.name);
+    expect(after.savedViewport).toEqual(page.savedViewport);
+    expect(after.layerOrder).toEqual(page.layerOrder);
+  });
+
+  it('rejects non-boolean Switch value at schema', () => {
+    expect(
+      overviewControlStateSchema.safeParse({
+        expectedRevision: 1,
+        controlState: { value: 'yes', updatedAt: '2026-09-23T00:00:00.000Z' }
+      }).success
+    ).toBe(false);
+  });
+
+  it('missing page returns NOT_FOUND', () => {
+    const page = seedControlPage();
+    expect(
+      codeOf(() =>
+        manager.updateElementControlState('11111111-1111-4111-8111-111111111111', 'sw-1', {
+          expectedRevision: page.revision,
+          controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+        })
+      )
+    ).toBe('NOT_FOUND');
+  });
+
+  it('missing element returns ELEMENT_NOT_FOUND', () => {
+    const page = seedControlPage();
+    expect(
+      codeOf(() =>
+        manager.updateElementControlState(page.id, 'nope', {
+          expectedRevision: page.revision,
+          controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+        })
+      )
+    ).toBe('ELEMENT_NOT_FOUND');
+  });
+
+  it('non-Control element is rejected', () => {
+    const page = seedControlPage();
+    expect(
+      codeOf(() =>
+        manager.updateElementControlState(page.id, 'lbl-1', {
+          expectedRevision: page.revision,
+          controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+        })
+      )
+    ).toBe('NOT_CONTROL');
+  });
+
+  it('unsupported Control type is rejected', () => {
+    const page = manager.create({ name: 'Bad Type' });
+    manager.update(page.id, {
+      expectedRevision: page.revision,
+      elements: [{ id: 'x', type: 'DIAL', category: 'CONTROL' }],
+      layerOrder: ['x']
+    });
+    const after = manager.get(page.id)!;
+    expect(
+      codeOf(() =>
+        manager.updateElementControlState(page.id, 'x', {
+          expectedRevision: after.revision,
+          controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+        })
+      )
+    ).toBe('UNSUPPORTED_CONTROL');
+  });
+
+  it('missing expectedRevision rejected by schema', () => {
+    expect(
+      overviewControlStateSchema.safeParse({
+        controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+      }).success
+    ).toBe(false);
+    expect(
+      overviewControlStateSchema.safeParse({
+        expectedRevision: 0,
+        controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+      }).success
+    ).toBe(false);
+  });
+
+  it('stale revision returns REVISION_CONFLICT without write', () => {
+    const page = seedControlPage();
+    manager.updateElementControlState(page.id, 'sw-1', {
+      expectedRevision: page.revision,
+      controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+    });
+    expect(
+      codeOf(() =>
+        manager.updateElementControlState(page.id, 'sw-1', {
+          expectedRevision: page.revision,
+          controlState: { value: false, updatedAt: '2026-09-23T01:00:00.000Z' }
+        })
+      )
+    ).toBe('REVISION_CONFLICT');
+    const after = manager.get(page.id)!;
+    const target = after.elements.find(el => el.id === 'sw-1')!;
+    expect((target.controlState as { value?: boolean } | undefined)?.value).toBe(true);
+  });
+
+  it('normalizes Push Button transient pressed to released', () => {
+    const page = seedControlPage();
+    const result = manager.updateElementControlState(page.id, 'btn-1', {
+      expectedRevision: page.revision,
+      controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+    });
+    expect(result.controlState.value).toBe(false);
+    const after = manager.get(page.id)!;
+    const btn = after.elements.find(el => el.id === 'btn-1')!;
+    expect((btn.controlState as { value?: boolean } | undefined)?.value).toBe(false);
+  });
+
+  it('atomic persistence preserves controlState on reload', () => {
+    const page = seedControlPage();
+    manager.updateElementControlState(page.id, 'sw-1', {
+      expectedRevision: page.revision,
+      controlState: { value: true, updatedAt: '2026-09-23T00:00:00.000Z' }
+    });
+    const file = path.join(dataDir, 'overview-pages', `${page.id}.json`);
+    expect(fs.existsSync(`${file}.tmp`)).toBe(false);
+    const reloaded = new OverviewPageManager(dataDir);
+    const target = reloaded.get(page.id)!.elements.find(el => el.id === 'sw-1')!;
+    expect((target.controlState as { value?: boolean } | undefined)?.value).toBe(true);
   });
 });

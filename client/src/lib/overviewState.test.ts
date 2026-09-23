@@ -31,6 +31,9 @@ import {
   buildElementDeleteDescription,
   buildElementDeleteFacts,
   marksOverviewDirty,
+  normalizeOverviewSavedViewport,
+  overviewSaveNeedsViewportPut,
+  overviewViewportsEqual,
   rememberOverviewViewport,
   requiresPageSwitchConfirm,
   resetOverviewPanelSession,
@@ -654,5 +657,88 @@ describe('O1-C critical UX source contracts (issues 1, 2, 5, 6, 10, 13, 14)', ()
     const node = read(['components', 'overview', 'ElementNode.tsx']);
     expect(node).not.toContain('/api/');
     expect(node).not.toContain('WebSocket');
+  });
+});
+
+describe('savedViewport + control-state client contract', () => {
+  it('maps missing savedViewport to default', () => {
+    expect(normalizeOverviewSavedViewport(undefined)).toEqual({ x: 0, y: 0, zoom: 1 });
+    expect(normalizeOverviewSavedViewport(null)).toEqual({ x: 0, y: 0, zoom: 1 });
+    expect(normalizeOverviewSavedViewport({ x: 1, y: 2, zoom: 1.5 })).toEqual({
+      x: 1,
+      y: 2,
+      zoom: 1.5,
+    });
+    expect(normalizeOverviewSavedViewport({ x: 0, y: 0, zoom: 0 })).toEqual({
+      x: 0,
+      y: 0,
+      zoom: 1,
+    });
+  });
+
+  it('detects changed viewport and unchanged viewport', () => {
+    expect(overviewViewportsEqual({ x: 0, y: 0, zoom: 1 }, { x: 10, y: 0, zoom: 1 })).toBe(false);
+    expect(overviewViewportsEqual({ x: 0, y: 0, zoom: 1 }, { x: 0, y: 0, zoom: 1 })).toBe(true);
+  });
+
+  it('viewport-only change triggers Save PUT; fully unchanged does not', () => {
+    const baseline = makePage({
+      savedViewport: { x: 0, y: 0, zoom: 1 },
+    });
+    const draft = structuredClone(baseline);
+    expect(overviewSaveNeedsViewportPut(baseline, draft, { x: 0, y: 0, zoom: 1 })).toBe(false);
+    expect(overviewSaveNeedsViewportPut(baseline, draft, { x: -40, y: 12, zoom: 1.2 })).toBe(true);
+    const dirtyDraft = { ...structuredClone(baseline), description: 'changed' };
+    expect(overviewSaveNeedsViewportPut(baseline, dirtyDraft, { x: 0, y: 0, zoom: 1 })).toBe(true);
+  });
+
+  it('successful Save accepts Server revision and Cancel restores baseline viewport', () => {
+    const baseline = makePage({ savedViewport: { x: 5, y: 6, zoom: 1.1 } });
+    const finished = finishOverviewSave({ ...baseline, revision: baseline.revision + 1 });
+    expect(finished.saveState).toBe('SAVED');
+    expect(finished.baseline.savedViewport).toEqual({ x: 5, y: 6, zoom: 1.1 });
+    const restored = cancelOverviewEdit(baseline);
+    expect(restored.draft.savedViewport).toEqual({ x: 5, y: 6, zoom: 1.1 });
+    expect(restored.mode).toBe('VIEW');
+  });
+
+  it('refresh restoration uses duration 0 and never fitView', () => {
+    const canvas = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewCanvas.tsx'),
+      'utf8',
+    );
+    expect(canvas).toContain('setViewport(viewport as Viewport, { duration: 0 })');
+    expect(canvas).not.toContain('fitViewOptions');
+    const page = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
+      'utf8',
+    );
+    expect(page).toContain('normalizeOverviewSavedViewport(record.savedViewport)');
+    expect(page).toContain('savedViewport: sessionViewport');
+    expect(page).toContain('patchOverviewElementControlState');
+  });
+
+  it('control-state client uses dedicated PATCH without full elements array', () => {
+    const api = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'lib', 'overviewApi.ts'),
+      'utf8',
+    );
+    expect(api).toContain('patchOverviewElementControlState');
+    expect(api).toContain("method: 'PATCH'");
+    expect(api).toContain('/control-state');
+    const page = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
+      'utf8',
+    );
+    // VIEW control path must not use draft dirty / undo / selection.
+    expect(page).toContain('handleControlStateChange');
+    expect(page).toContain('Exit Edit Mode to use control preview');
+    const node = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'ElementNode.tsx'),
+      'utf8',
+    );
+    expect(node).toContain('onControlStateChange');
+    expect(node).toContain('persistedSwitch');
+    expect(node).toContain('Released state only');
   });
 });
