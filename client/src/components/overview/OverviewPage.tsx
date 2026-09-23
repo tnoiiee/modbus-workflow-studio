@@ -63,6 +63,7 @@ import {
   overviewSendToBack,
   pushOverviewHistory,
   redoOverviewHistory,
+  snapOverviewCoordinate,
   undoOverviewHistory,
   validateOverviewElements,
   OVERVIEW_TYPE_CATEGORY,
@@ -162,7 +163,20 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       const list = await fetchOverviewPages();
       setPages(list);
       setLoadError(undefined);
-      const requested = preferId && list.some(item => item.id === preferId) ? preferId : list[0]?.id;
+      const remembered = (() => {
+        try {
+          return localStorage.getItem('mws.activeOverviewPageId') ?? undefined;
+        } catch {
+          return undefined;
+        }
+      })();
+      const preferred =
+        preferId && list.some(item => item.id === preferId)
+          ? preferId
+          : remembered && list.some(item => item.id === remembered)
+            ? remembered
+            : undefined;
+      const requested = preferred ?? list[0]?.id;
       if (!requested) {
         setActivePage(null);
         setBaseline(null);
@@ -171,12 +185,19 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       }
       if (requested !== activePageIdRef.current) {
         setActivePageId(requested);
+        try {
+          localStorage.setItem('mws.activeOverviewPageId', requested);
+        } catch {
+          void 0;
+        }
         const record = await fetchOverviewPage(requested);
         setActivePage(record);
         setBaseline(record);
         setDraft(record);
         setSelectedElementId(null);
         setHistory(emptyOverviewHistory());
+        setSaveState('SAVED');
+        setMode('VIEW');
       }
       return list;
     } catch (error) {
@@ -188,6 +209,16 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   useEffect(() => {
     void loadPages();
   }, [loadPages]);
+
+  // Persist only navigation identity: active Overview Page ID.
+  useEffect(() => {
+    if (!activePageId) return;
+    try {
+      localStorage.setItem('mws.activeOverviewPageId', activePageId);
+    } catch {
+      void 0;
+    }
+  }, [activePageId]);
 
   /* ---- mode machine ----------------------------------------------------- */
 
@@ -570,7 +601,22 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         width: draft.designWidth ?? workingPage?.designWidth ?? 1024,
         height: draft.designHeight ?? workingPage?.designHeight ?? 768,
       };
-      const position = nudgeOverviewElementToFreeSlot(base, probe, existing, undefined, undefined, bounds);
+      const position = nudgeOverviewElementToFreeSlot(
+        { x: base.x, y: base.y },
+        { width: probe.width, height: probe.height },
+        existing,
+        undefined,
+        undefined,
+        bounds,
+      );
+      if (!position) {
+        // Custom UI error — never place an overlapping Element as fallback.
+        setLoadError(
+          `No free space on the Design Canvas to add ${probe.name}. Move or remove an Element and try again.`,
+        );
+        return;
+      }
+      setLoadError(undefined);
       const element = createOverviewElement(type, {
         id,
         x: position.x,
@@ -593,13 +639,23 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   );
 
   const handleResizeElement = useCallback(
-    (id: string, width: number, height: number) => {
+    (
+      id: string,
+      geometry: { x: number; y: number; width: number; height: number },
+    ) => {
+      // One gesture → one history entry (coalesced by pointer release).
       const firstFrame = resizeGestureRef.current !== id;
       resizeGestureRef.current = id;
+      const snappedX = snapOverviewCoordinate(geometry.x);
+      const snappedY = snapOverviewCoordinate(geometry.y);
+      const width = Math.max(1, snapOverviewCoordinate(geometry.width));
+      const height = Math.max(1, snapOverviewCoordinate(geometry.height));
       applyElementMutation(
         elements =>
           elements.map(el =>
-            el.id === id && !el.locked && width > 0 && height > 0 ? { ...el, width, height } : el,
+            el.id === id && !el.locked && width > 0 && height > 0
+              ? { ...el, x: snappedX, y: snappedY, width, height }
+              : el,
           ),
         { pushHistory: firstFrame },
       );

@@ -40,6 +40,8 @@ import {
   OVERVIEW_CONTROL_TYPES,
   OVERVIEW_MONITORING_TYPES,
   OVERVIEW_PANEL_TOGGLE_CLASS,
+  selectionFromNodeClick,
+  selectionFromPaneClick,
 } from './overviewState.js';
 import {
   TOOLTIP_OVERLAY_Z,
@@ -158,10 +160,11 @@ describe('add placement at current canvas center', () => {
     const existing = [{ x: 0, y: 0, width: 64, height: 64 }];
     const first = nudgeOverviewElementToFreeSlot({ x: 0, y: 0 }, size, existing);
     const second = nudgeOverviewElementToFreeSlot({ x: 0, y: 0 }, size, existing);
+    expect(first).not.toBeNull();
     expect(first).toEqual(second);
     expect(first).not.toEqual({ x: 0, y: 0 });
     expect(existing[0]).toEqual({ x: 0, y: 0, width: 64, height: 64 });
-    expect(first.x % OVERVIEW_ELEMENT_SNAP).toBe(0);
+    expect(first!.x % OVERVIEW_ELEMENT_SNAP).toBe(0);
   });
 
   it('repeated Add does not stack elements on one another', () => {
@@ -169,7 +172,9 @@ describe('add placement at current canvas center', () => {
     const placed: Array<{ x: number; y: number; width: number; height: number }> = [];
     let next = { x: 160, y: 96 };
     for (let i = 0; i < 5; i += 1) {
-      next = nudgeOverviewElementToFreeSlot(next, size, placed);
+      const found = nudgeOverviewElementToFreeSlot(next, size, placed);
+      expect(found).not.toBeNull();
+      next = found!;
       placed.push({ ...next, ...size });
     }
     const unique = new Set(placed.map(p => `${p.x},${p.y}`));
@@ -460,11 +465,12 @@ describe('collision: rectangle intersection + bounds (issue 7)', () => {
     const base = { x: 150, y: 140 };
     const size = { width: 120, height: 60 };
     const pos = nudgeOverviewElementToFreeSlot(base, size, existing);
+    expect(pos).not.toBeNull();
     const overlaps = existing.some(other =>
-      pos.x < other.x + other.width &&
-      pos.x + size.width > other.x &&
-      pos.y < other.y + other.height &&
-      pos.y + size.height > other.y,
+      pos!.x < other.x + other.width &&
+      pos!.x + size.width > other.x &&
+      pos!.y < other.y + other.height &&
+      pos!.y + size.height > other.y,
     );
     expect(overlaps).toBe(false);
     expect(pos).not.toEqual(base);
@@ -476,7 +482,8 @@ describe('collision: rectangle intersection + bounds (issue 7)', () => {
     const placed: Array<{ x: number; y: number; width: number; height: number }> = [];
     for (let i = 0; i < 5; i += 1) {
       const pos = nudgeOverviewElementToFreeSlot(base, size, placed);
-      const rect = { ...pos, ...size };
+      expect(pos).not.toBeNull();
+      const rect = { ...pos!, ...size };
       for (const other of placed) {
         const overlap =
           rect.x < other.x + other.width &&
@@ -496,15 +503,16 @@ describe('collision: rectangle intersection + bounds (issue 7)', () => {
     // Existing block occupies the center so the nudge must search within bounds.
     const existing = [{ x: 160, y: 130, width: 80, height: 40 }];
     const pos = nudgeOverviewElementToFreeSlot({ x: 160, y: 130 }, size, existing, undefined, undefined, bounds);
-    expect(pos.x).toBeGreaterThanOrEqual(0);
-    expect(pos.y).toBeGreaterThanOrEqual(0);
-    expect(pos.x + size.width).toBeLessThanOrEqual(bounds.width);
-    expect(pos.y + size.height).toBeLessThanOrEqual(bounds.height);
+    expect(pos).not.toBeNull();
+    expect(pos!.x).toBeGreaterThanOrEqual(0);
+    expect(pos!.y).toBeGreaterThanOrEqual(0);
+    expect(pos!.x + size.width).toBeLessThanOrEqual(bounds.width);
+    expect(pos!.y + size.height).toBeLessThanOrEqual(bounds.height);
     const overlaps = existing.some(other =>
-      pos.x < other.x + other.width &&
-      pos.x + size.width > other.x &&
-      pos.y < other.y + other.height &&
-      pos.y + size.height > other.y,
+      pos!.x < other.x + other.width &&
+      pos!.x + size.width > other.x &&
+      pos!.y < other.y + other.height &&
+      pos!.y + size.height > other.y,
     );
     expect(overlaps).toBe(false);
   });
@@ -550,5 +558,182 @@ describe('binding direction by category (issue 9)', () => {
     expect(normalizeOverviewBindingDirection('DISPLAY', 'MONITOR')).toBe('NONE');
     expect(normalizeOverviewBindingDirection('DISPLAY', 'COMMAND')).toBe('NONE');
     expect(normalizeOverviewBindingDirection('CONTROL', 'COMMAND')).toBe('COMMAND');
+  });
+});
+
+/* ---- Owner punchlist: handles, selection, resize, collision ------------ */
+
+describe('Owner punchlist: element handles removed (item 1)', () => {
+  it('ElementNode renders no React Flow source/target Handle', () => {
+    const node = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'ElementNode.tsx'),
+      'utf8',
+    );
+    expect(node).not.toMatch(/\bHandle\b/);
+    expect(node).not.toContain('Position.Left');
+    expect(node).not.toContain('Position.Right');
+    expect(node).not.toContain('type="target"');
+    expect(node).not.toContain('type="source"');
+    expect(node).toContain('NodeResizer');
+    expect(node).toContain("from '@xyflow/react'");
+  });
+
+  it('OverviewCanvas disables connectable and keeps edges empty', () => {
+    const canvas = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewCanvas.tsx'),
+      'utf8',
+    );
+    expect(canvas).toContain('connectable: false');
+    expect(canvas).toContain('nodesConnectable={false}');
+    expect(canvas).toContain('edges={[]}');
+  });
+});
+
+describe('Owner punchlist: selection contract (item 2)', () => {
+  it('does not stop propagation on Element root click in edit mode', () => {
+    const node = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'ElementNode.tsx'),
+      'utf8',
+    );
+    expect(node).not.toContain('stopEditEvents');
+    expect(node).not.toMatch(/onClick=\{stopEditEvents\}/);
+  });
+
+  it('onNodeClick is authoritative; pane click alone clears; select:false never clears', () => {
+    const canvas = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewCanvas.tsx'),
+      'utf8',
+    );
+    expect(canvas).toContain('onNodeClick={handleNodeClick}');
+    expect(canvas).toContain('onSelectElement(node.id)');
+    expect(canvas).toContain('onPaneClick={handlePaneClick}');
+    expect(canvas).toContain('onSelectElement(null)');
+    // select true only:
+    expect(canvas).toContain('if (change.selected) onSelectElement(change.id)');
+    expect(canvas).not.toContain('else onSelectElement(null)');
+  });
+
+  it('A → B → A and pane clear are pure one-click operations', () => {
+    expect(selectionFromNodeClick('A')).toBe('A');
+    expect(selectionFromNodeClick('B')).toBe('B');
+    expect(selectionFromNodeClick('A')).toBe('A');
+    expect(selectionFromPaneClick()).toBeNull();
+  });
+});
+
+describe('Owner punchlist: resize geometry (item 3)', () => {
+  it('canvas consumes full resize result including position for top/left handles', () => {
+    const canvas = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewCanvas.tsx'),
+      'utf8',
+    );
+    expect(canvas).toContain('onResizeElement');
+    expect(canvas).toContain('liveResizes');
+    expect(canvas).toContain('resizingRef');
+    // Position applied during resize anchors (top/left move x/y):
+    expect(canvas).toMatch(/liveResizes[\s\S]*\bx,\s*y\b/);
+  });
+
+  it('OverviewPage commits x/y/width/height with one history entry per gesture', () => {
+    const page = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
+      'utf8',
+    );
+    expect(page).toContain('geometry: { x: number; y: number; width: number; height: number }');
+    expect(page).toContain('x: snappedX');
+    expect(page).toContain('y: snappedY');
+    expect(page).toContain('pushHistory: firstFrame');
+    expect(page).toContain('resizeGestureRef');
+  });
+
+  it('eight handles only for selected unlocked Element in Edit Mode', () => {
+    const node = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'ElementNode.tsx'),
+      'utf8',
+    );
+    expect(node).toContain('showResizeHandles');
+    expect(node).toContain('edit && selected && !element.locked');
+    expect(node).toContain('minWidth={8}');
+    expect(node).toContain('minHeight={8}');
+  });
+});
+
+describe('Owner punchlist: collision (item 4)', () => {
+  it('returns null when no free slot instead of overlapping fallback', () => {
+    const bounds = { width: 64, height: 64 };
+    const size = { width: 64, height: 64 };
+    const existing = [{ x: 0, y: 0, width: 64, height: 64 }];
+    const pos = nudgeOverviewElementToFreeSlot({ x: 0, y: 0 }, size, existing, 16, 50, bounds);
+    expect(pos).toBeNull();
+  });
+
+  it('handles different-size elements without overlap', () => {
+    const existing = [
+      { x: 0, y: 0, width: 320, height: 240 },
+      { x: 400, y: 0, width: 72, height: 40 },
+    ];
+    const size = { width: 128, height: 44 };
+    const pos = nudgeOverviewElementToFreeSlot({ x: 16, y: 16 }, size, existing);
+    expect(pos).not.toBeNull();
+    const rect = { ...pos!, ...size };
+    for (const other of existing) {
+      const overlap =
+        rect.x < other.x + other.width &&
+        rect.x + rect.width > other.x &&
+        rect.y < other.y + other.height &&
+        rect.y + rect.height > other.y;
+      expect(overlap).toBe(false);
+    }
+  });
+
+  it('clamps near right and bottom edges inside design bounds', () => {
+    const bounds = { width: 256, height: 256 };
+    const size = { width: 80, height: 40 };
+    const existing = [{ x: 176, y: 216, width: 80, height: 40 }];
+    const pos = nudgeOverviewElementToFreeSlot({ x: 176, y: 216 }, size, existing, 16, 400, bounds);
+    expect(pos).not.toBeNull();
+    expect(pos!.x + size.width).toBeLessThanOrEqual(bounds.width);
+    expect(pos!.y + size.height).toBeLessThanOrEqual(bounds.height);
+  });
+
+  it('uses full draft rectangle (x/y/w/h), not equal-x/y only', () => {
+    // Candidate x/y differs but rectangles still intersect → must move.
+    const existing = [{ x: 0, y: 0, width: 200, height: 100 }];
+    const size = { width: 100, height: 100 };
+    const pos = nudgeOverviewElementToFreeSlot({ x: 50, y: 50 }, size, existing);
+    expect(pos).not.toBeNull();
+    expect(pos).not.toEqual({ x: 48, y: 48 });
+    expect(pos).not.toEqual({ x: 50, y: 50 });
+  });
+
+  it('Add path surfaces custom error instead of placing overlap', () => {
+    const page = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
+      'utf8',
+    );
+    expect(page).toContain('No free space on the Design Canvas');
+    expect(page).toContain('if (!position)');
+  });
+});
+
+describe('Owner punchlist: refresh navigation identity (item 8)', () => {
+  it('App persists and restores active App page (Overview only)', () => {
+    const app = fs.readFileSync(path.join(process.cwd(), 'src', 'App.tsx'), 'utf8');
+    expect(app).toContain("localStorage.getItem('mws.activeAppPage')");
+    expect(app).toContain("localStorage.setItem('mws.activeAppPage',page)");
+    expect(app).toContain("'Overview'");
+  });
+
+  it('OverviewPage persists only active Overview Page ID', () => {
+    const page = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
+      'utf8',
+    );
+    expect(page).toContain("localStorage.setItem('mws.activeOverviewPageId'");
+    expect(page).toContain("localStorage.getItem('mws.activeOverviewPageId')");
+    // Must not persist edit session state:
+    expect(page).not.toContain("localStorage.setItem('mws.overviewMode'");
+    expect(page).not.toContain("localStorage.setItem('mws.overviewDraft'");
+    expect(page).not.toContain("localStorage.setItem('mws.overviewSelection'");
   });
 });

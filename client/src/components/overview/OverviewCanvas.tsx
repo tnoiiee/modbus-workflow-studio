@@ -29,6 +29,13 @@ export interface OverviewViewportSnapshot {
 
 export const OVERVIEW_DEFAULT_VIEWPORT: OverviewViewportSnapshot = { x: 0, y: 0, zoom: 1 };
 
+interface LiveGeometry {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
@@ -43,11 +50,12 @@ export interface OverviewCanvasProps {
   /** Session viewport restored on show; never auto-fit on return. */
   viewport: OverviewViewportSnapshot;
   onViewportChange: (viewport: OverviewViewportSnapshot) => void;
-  /** Becomes true each time the canvas is (re)shown — restore exact viewport. */
+  /** Becomes non-zero each time the canvas is (re)shown — restore exact viewport. */
   restoreViewportEpoch: number;
   onSelectElement: (id: string | null) => void;
   onMoveElement: (id: string, x: number, y: number) => void;
-  onResizeElement: (id: string, width: number, height: number) => void;
+  /** Full resize result: position + dimensions (top/left handles must move x/y). */
+  onResizeElement: (id: string, geometry: { x: number; y: number; width: number; height: number }) => void;
   onInstanceReady: (instance: ReactFlowInstance) => void;
 }
 
@@ -57,6 +65,8 @@ export interface OverviewCanvasProps {
  * EDIT mode enables pan, zoom, fit, selection, drag, resize, grid and snap.
  * VIEW mode locks the surface: no controls, no minimap, no pan/zoom, no
  * selection handles. Element geometry lives in the Overview Draft only.
+ *
+ * Overview Elements are HMI components — no source/target Handles, no edges.
  */
 function OverviewCanvasBase({
   mode,
@@ -76,28 +86,40 @@ function OverviewCanvasBase({
   const edit = mode === 'EDIT';
   const instanceRef = useRef<ReactFlowInstance | null>(null);
   const [dragPositions, setDragPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [liveResizes, setLiveResizes] = useState<Record<string, LiveGeometry>>({});
+  // True while a NodeResizer gesture is active so position deltas are applied
+  // as resize anchors (not drags).
+  const resizingRef = useRef(false);
 
   const nodes = useMemo<Node<OverviewElementNodeData>[]>(() => {
-    const live = edit ? dragPositions : null;
     return elements.map(element => {
-      const livePos = live ? live[element.id] : undefined;
+      const liveResize = edit ? liveResizes[element.id] : undefined;
+      const liveDrag = edit && !liveResize ? dragPositions[element.id] : undefined;
+      const position = liveResize
+        ? { x: liveResize.x, y: liveResize.y }
+        : liveDrag ?? { x: element.x, y: element.y };
+      const size = liveResize
+        ? { width: liveResize.width, height: liveResize.height }
+        : { width: element.width, height: element.height };
       return {
         id: element.id,
         type: 'overviewElement',
-        position: livePos ?? { x: element.x, y: element.y },
-        style: { width: element.width, height: element.height, zIndex: element.zIndex },
+        position,
+        style: { width: size.width, height: size.height, zIndex: element.zIndex },
         selected: edit && element.id === selectedElementId,
         draggable: edit && !element.locked,
         resizable: edit && !element.locked,
         connectable: false,
         data: {
-          element,
+          element: liveResize || liveDrag
+            ? { ...element, x: position.x, y: position.y, width: size.width, height: size.height }
+            : element,
           mode,
           selected: edit && element.id === selectedElementId,
         },
       };
     });
-  }, [dragPositions, elements, edit, mode, selectedElementId]);
+  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {
@@ -106,12 +128,10 @@ function OverviewCanvasBase({
       // Restore the exact session viewport — never Fit View on init/return.
       instance.setViewport(viewport as Viewport, { duration: 0 });
     },
-    // Intentionally only on init: later restores are driven by restoreViewportEpoch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [onInstanceReady],
   );
 
-  // Restore the stored viewport whenever the canvas is shown again (panel/page return).
   useEffect(() => {
     if (restoreViewportEpoch === 0) return;
     const instance = instanceRef.current;
@@ -127,23 +147,87 @@ function OverviewCanvasBase({
     [onViewportChange],
   );
 
+  const commitResize = useCallback(
+    (id: string, geometry: LiveGeometry) => {
+      setLiveResizes(prev => {
+        if (!(id in prev)) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+      if (geometry.width > 0 && geometry.height > 0) {
+        onResizeElement(id, geometry);
+      }
+    },
+    [onResizeElement],
+  );
+
   const handleNodesChange = useCallback(
     (changes: NodeChange<Node<OverviewElementNodeData>>[]) => {
       if (!edit) return;
+
+      // Batch pass: detect resize gestures (dimensions with resizing flag).
+      let sawResize = false;
+      for (const change of changes) {
+        if (change.type === 'dimensions' && 'resizing' in change && change.resizing) {
+          sawResize = true;
+        }
+      }
+      if (sawResize) resizingRef.current = true;
+
       for (const change of changes) {
         if (change.type === 'select') {
-          // Select true only — clearing is reserved for Pane click alone so
-          // A→B never briefly clears or requires a second click.
+          // Select true only — clearing is reserved for Pane click alone.
           if (change.selected) onSelectElement(change.id);
         }
+
+        if (change.type === 'dimensions' && change.dimensions) {
+          const width = change.dimensions.width;
+          const height = change.dimensions.height;
+          if (width <= 0 || height <= 0) continue;
+          const resizing = 'resizing' in change ? Boolean(change.resizing) : resizingRef.current;
+          const element = elements.find(el => el.id === change.id);
+          if (!element) continue;
+
+          if (resizing) {
+            resizingRef.current = true;
+            setLiveResizes(prev => {
+              const base = prev[change.id] ?? { x: element.x, y: element.y, width: element.width, height: element.height };
+              return { ...prev, [change.id]: { ...base, width, height } };
+            });
+          } else if (!resizingRef.current) {
+            // Non-resize dimension sync (e.g. external) — ignore without history.
+            continue;
+          }
+        }
+
         if (change.type === 'position' && change.position) {
+          const { x, y } = change.position;
+
+          if (resizingRef.current) {
+            // Top/left resize moves the opposite-anchored origin: apply x/y too.
+            setLiveResizes(prev => {
+              const element = elements.find(el => el.id === change.id);
+              const base = element
+                ? prev[change.id] ?? {
+                    x: element.x,
+                    y: element.y,
+                    width: element.width,
+                    height: element.height,
+                  }
+                : prev[change.id];
+              if (!base) return prev;
+              return { ...prev, [change.id]: { ...base, x, y } };
+            });
+            if (change.dragging === false) {
+              // End of gesture handled when dimensions report resizing:false.
+            }
+            continue;
+          }
+
           if (change.dragging === true) {
-            // Live visual feedback while the pointer moves.
-            const { x, y } = change.position;
             setDragPositions(prev => ({ ...prev, [change.id]: { x, y } }));
           } else if (change.dragging === false) {
-            // Drag stop: one draft commit → one history entry + dirty once.
-            const { x, y } = change.position;
             setDragPositions(prev => {
               if (!(change.id in prev)) return prev;
               const next = { ...prev };
@@ -153,16 +237,30 @@ function OverviewCanvasBase({
             onMoveElement(change.id, x, y);
           }
         }
-        if (change.type === 'dimensions' && change.dimensions) {
-          const width = change.dimensions.width;
-          const height = change.dimensions.height;
-          if (width > 0 && height > 0) {
-            onResizeElement(change.id, width, height);
-          }
+      }
+
+      // Commit resize when the batch ends the gesture.
+      for (const change of changes) {
+        if (change.type === 'dimensions' && 'resizing' in change && change.resizing === false) {
+          const element = elements.find(el => el.id === change.id);
+          if (!element) continue;
+          const width = change.dimensions?.width ?? element.width;
+          const height = change.dimensions?.height ?? element.height;
+          // Pull latest live geometry (may include position from same batch).
+          setLiveResizes(prev => {
+            const live = prev[change.id];
+            const geometry = live
+              ? { ...live, width: width > 0 ? width : live.width, height: height > 0 ? height : live.height }
+              : { x: element.x, y: element.y, width, height };
+            // Defer state clear to commitResize after this updater.
+            queueMicrotask(() => commitResize(change.id, geometry));
+            return prev;
+          });
+          resizingRef.current = false;
         }
       }
     },
-    [edit, onMoveElement, onResizeElement, onSelectElement],
+    [edit, elements, onMoveElement, onSelectElement, commitResize],
   );
 
   // Single-click selection: node click is authoritative; pane click alone clears.

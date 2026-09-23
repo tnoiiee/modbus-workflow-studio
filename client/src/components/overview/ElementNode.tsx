@@ -1,5 +1,5 @@
 import { memo, useCallback, useState, type CSSProperties, type ReactNode } from 'react';
-import { Handle, NodeResizer, Position, type NodeProps } from '@xyflow/react';
+import { NodeResizer, type NodeProps } from '@xyflow/react';
 import { Lock } from 'lucide-react';
 
 import type { OverviewElement } from '../../lib/overviewElements.js';
@@ -28,15 +28,10 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
   const [buttonPressed, setButtonPressed] = useState(false);
   const [linkFeedback, setLinkFeedback] = useState(false);
 
-  const stopEditEvents = useCallback((event: React.SyntheticEvent) => {
-    if (edit) {
-      event.stopPropagation();
-    }
-  }, [edit]);
-
   const handleSwitchClick = useCallback(
     (event: React.MouseEvent) => {
       if (edit) return;
+      // Stop only the control interaction — never the Element root select path.
       event.stopPropagation();
       setSwitchOn(on => !on);
     },
@@ -74,14 +69,12 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
 
   if (!element.visible) {
     return (
-      <div className="overview-element overview-element--hidden" data-element-id={element.id} data-selected={selected ? 'true' : 'false'}>
+      <div
+        className="overview-element overview-element--hidden"
+        data-element-id={element.id}
+        data-selected={selected ? 'true' : 'false'}
+      >
         <span className="overview-element__hidden-label">Hidden</span>
-        {edit ? (
-          <>
-            <Handle type="target" position={Position.Left} className="overview-element__handle" />
-            <Handle type="source" position={Position.Right} className="overview-element__handle" />
-          </>
-        ) : null}
       </div>
     );
   }
@@ -133,7 +126,6 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
         data-preview-pressed={type === 'PUSH_BUTTON' && !edit ? (buttonPressed ? 'true' : 'false') : undefined}
         style={boxStyle}
         title={element.locked ? `${element.name} (locked)` : element.name}
-        onClick={stopEditEvents}
       >
         {element.locked ? (
           <span className="overview-element__lock" aria-hidden="true">
@@ -155,13 +147,6 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
             {!edit && type === 'PUSH_BUTTON' ? ' · PREVIEW' : ''}
             {!edit && type === 'NAVIGATION_LINK' ? ' · PREVIEW' : ''}
           </span>
-        ) : null}
-
-        {edit ? (
-          <>
-            <Handle type="target" position={Position.Left} id="in" className="overview-element__handle" />
-            <Handle type="source" position={Position.Right} id="out" className="overview-element__handle" />
-          </>
         ) : null}
       </div>
     </>

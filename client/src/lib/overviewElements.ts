@@ -312,7 +312,7 @@ export function nudgeOverviewElementToFreeSlot(
   grid = OVERVIEW_ELEMENT_SNAP,
   limit = 400,
   bounds?: { width: number; height: number },
-): { x: number; y: number } {
+): { x: number; y: number } | null {
   const hasBounds = Boolean(bounds);
   const maxX = bounds ? Math.max(0, Math.floor((bounds.width - size.width) / grid) * grid) : Number.POSITIVE_INFINITY;
   const maxY = bounds ? Math.max(0, Math.floor((bounds.height - size.height) / grid) * grid) : Number.POSITIVE_INFINITY;
@@ -340,7 +340,8 @@ export function nudgeOverviewElementToFreeSlot(
       candidate = { x: candidate.x + grid, y: candidate.y + grid };
       if (free(candidate)) return candidate;
     }
-    return start;
+    // No valid free slot — never fall back to an overlapping position.
+    return null;
   }
 
   // Expanding ring search over grid cells — deterministic, stays in bounds.
@@ -362,7 +363,7 @@ export function nudgeOverviewElementToFreeSlot(
       }
     }
   }
-  return start;
+  return null;
 }
 
 /** Layer operations — return a new elements array with updated zIndex values. */
@@ -425,6 +426,7 @@ export function duplicateOverviewElement(
     size,
     elements.filter(el => el.id !== id),
   );
+  if (!position) return null;
   const copy: OverviewElement = {
     ...structuredClone(source),
     id: newId,
