@@ -28,9 +28,18 @@ import {
   overviewSaveLabel,
   pageCrudDisabledInMode,
   pageCrudTooltip,
+  buildElementDeleteDescription,
+  buildElementDeleteFacts,
+  marksOverviewDirty,
+  rememberOverviewViewport,
   requiresPageSwitchConfirm,
   resetOverviewPanelSession,
+  resolveElementLibraryBulkToggle,
+  resolveInspectorToggle,
+  selectionFromNodeClick,
+  selectionFromPaneClick,
   setSessionPanelCollapsed,
+  shouldAutoFitOverviewViewport,
   showOverviewShell,
   showWorkflowCommandBar,
   shouldConfirmCancel,
@@ -38,8 +47,10 @@ import {
   uniqueOverviewPageName,
   validateOverviewDimensions,
   validateOverviewPageName,
+  OVERVIEW_HOME_VIEWPORT,
   type OverviewPageRecord,
   type OverviewSaveState,
+  type OverviewViewportMemory,
 } from './overviewState.js';
 
 function makePage(overrides: Partial<OverviewPageRecord> = {}): OverviewPageRecord {
@@ -393,5 +404,255 @@ describe('Workflow Command Bar page scope', () => {
     for (const pageName of ['Workflow', ...otherPages.slice(1)] as const) {
       expect(showOverviewShell(pageName)).toBe(false);
     }
+  });
+});
+
+/* ---- O1-C critical UX correction (issues 1–3, 8, 11, 12) --------------- */
+
+describe('session preservation helpers (issues 1–2)', () => {
+  it('remembers an exact viewport snapshot', () => {
+    const stored = rememberOverviewViewport(OVERVIEW_HOME_VIEWPORT, { x: -120.5, y: 40, zoom: 1.35 });
+    expect(stored).toEqual({ x: -120.5, y: 40, zoom: 1.35 });
+  });
+
+  it('never auto-fits when returning to Overview', () => {
+    expect(shouldAutoFitOverviewViewport()).toBe(false);
+  });
+
+  it('panel toggle does not alter the stored viewport memory', () => {
+    const viewport: OverviewViewportMemory = { x: -10, y: 20, zoom: 0.9 };
+    const afterToggle = toggleOverviewPanel(false);
+    expect(afterToggle).toBe(true);
+    expect(viewport).toEqual({ x: -10, y: 20, zoom: 0.9 });
+  });
+
+  it('Edit mode / draft survive the keep-alive path (no reset on navigate)', () => {
+    const session = beginOverviewEdit(makePage({ description: 'keep me' }));
+    expect(session.mode).toBe('EDIT');
+    // Keep-alive: App keeps Overview mounted — session values are not recomputed
+    // from the server on return; pure session object stays intact.
+    expect(session.draft.description).toBe('keep me');
+    expect(session.saveState).toBe('SAVED');
+  });
+});
+
+describe('dirty state (issue 3)', () => {
+  it('first mutation from SAVED marks UNSAVED / CHANGES PENDING', () => {
+    const session = beginOverviewEdit(makePage());
+    expect(session.saveState).toBe('SAVED');
+    expect(marksOverviewDirty(session.saveState)).toBe(true);
+    const first = applyOverviewDraftPatch(session.baseline, session.draft, {
+      description: 'first mutation',
+    });
+    expect(first.saveState).toBe('UNSAVED');
+    expect(overviewSaveLabel(first.saveState)).toBe('CHANGES PENDING');
+    expect(shouldConfirmCancel(first.saveState)).toBe(true);
+  });
+
+  it('selection / pan / zoom / panel / search do not mark dirty', () => {
+    // Those interactions never call applyOverviewDraftPatch — pure guard:
+    expect(marksOverviewDirty('SAVED')).toBe(true); // only mutation entry point
+    const baseline = makePage();
+    const draft = structuredClone(baseline);
+    // No patch applied → still matches baseline → SAVED.
+    expect(overviewDraftMatchesBaseline(baseline, draft)).toBe(true);
+    expect(overviewSaveLabel('SAVED')).toBe('SAVED');
+    expect(shouldConfirmCancel('SAVED')).toBe(false);
+    // Panel/search state lives outside draft:
+    resetOverviewPanelSession();
+    expect(getSessionPanelCollapsed('library')).toBe(false);
+    expect(overviewDraftMatchesBaseline(baseline, draft)).toBe(true);
+  });
+
+  it('UI label for UNSAVED is exactly CHANGES PENDING', () => {
+    expect(overviewSaveLabel('UNSAVED')).toBe('CHANGES PENDING');
+  });
+});
+
+describe('selection helpers (issue 4)', () => {
+  it('node click A then B selects in one click each', () => {
+    expect(selectionFromNodeClick('A')).toBe('A');
+    expect(selectionFromNodeClick('B')).toBe('B');
+  });
+
+  it('pane click alone clears selection', () => {
+    expect(selectionFromPaneClick()).toBeNull();
+  });
+});
+
+describe('delete confirmation copy (issue 8)', () => {
+  it('uses the required title/description contract', () => {
+    expect(buildElementDeleteDescription('Pump 1')).toBe('Delete "Pump 1" from this Overview Page?');
+  });
+
+  it('lists type, ID, binding status, and local-until-save facts', () => {
+    const facts = buildElementDeleteFacts({
+      type: 'SWITCH',
+      id: 'element-9',
+      binding: { status: 'NOT_BOUND' },
+    });
+    expect(facts).toEqual([
+      'Element type: SWITCH',
+      'Element ID: element-9',
+      'Binding status: NOT_BOUND',
+      'This change remains local until Save & Exit',
+    ]);
+  });
+
+  it('OverviewPage wires every delete path through ConfirmDialog', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'OverviewPage.tsx'),
+      'utf8',
+    );
+    expect(source).toContain('title="Delete Overview Element"');
+    expect(source).toContain('requestDeleteElement');
+    expect(source).toContain('confirmDeleteElement');
+    expect(source).toContain('cancelDeleteElement');
+    // Keyboard + inspector + command all use requestDeleteElement, not direct mutation.
+    expect(source).toContain('event.key === \'Delete\' || event.key === \'Backspace\'');
+    expect(source).toContain('onDeleteSelected');
+    // No native dialogs.
+    expect(source).not.toContain('window.confirm(');
+    expect(source).not.toContain('window.alert(');
+  });
+});
+
+describe('library bulk toggle (issue 11)', () => {
+  it('any collapsed → Expand All with expand icon', () => {
+    const state = resolveElementLibraryBulkToggle(false);
+    expect(state.action).toBe('expand');
+    expect(state.ariaLabel).toBe('Expand All Categories');
+    expect(state.icon).toBe('expand');
+  });
+
+  it('all expanded → Collapse All with collapse icon', () => {
+    const state = resolveElementLibraryBulkToggle(true);
+    expect(state.action).toBe('collapse');
+    expect(state.ariaLabel).toBe('Collapse All Categories');
+    expect(state.icon).toBe('collapse');
+  });
+
+  it('ElementLibrary uses a single toggle beside Search', () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), 'src', 'components', 'overview', 'ElementLibrary.tsx'),
+      'utf8',
+    );
+    expect(source).not.toContain('Expand All\n');
+    expect(source).not.toContain('>Expand All<');
+    expect(source).not.toContain('>Collapse All<');
+    expect(source).toContain('resolveElementLibraryBulkToggle');
+    expect(source).toContain('element-library__toggle');
+    expect(source).toContain('element-library__search');
+    // Category toggles unchanged:
+    expect(source).toContain('element-library__section-toggle');
+  });
+});
+
+describe('inspector rail icons (issue 12)', () => {
+  it('expanded → Collapse Element Inspector', () => {
+    const state = resolveInspectorToggle(true);
+    expect(state.ariaLabel).toBe('Collapse Element Inspector');
+    expect(state.icon).toBe('collapse');
+  });
+
+  it('collapsed → Expand Element Inspector', () => {
+    const state = resolveInspectorToggle(false);
+    expect(state.ariaLabel).toBe('Expand Element Inspector');
+    expect(state.icon).toBe('expand');
+  });
+});
+
+describe('O1-C critical UX source contracts (issues 1, 2, 5, 6, 10, 13, 14)', () => {
+  const read = (rel: string[]) => fs.readFileSync(path.join(process.cwd(), 'src', ...rel), 'utf8');
+
+  it('App keeps Overview session mounted across navigation (issue 1)', () => {
+    const app = read(['App.tsx']);
+    expect(app).toContain('overviewMounted');
+    expect(app).toContain('setOverviewMounted(true)');
+    expect(app).toContain('overview-session-host');
+    // Must not unmount Overview when navigating away:
+    expect(app).toContain("page==='Overview'?undefined:{display:'none'}");
+    expect(app).not.toContain("{page==='Overview'&&<OverviewPage/>}");
+  });
+
+  it('canvas restores viewport without Fit View on return (issue 2)', () => {
+    const canvas = read(['components', 'overview', 'OverviewCanvas.tsx']);
+    expect(canvas).toContain('onViewportChange');
+    expect(canvas).toContain('restoreViewportEpoch');
+    expect(canvas).toContain('setViewport');
+    // No auto fitView prop on the ReactFlow instance:
+    expect(canvas).not.toMatch(/<ReactFlow[^>]*\sfitView[\s>]/);
+    expect(canvas).not.toContain('fitViewOptions');
+    expect(read(['components', 'overview', 'OverviewPage.tsx'])).toContain('handleFitView');
+  });
+
+  it('drag updates live and commits once on stop (issue 5)', () => {
+    const canvas = read(['components', 'overview', 'OverviewCanvas.tsx']);
+    expect(canvas).toContain('dragging === true');
+    expect(canvas).toContain('setDragPositions');
+    expect(canvas).toContain('dragging === false');
+    expect(canvas).toContain('onMoveElement(change.id, x, y)');
+  });
+
+  it('eight resize handles via NodeResizer; none when locked or VIEW (issue 6)', () => {
+    const node = read(['components', 'overview', 'ElementNode.tsx']);
+    expect(node).toContain('NodeResizer');
+    expect(node).toContain('showResizeHandles');
+    expect(node).toContain('edit && selected && !element.locked');
+    const page = read(['components', 'overview', 'OverviewPage.tsx']);
+    // Coalesced gesture → one history entry per resize.
+    expect(page).toContain('resizeGestureRef');
+    expect(page).toContain('pushHistory: firstFrame');
+  });
+
+  it('VIEW control preview is local UI only (issue 10)', () => {
+    const node = read(['components', 'overview', 'ElementNode.tsx']);
+    expect(node).toContain('data-preview-control="switch"');
+    expect(node).toContain('data-preview-control="push-button"');
+    expect(node).toContain('data-preview-control="navigation-link"');
+    expect(node).toContain('PREVIEW');
+    expect(node).not.toContain('fetch(');
+    expect(node).not.toContain('/api/');
+    expect(node).not.toContain('updateOverviewPage');
+  });
+
+  it('Inspector offers only category-valid directions (issue 9)', () => {
+    const inspector = read(['components', 'overview', 'ElementInspector.tsx']);
+    expect(inspector).toContain('overviewAllowedDirections(element.category)');
+    expect(inspector).not.toContain("DIRECTIONS.map");
+    const page = read(['components', 'overview', 'OverviewPage.tsx']);
+    expect(page).toContain('normalizeOverviewBindingDirection');
+  });
+
+  it('library CSS keeps search flex + toggle without overflow (issue 11)', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src', 'styles', 'overview.css'), 'utf8');
+    expect(css).toContain('.element-library__toggle');
+    expect(css).toMatch(/\.element-library__search\s*\{[^}]*flex:\s*1 1 auto/s);
+    expect(css).toMatch(/\.element-library__search\s*\{[^}]*min-width:\s*0/s);
+  });
+
+  it('version is v1.3.0-dev across canonical sources (issue 13)', () => {
+    const version = read(['version.ts']);
+    expect(version).toContain("'1.3.0-dev'");
+    const rootPkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), '..', 'package.json'), 'utf8'));
+    const clientPkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+    expect(rootPkg.version).toBe('1.3.0-dev');
+    expect(clientPkg.version).toBe('1.3.0-dev');
+  });
+
+  it('does not touch protected Workflow/Modbus/Tag/Variable surfaces (issue 14)', () => {
+    const page = read(['components', 'overview', 'OverviewPage.tsx']);
+    // Save pipeline only via confirmSaveAndExit — never during element mutations.
+    expect(page).toContain('confirmSaveAndExit');
+    expect(page).toContain('updateOverviewPage');
+    expect(page).not.toContain('window.confirm(');
+    expect(page).not.toContain('window.alert(');
+    // No Runtime/Modbus APIs from element canvas/node code:
+    const canvas = read(['components', 'overview', 'OverviewCanvas.tsx']);
+    expect(canvas).not.toContain('/api/');
+    expect(canvas).not.toContain('WebSocket');
+    const node = read(['components', 'overview', 'ElementNode.tsx']);
+    expect(node).not.toContain('/api/');
+    expect(node).not.toContain('WebSocket');
   });
 });

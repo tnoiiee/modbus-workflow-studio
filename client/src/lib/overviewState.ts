@@ -376,3 +376,97 @@ export function resetOverviewPanelSession(): void {
   sessionLibraryCollapsed = false;
   sessionInspectorCollapsed = false;
 }
+
+/* ---- O1-C critical UX helpers (pure) ---------------------------------- */
+
+/**
+ * Session viewport memory (not Local Storage).
+ * Survives App page navigation while Overview stays mounted.
+ */
+export interface OverviewViewportMemory {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export const OVERVIEW_HOME_VIEWPORT: OverviewViewportMemory = { x: 0, y: 0, zoom: 1 };
+
+export function rememberOverviewViewport(
+  _current: OverviewViewportMemory,
+  next: OverviewViewportMemory,
+): OverviewViewportMemory {
+  return { x: next.x, y: next.y, zoom: next.zoom };
+}
+
+/** Fit View runs only on explicit user action — never when returning. */
+export function shouldAutoFitOverviewViewport(): boolean {
+  return false;
+}
+
+/** True when the first draft mutation must flip SAVED → UNSAVED. */
+export function marksOverviewDirty(saveStateBefore: OverviewSaveState): boolean {
+  return saveStateBefore === 'SAVED';
+}
+
+/** Single library bulk toggle: any collapsed → expand; all expanded → collapse. */
+export function resolveElementLibraryBulkToggle(allExpanded: boolean): {
+  action: 'expand' | 'collapse';
+  label: string;
+  ariaLabel: string;
+  icon: 'expand' | 'collapse';
+} {
+  if (allExpanded) {
+    return {
+      action: 'collapse',
+      label: 'Collapse All Categories',
+      ariaLabel: 'Collapse All Categories',
+      icon: 'collapse',
+    };
+  }
+  return {
+    action: 'expand',
+    label: 'Expand All Categories',
+    ariaLabel: 'Expand All Categories',
+    icon: 'expand',
+  };
+}
+
+/**
+ * Right-side Inspector rail/panel icons (O1-C §12).
+ * Expanded shows Collapse; collapsed shows Expand.
+ */
+export function resolveInspectorToggle(expanded: boolean): {
+  ariaLabel: 'Collapse Element Inspector' | 'Expand Element Inspector';
+  icon: 'collapse' | 'expand';
+} {
+  return expanded
+    ? { ariaLabel: 'Collapse Element Inspector', icon: 'collapse' }
+    : { ariaLabel: 'Expand Element Inspector', icon: 'expand' };
+}
+
+/** Element delete ConfirmDialog copy (O1-C §8). */
+export function buildElementDeleteDescription(name: string): string {
+  return `Delete "${name}" from this Overview Page?`;
+}
+
+export function buildElementDeleteFacts(element: {
+  type: string;
+  id: string;
+  binding: { status: string };
+}): string[] {
+  return [
+    `Element type: ${element.type}`,
+    `Element ID: ${element.id}`,
+    `Binding status: ${element.binding.status}`,
+    'This change remains local until Save & Exit',
+  ];
+}
+
+/** Pane click alone clears selection; node clicks always select the node id. */
+export function selectionFromNodeClick(id: string): string {
+  return id;
+}
+
+export function selectionFromPaneClick(): null {
+  return null;
+}

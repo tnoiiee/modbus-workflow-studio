@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactFlowInstance } from '@xyflow/react';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
 import { ConfirmDialog } from '../ui/ConfirmDialog.js';
 import { Field } from '../ui/Field.js';
@@ -8,7 +8,12 @@ import { Modal } from '../ui/Modal.js';
 import { Tooltip } from '../ui/Tooltip.js';
 import { ElementInspector } from './ElementInspector.js';
 import { ElementLibrary } from './ElementLibrary.js';
-import { OverviewCanvas, fitOverviewView } from './OverviewCanvas.js';
+import {
+  OverviewCanvas,
+  fitOverviewView,
+  OVERVIEW_DEFAULT_VIEWPORT,
+  type OverviewViewportSnapshot,
+} from './OverviewCanvas.js';
 import { OverviewCommandBar } from './OverviewCommandBar.js';
 import {
   OVERVIEW_DEFAULT_BACKGROUND,
@@ -18,6 +23,8 @@ import {
   applyOverviewDraftPatch,
   beginOverviewEdit,
   buildDeleteConfirmFacts,
+  buildElementDeleteDescription,
+  buildElementDeleteFacts,
   buildSaveConfirmDescription,
   buildSaveConfirmFacts,
   cancelOverviewEdit,
@@ -49,6 +56,7 @@ import {
   emptyOverviewHistory,
   layerOrderFromElements,
   nudgeOverviewElementToFreeSlot,
+  normalizeOverviewBindingDirection,
   overviewBringForward,
   overviewBringToFront,
   overviewSendBackward,
@@ -57,6 +65,7 @@ import {
   redoOverviewHistory,
   undoOverviewHistory,
   validateOverviewElements,
+  OVERVIEW_TYPE_CATEGORY,
   type OverviewDraftHistory,
   type OverviewElement,
   type OverviewElementType,
@@ -93,7 +102,7 @@ function asElements(page: OverviewPageRecord | null): OverviewElement[] {
  * Save & Exit pipeline, page CRUD dialogs, and session-scoped panel collapse.
  * Persistence goes through `/api/overview-pages` only.
  */
-export function OverviewPage() {
+export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const [pages, setPages] = useState<OverviewPageSummary[]>([]);
   const [activePageId, setActivePageId] = useState('');
   const [activePage, setActivePage] = useState<OverviewPageRecord | null>(null);
@@ -125,9 +134,17 @@ export function OverviewPage() {
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [history, setHistory] = useState<OverviewDraftHistory>(() => emptyOverviewHistory());
 
+  // Element delete confirmation (all paths route through this dialog).
+  const [elementDeleteTarget, setElementDeleteTarget] = useState<OverviewElement | null>(null);
+
+  // Session viewport — preserved across App navigation (memory only).
+  const [viewport, setViewport] = useState<OverviewViewportSnapshot>(OVERVIEW_DEFAULT_VIEWPORT);
+  const [restoreViewportEpoch, setRestoreViewportEpoch] = useState(0);
+
   const flowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const activePageIdRef = useRef('');
   activePageIdRef.current = activePageId;
+  const activeRef = useRef(active);
   // Coalesce a continuous resize gesture into a single undo entry.
   const resizeGestureRef = useRef<string | null>(null);
 
@@ -549,7 +566,11 @@ export function OverviewPage() {
       const existing = asElements(draft);
       const probe = createOverviewElement(type, { id, x: 0, y: 0, existing });
       const base = centerOverviewElementPosition(center, probe);
-      const position = nudgeOverviewElementToFreeSlot(base, probe, existing);
+      const bounds = {
+        width: draft.designWidth ?? workingPage?.designWidth ?? 1024,
+        height: draft.designHeight ?? workingPage?.designHeight ?? 768,
+      };
+      const position = nudgeOverviewElementToFreeSlot(base, probe, existing, undefined, undefined, bounds);
       const element = createOverviewElement(type, {
         id,
         x: position.x,
@@ -559,7 +580,7 @@ export function OverviewPage() {
       });
       applyElementMutation(elements => [...elements, element], { select: id });
     },
-    [applyElementMutation, draft, mode],
+    [applyElementMutation, draft, mode, workingPage],
   );
 
   const handleMoveElement = useCallback(
@@ -599,11 +620,26 @@ export function OverviewPage() {
     (patch: Partial<OverviewElement>) => {
       if (!selectedElementId) return;
       applyElementMutation(elements =>
-        elements.map(el =>
-          el.id === selectedElementId && !el.locked
-            ? { ...el, ...patch, id: el.id, type: el.type, category: el.category }
-            : el,
-        ),
+        elements.map(el => {
+          if (el.id !== selectedElementId || el.locked) return el;
+          const nextType = patch.type ?? el.type;
+          const nextCategory = patch.category ?? OVERVIEW_TYPE_CATEGORY[nextType] ?? el.category;
+          const next: OverviewElement = {
+            ...el,
+            ...patch,
+            id: el.id,
+            type: nextType,
+            category: nextCategory,
+          };
+          // Type/category change must normalize Binding Direction to a valid value.
+          if (patch.type !== undefined || patch.category !== undefined) {
+            next.binding = {
+              ...el.binding,
+              direction: normalizeOverviewBindingDirection(nextCategory, el.binding.direction),
+            };
+          }
+          return next;
+        }),
       );
     },
     [applyElementMutation, selectedElementId],
@@ -625,9 +661,14 @@ export function OverviewPage() {
     (patch: Partial<OverviewElement['binding']>) => {
       if (!selectedElementId) return;
       applyElementMutation(elements =>
-        elements.map(el =>
-          el.id === selectedElementId && !el.locked ? { ...el, binding: { ...el.binding, ...patch } } : el,
-        ),
+        elements.map(el => {
+          if (el.id !== selectedElementId || el.locked) return el;
+          const nextBinding = { ...el.binding, ...patch };
+          if (patch.direction !== undefined) {
+            nextBinding.direction = normalizeOverviewBindingDirection(el.category, patch.direction);
+          }
+          return { ...el, binding: nextBinding };
+        }),
       );
     },
     [applyElementMutation, selectedElementId],
@@ -647,15 +688,26 @@ export function OverviewPage() {
     );
   }, [applyElementMutation, selectedElementId]);
 
-  const handleDeleteElement = useCallback(() => {
+  const requestDeleteElement = useCallback(() => {
     if (!selectedElementId) return;
     const target = asElements(draft).find(el => el.id === selectedElementId);
     if (!target || target.locked) return;
-    applyElementMutation(
-      elements => elements.filter(el => el.id !== selectedElementId),
-      { select: null },
-    );
-  }, [applyElementMutation, draft, selectedElementId]);
+    setElementDeleteTarget(target);
+  }, [draft, selectedElementId]);
+
+  const confirmDeleteElement = useCallback(() => {
+    if (!elementDeleteTarget) return;
+    const id = elementDeleteTarget.id;
+    applyElementMutation(elements => elements.filter(el => el.id !== id), { select: null });
+    setElementDeleteTarget(null);
+  }, [applyElementMutation, elementDeleteTarget]);
+
+  const cancelDeleteElement = useCallback(() => {
+    // Keep Element + selection; no history entry; no request.
+    setElementDeleteTarget(null);
+  }, []);
+
+  const handleDeleteElement = requestDeleteElement;
 
   const handleDuplicateElement = useCallback(() => {
     if (!selectedElementId) return;
@@ -731,8 +783,18 @@ export function OverviewPage() {
 
   /* ---- canvas controls -------------------------------------------------- */
 
+  // Restore the exact stored viewport whenever Overview becomes visible again.
+  useEffect(() => {
+    if (!active) return;
+    activeRef.current = true;
+    setRestoreViewportEpoch(token => token + 1);
+  }, [active]);
+
   const handleInstanceReady = useCallback((instance: ReactFlowInstance) => {
     flowInstanceRef.current = instance;
+  }, []);
+  const handleViewportChange = useCallback((next: OverviewViewportSnapshot) => {
+    setViewport(next);
   }, []);
   const handleFitView = useCallback(() => fitOverviewView(flowInstanceRef.current), []);
   const handleZoomIn = useCallback(() => flowInstanceRef.current?.zoomIn(), []);
@@ -827,6 +889,9 @@ export function OverviewPage() {
           onUnlockSelected={() => {
             if (selectedElement?.locked) handleToggleLock();
           }}
+          onDeleteSelected={() => {
+            if (selectedElement && !selectedElement.locked) requestDeleteElement();
+          }}
         />
       </div>
 
@@ -887,6 +952,9 @@ export function OverviewPage() {
           backgroundColor={workingPage?.backgroundColor ?? OVERVIEW_DEFAULT_BACKGROUND}
           elements={draftElements}
           selectedElementId={selectedElementId}
+          viewport={viewport}
+          onViewportChange={handleViewportChange}
+          restoreViewportEpoch={restoreViewportEpoch}
           onSelectElement={setSelectedElementId}
           onMoveElement={handleMoveElement}
           onResizeElement={handleResizeElement}
@@ -903,7 +971,7 @@ export function OverviewPage() {
                 aria-expanded={false}
                 onClick={handleToggleInspector}
               >
-                <PanelLeftOpen size={16} />
+                <PanelRightOpen size={16} />
               </button>
             </Tooltip>
             <span className="overview-rail__marker" aria-hidden="true">
@@ -923,7 +991,7 @@ export function OverviewPage() {
                     aria-expanded={true}
                     onClick={handleToggleInspector}
                   >
-                    <PanelLeftClose size={16} />
+                    <PanelRightClose size={16} />
                   </button>
                 </Tooltip>
               ) : null}
@@ -1158,6 +1226,19 @@ export function OverviewPage() {
         danger
         onConfirm={confirmPendingPageSwitch}
         onClose={() => setPendingPageId(null)}
+      />
+
+      {/* Element delete confirmation — every user-initiated delete path */}
+      <ConfirmDialog
+        open={elementDeleteTarget !== null}
+        title="Delete Overview Element"
+        description={elementDeleteTarget ? buildElementDeleteDescription(elementDeleteTarget.name) : ''}
+        facts={elementDeleteTarget ? buildElementDeleteFacts(elementDeleteTarget) : []}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        danger
+        onConfirm={confirmDeleteElement}
+        onClose={cancelDeleteElement}
       />
     </section>
   );

@@ -1,5 +1,5 @@
-import { memo, type CSSProperties, type ReactNode } from 'react';
-import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { memo, useCallback, useState, type CSSProperties, type ReactNode } from 'react';
+import { Handle, NodeResizer, Position, type NodeProps } from '@xyflow/react';
 import { Lock } from 'lucide-react';
 
 import type { OverviewElement } from '../../lib/overviewElements.js';
@@ -15,13 +15,62 @@ export interface OverviewElementNodeData {
 /**
  * Overview Element renderer — editor preview only.
  * Monitoring shows labeled Editor Preview values; Controls show NOT BOUND.
- * No runtime API, no Modbus write, no production command.
+ * VIEW-mode control interactions are UI-only local preview (no API/Runtime).
  */
 function ElementNodeComponent({ data, selected }: NodeProps) {
   const element = (data as OverviewElementNodeData).element;
   const mode = (data as OverviewElementNodeData).mode;
   const edit = mode === 'EDIT';
   const { style, binding, category, type } = element;
+
+  // UI-only VIEW preview state — not persisted, resets on remount/page switch.
+  const [switchOn, setSwitchOn] = useState(false);
+  const [buttonPressed, setButtonPressed] = useState(false);
+  const [linkFeedback, setLinkFeedback] = useState(false);
+
+  const stopEditEvents = useCallback((event: React.SyntheticEvent) => {
+    if (edit) {
+      event.stopPropagation();
+    }
+  }, [edit]);
+
+  const handleSwitchClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (edit) return;
+      event.stopPropagation();
+      setSwitchOn(on => !on);
+    },
+    [edit],
+  );
+
+  const handleButtonPointerDown = useCallback(
+    (event: React.PointerEvent) => {
+      if (edit) return;
+      event.stopPropagation();
+      setButtonPressed(true);
+    },
+    [edit],
+  );
+
+  const handleButtonPointerUp = useCallback(
+    (event: React.PointerEvent) => {
+      if (edit) return;
+      event.stopPropagation();
+      setButtonPressed(false);
+    },
+    [edit],
+  );
+
+  const handleLinkClick = useCallback(
+    (event: React.MouseEvent) => {
+      if (edit) return;
+      event.stopPropagation();
+      // Preview feedback only — no navigation until a valid target exists.
+      setLinkFeedback(true);
+      window.setTimeout(() => setLinkFeedback(false), 1200);
+    },
+    [edit],
+  );
 
   if (!element.visible) {
     return (
@@ -50,54 +99,87 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
     borderRadius: style.borderRadius,
   };
 
+  const showResizeHandles = edit && selected && !element.locked;
+
   return (
-    <div
-      className={[
-        'overview-element',
-        `overview-element--${type.toLowerCase()}`,
-        `overview-element--${category.toLowerCase()}`,
-        element.locked ? 'is-locked' : '',
-        selected && edit ? 'is-selected' : '',
-        edit ? 'is-editable' : 'is-readonly',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      data-element-id={element.id}
-      data-element-type={element.type}
-      data-selected={selected && edit ? 'true' : 'false'}
-      style={boxStyle}
-      title={element.locked ? `${element.name} (locked)` : element.name}
-    >
-      {element.locked ? (
-        <span className="overview-element__lock" aria-hidden="true">
-          <Lock size={11} />
-        </span>
+    <>
+      {showResizeHandles ? (
+        <NodeResizer
+          minWidth={8}
+          minHeight={8}
+          handleStyle={{ width: 10, height: 10, borderRadius: 2 }}
+          lineStyle={{ borderColor: 'rgba(56, 189, 248, 0.9)' }}
+          isVisible
+        />
       ) : null}
+      <div
+        className={[
+          'overview-element',
+          `overview-element--${type.toLowerCase()}`,
+          `overview-element--${category.toLowerCase()}`,
+          element.locked ? 'is-locked' : '',
+          selected && edit ? 'is-selected' : '',
+          edit ? 'is-editable' : 'is-readonly',
+          switchOn && type === 'SWITCH' && !edit ? 'is-preview-on' : '',
+          buttonPressed && type === 'PUSH_BUTTON' && !edit ? 'is-pressed' : '',
+          linkFeedback && type === 'NAVIGATION_LINK' && !edit ? 'is-link-feedback' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        data-element-id={element.id}
+        data-element-type={element.type}
+        data-selected={selected && edit ? 'true' : 'false'}
+        data-preview-switch={type === 'SWITCH' && !edit ? (switchOn ? 'on' : 'off') : undefined}
+        data-preview-pressed={type === 'PUSH_BUTTON' && !edit ? (buttonPressed ? 'true' : 'false') : undefined}
+        style={boxStyle}
+        title={element.locked ? `${element.name} (locked)` : element.name}
+        onClick={stopEditEvents}
+      >
+        {element.locked ? (
+          <span className="overview-element__lock" aria-hidden="true">
+            <Lock size={11} />
+          </span>
+        ) : null}
 
-      <span className="overview-element__body">{renderPreview(element)}</span>
+        <span className="overview-element__body">{renderPreview(element, { switchOn, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
 
-      {category === 'MONITORING' ? (
-        <span className="overview-element__badge overview-element__badge--preview" aria-hidden="true">
-          Editor Preview
-        </span>
-      ) : null}
-      {category === 'CONTROL' ? (
-        <span className="overview-element__badge overview-element__badge--unbound" aria-hidden="true">
-          {binding.status === 'DRAFT' ? 'DRAFT' : 'NOT BOUND'}
-        </span>
-      ) : null}
+        {category === 'MONITORING' ? (
+          <span className="overview-element__badge overview-element__badge--preview" aria-hidden="true">
+            Editor Preview
+          </span>
+        ) : null}
+        {category === 'CONTROL' ? (
+          <span className="overview-element__badge overview-element__badge--unbound" aria-hidden="true">
+            {binding.status === 'DRAFT' ? 'DRAFT' : 'NOT BOUND'}
+            {!edit && type === 'SWITCH' ? ' · PREVIEW' : ''}
+            {!edit && type === 'PUSH_BUTTON' ? ' · PREVIEW' : ''}
+            {!edit && type === 'NAVIGATION_LINK' ? ' · PREVIEW' : ''}
+          </span>
+        ) : null}
 
-      {edit ? (
-        <>
-          <Handle type="target" position={Position.Left} id="in" className="overview-element__handle" />
-          <Handle type="source" position={Position.Right} id="out" className="overview-element__handle" />
-        </>
-      ) : null}
-    </div>
+        {edit ? (
+          <>
+            <Handle type="target" position={Position.Left} id="in" className="overview-element__handle" />
+            <Handle type="source" position={Position.Right} id="out" className="overview-element__handle" />
+          </>
+        ) : null}
+      </div>
+    </>
   );
 }
 
-function renderPreview(element: OverviewElement): ReactNode {
+interface PreviewHandlers {
+  switchOn: boolean;
+  buttonPressed: boolean;
+  linkFeedback: boolean;
+  edit: boolean;
+  onSwitchClick: (event: React.MouseEvent) => void;
+  onButtonDown: (event: React.PointerEvent) => void;
+  onButtonUp: (event: React.PointerEvent) => void;
+  onLinkClick: (event: React.MouseEvent) => void;
+}
+
+function renderPreview(element: OverviewElement, handlers: PreviewHandlers): ReactNode {
   const { type, style, binding, category } = element;
   const text = style.text;
 
@@ -131,23 +213,67 @@ function renderPreview(element: OverviewElement): ReactNode {
         </span>
       );
     case 'SWITCH':
+      if (handlers.edit) {
+        return (
+          <span className="overview-element__preview overview-element__preview--switch" data-editor-preview="true">
+            <i className="overview-element__switch-track" aria-hidden="true" />
+            <span>OFF · PREVIEW</span>
+          </span>
+        );
+      }
       return (
-        <span className="overview-element__preview overview-element__preview--switch" data-editor-preview="true">
+        <button
+          type="button"
+          className={`overview-element__preview overview-element__preview--switch overview-element__preview--interactive${handlers.switchOn ? ' is-on' : ''}`}
+          data-preview-control="switch"
+          aria-pressed={handlers.switchOn}
+          aria-label="Toggle switch preview"
+          onClick={handlers.onSwitchClick}
+        >
           <i className="overview-element__switch-track" aria-hidden="true" />
-          <span>OFF · PREVIEW</span>
-        </span>
+          <span>{handlers.switchOn ? 'ON · PREVIEW' : 'OFF · PREVIEW'}</span>
+        </button>
       );
     case 'PUSH_BUTTON':
+      if (handlers.edit) {
+        return (
+          <span className="overview-element__preview overview-element__preview--button" data-editor-preview="true">
+            {text || 'Push'}
+          </span>
+        );
+      }
       return (
-        <span className="overview-element__preview overview-element__preview--button" data-editor-preview="true">
+        <button
+          type="button"
+          className={`overview-element__preview overview-element__preview--button overview-element__preview--interactive${handlers.buttonPressed ? ' is-pressed' : ''}`}
+          data-preview-control="push-button"
+          aria-label="Push button preview"
+          onPointerDown={handlers.onButtonDown}
+          onPointerUp={handlers.onButtonUp}
+          onPointerLeave={handlers.onButtonUp}
+          onPointerCancel={handlers.onButtonUp}
+        >
           {text || 'Push'}
-        </span>
+        </button>
       );
     case 'NAVIGATION_LINK':
+      if (handlers.edit) {
+        return (
+          <span className="overview-element__preview overview-element__preview--link" data-editor-preview="true">
+            {text || 'Link'}
+          </span>
+        );
+      }
       return (
-        <span className="overview-element__preview overview-element__preview--link" data-editor-preview="true">
-          {text || 'Link'}
-        </span>
+        <button
+          type="button"
+          className={`overview-element__preview overview-element__preview--link overview-element__preview--interactive${handlers.linkFeedback ? ' is-feedback' : ''}`}
+          data-preview-control="navigation-link"
+          aria-label="Navigation link preview"
+          onClick={handlers.onLinkClick}
+        >
+          {handlers.linkFeedback ? 'Preview · no target' : text || 'Link'}
+        </button>
       );
     case 'STATIC_TEXT':
       return <span className="overview-element__preview">{text || 'Static text'}</span>;

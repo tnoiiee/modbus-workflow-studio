@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Background,
   Controls,
@@ -7,6 +7,7 @@ import {
   type Node,
   type NodeChange,
   type ReactFlowInstance,
+  type Viewport,
 } from '@xyflow/react';
 import { Lock, Pencil } from 'lucide-react';
 
@@ -19,6 +20,15 @@ export const OVERVIEW_SNAP_GRID = 16;
 
 const overviewNodeTypes = { overviewElement: ElementNode };
 
+/** Last Overview viewport kept in session memory (not Local Storage). */
+export interface OverviewViewportSnapshot {
+  x: number;
+  y: number;
+  zoom: number;
+}
+
+export const OVERVIEW_DEFAULT_VIEWPORT: OverviewViewportSnapshot = { x: 0, y: 0, zoom: 1 };
+
 function prefersReducedMotion(): boolean {
   return typeof window !== 'undefined' && Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
@@ -30,6 +40,11 @@ export interface OverviewCanvasProps {
   backgroundColor: string;
   elements: readonly OverviewElement[];
   selectedElementId: string | null;
+  /** Session viewport restored on show; never auto-fit on return. */
+  viewport: OverviewViewportSnapshot;
+  onViewportChange: (viewport: OverviewViewportSnapshot) => void;
+  /** Becomes true each time the canvas is (re)shown — restore exact viewport. */
+  restoreViewportEpoch: number;
   onSelectElement: (id: string | null) => void;
   onMoveElement: (id: string, x: number, y: number) => void;
   onResizeElement: (id: string, width: number, height: number) => void;
@@ -50,19 +65,26 @@ function OverviewCanvasBase({
   backgroundColor,
   elements,
   selectedElementId,
+  viewport,
+  onViewportChange,
+  restoreViewportEpoch,
   onSelectElement,
   onMoveElement,
   onResizeElement,
   onInstanceReady,
 }: OverviewCanvasProps) {
   const edit = mode === 'EDIT';
+  const instanceRef = useRef<ReactFlowInstance | null>(null);
+  const [dragPositions, setDragPositions] = useState<Record<string, { x: number; y: number }>>({});
 
-  const nodes = useMemo<Node<OverviewElementNodeData>[]>(
-    () =>
-      elements.map(element => ({
+  const nodes = useMemo<Node<OverviewElementNodeData>[]>(() => {
+    const live = edit ? dragPositions : null;
+    return elements.map(element => {
+      const livePos = live ? live[element.id] : undefined;
+      return {
         id: element.id,
         type: 'overviewElement',
-        position: { x: element.x, y: element.y },
+        position: livePos ?? { x: element.x, y: element.y },
         style: { width: element.width, height: element.height, zIndex: element.zIndex },
         selected: edit && element.id === selectedElementId,
         draggable: edit && !element.locked,
@@ -73,15 +95,36 @@ function OverviewCanvasBase({
           mode,
           selected: edit && element.id === selectedElementId,
         },
-      })),
-    [elements, edit, mode, selectedElementId],
-  );
+      };
+    });
+  }, [dragPositions, elements, edit, mode, selectedElementId]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {
+      instanceRef.current = instance as unknown as ReactFlowInstance;
       onInstanceReady(instance as unknown as ReactFlowInstance);
+      // Restore the exact session viewport — never Fit View on init/return.
+      instance.setViewport(viewport as Viewport, { duration: 0 });
     },
+    // Intentionally only on init: later restores are driven by restoreViewportEpoch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [onInstanceReady],
+  );
+
+  // Restore the stored viewport whenever the canvas is shown again (panel/page return).
+  useEffect(() => {
+    if (restoreViewportEpoch === 0) return;
+    const instance = instanceRef.current;
+    if (!instance) return;
+    instance.setViewport(viewport as Viewport, { duration: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restoreViewportEpoch]);
+
+  const handleViewportChange = useCallback(
+    (next: Viewport) => {
+      onViewportChange({ x: next.x, y: next.y, zoom: next.zoom });
+    },
+    [onViewportChange],
   );
 
   const handleNodesChange = useCallback(
@@ -89,10 +132,26 @@ function OverviewCanvasBase({
       if (!edit) return;
       for (const change of changes) {
         if (change.type === 'select') {
-          onSelectElement(change.selected ? change.id : null);
+          // Select true only — clearing is reserved for Pane click alone so
+          // A→B never briefly clears or requires a second click.
+          if (change.selected) onSelectElement(change.id);
         }
-        if (change.type === 'position' && change.position && change.dragging === false) {
-          onMoveElement(change.id, change.position.x, change.position.y);
+        if (change.type === 'position' && change.position) {
+          if (change.dragging === true) {
+            // Live visual feedback while the pointer moves.
+            const { x, y } = change.position;
+            setDragPositions(prev => ({ ...prev, [change.id]: { x, y } }));
+          } else if (change.dragging === false) {
+            // Drag stop: one draft commit → one history entry + dirty once.
+            const { x, y } = change.position;
+            setDragPositions(prev => {
+              if (!(change.id in prev)) return prev;
+              const next = { ...prev };
+              delete next[change.id];
+              return next;
+            });
+            onMoveElement(change.id, x, y);
+          }
         }
         if (change.type === 'dimensions' && change.dimensions) {
           const width = change.dimensions.width;
@@ -104,6 +163,14 @@ function OverviewCanvasBase({
       }
     },
     [edit, onMoveElement, onResizeElement, onSelectElement],
+  );
+
+  // Single-click selection: node click is authoritative; pane click alone clears.
+  const handleNodeClick = useCallback(
+    (_event: unknown, node: Node) => {
+      if (edit) onSelectElement(node.id);
+    },
+    [edit, onSelectElement],
   );
 
   const handlePaneClick = useCallback(() => {
@@ -122,9 +189,10 @@ function OverviewCanvasBase({
         nodeTypes={overviewNodeTypes}
         onNodesChange={handleNodesChange}
         onInit={handleInit}
+        onNodeClick={handleNodeClick}
         onPaneClick={handlePaneClick}
-        fitView
-        fitViewOptions={{ padding: 0.2 }}
+        onViewportChange={handleViewportChange}
+        defaultViewport={viewport as Viewport}
         snapToGrid={edit}
         snapGrid={[OVERVIEW_SNAP_GRID, OVERVIEW_SNAP_GRID] as [number, number]}
         minZoom={edit ? 0.1 : 1}

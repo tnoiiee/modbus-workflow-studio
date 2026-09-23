@@ -196,9 +196,35 @@ export function overviewDefaultBinding(category: OverviewElementCategory): Overv
     tagId: '',
     tagName: '',
     dataType: 'Unknown',
-    direction: category === 'MONITORING' ? 'MONITOR' : category === 'CONTROL' ? 'COMMAND' : 'NONE',
+    direction: overviewDefaultDirection(category),
     status: 'NOT_BOUND',
   };
+}
+
+/** Binding Direction options allowed for a category (O1-C §9). */
+export function overviewAllowedDirections(
+  category: OverviewElementCategory,
+): readonly OverviewBindingDirection[] {
+  if (category === 'MONITORING') return ['MONITOR', 'NONE'];
+  if (category === 'CONTROL') return ['COMMAND', 'NONE'];
+  return ['NONE'];
+}
+
+/** Default Direction for a category. */
+export function overviewDefaultDirection(category: OverviewElementCategory): OverviewBindingDirection {
+  return category === 'MONITORING' ? 'MONITOR' : category === 'CONTROL' ? 'COMMAND' : 'NONE';
+}
+
+/**
+ * Normalize a Direction to a value valid for the category.
+ * Invalid values fall back to the category default — never preserved.
+ */
+export function normalizeOverviewBindingDirection(
+  category: OverviewElementCategory,
+  direction: OverviewBindingDirection,
+): OverviewBindingDirection {
+  const allowed = overviewAllowedDirections(category);
+  return allowed.includes(direction) ? direction : overviewDefaultDirection(category);
 }
 
 export function overviewDefaultStyle(category: OverviewElementCategory): OverviewElementStyle {
@@ -274,8 +300,10 @@ function rectsOverlap(
 }
 
 /**
- * Deterministic collision nudge: walk the snap grid diagonally until free.
+ * Deterministic collision nudge: walk the snap grid until free.
  * Existing elements are never moved; no randomness is used.
+ * When `bounds` is provided the candidate rectangle is kept fully inside
+ * the Design Canvas (expanding ring search over grid cells).
  */
 export function nudgeOverviewElementToFreeSlot(
   base: { x: number; y: number },
@@ -283,15 +311,58 @@ export function nudgeOverviewElementToFreeSlot(
   existing: readonly Pick<OverviewElement, 'x' | 'y' | 'width' | 'height'>[],
   grid = OVERVIEW_ELEMENT_SNAP,
   limit = 400,
+  bounds?: { width: number; height: number },
 ): { x: number; y: number } {
-  const step = grid;
-  let candidate = { ...base };
-  for (let i = 0; i < limit; i += 1) {
-    const overlaps = existing.some(other => rectsOverlap({ ...candidate, ...size }, other));
-    if (!overlaps) return candidate;
-    candidate = { x: candidate.x + step, y: candidate.y + step };
+  const hasBounds = Boolean(bounds);
+  const maxX = bounds ? Math.max(0, Math.floor((bounds.width - size.width) / grid) * grid) : Number.POSITIVE_INFINITY;
+  const maxY = bounds ? Math.max(0, Math.floor((bounds.height - size.height) / grid) * grid) : Number.POSITIVE_INFINITY;
+  const snap = (value: number) => Math.round(value / grid) * grid;
+  const clamp = (point: { x: number; y: number }): { x: number; y: number } => {
+    if (!hasBounds) return { x: snap(point.x), y: snap(point.y) };
+    return {
+      x: Math.min(Math.max(0, snap(point.x)), maxX),
+      y: Math.min(Math.max(0, snap(point.y)), maxY),
+    };
+  };
+  const free = (point: { x: number; y: number }): boolean =>
+    point.x >= 0 &&
+    point.y >= 0 &&
+    (!hasBounds || (point.x <= maxX && point.y <= maxY)) &&
+    !existing.some(other => rectsOverlap({ ...point, ...size }, other));
+
+  const start = clamp(base);
+  if (free(start)) return start;
+
+  if (!hasBounds) {
+    // Unbounded diagonal walk (legacy behaviour).
+    let candidate = { x: start.x, y: start.y };
+    for (let i = 0; i < limit; i += 1) {
+      candidate = { x: candidate.x + grid, y: candidate.y + grid };
+      if (free(candidate)) return candidate;
+    }
+    return start;
   }
-  return candidate;
+
+  // Expanding ring search over grid cells — deterministic, stays in bounds.
+  const baseCol = Math.round(start.x / grid);
+  const baseRow = Math.round(start.y / grid);
+  const maxRing = Math.ceil(Math.max(maxX, maxY) / grid) + 2;
+  let visited = 0;
+  for (let ring = 0; ring <= maxRing && visited < limit; ring += 1) {
+    for (let dr = -ring; dr <= ring && visited < limit; dr += 1) {
+      for (let dc = -ring; dc <= ring && visited < limit; dc += 1) {
+        if (Math.max(Math.abs(dr), Math.abs(dc)) !== ring) continue;
+        const col = baseCol + dc;
+        const row = baseRow + dr;
+        if (col < 0 || row < 0) continue;
+        const candidate = { x: col * grid, y: row * grid };
+        if (candidate.x > maxX || candidate.y > maxY) continue;
+        visited += 1;
+        if (free(candidate)) return candidate;
+      }
+    }
+  }
+  return start;
 }
 
 /** Layer operations — return a new elements array with updated zIndex values. */

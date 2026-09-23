@@ -14,6 +14,7 @@ import {
   OVERVIEW_ELEMENT_LABELS,
   clampOverviewOpacity,
   normalizeOverviewRotation,
+  overviewAllowedDirections,
   type OverviewElement,
   type OverviewBindingDataType,
   type OverviewBindingDirection,
@@ -120,7 +121,6 @@ export interface ElementInspectorProps {
 }
 
 const DATA_TYPES: readonly OverviewBindingDataType[] = ['Boolean', 'Number', 'String', 'Unknown'];
-const DIRECTIONS: readonly OverviewBindingDirection[] = ['MONITOR', 'COMMAND', 'NONE'];
 
 /**
  * O1-C Element Inspector — identity, layout, appearance, binding placeholder.
@@ -398,9 +398,11 @@ export function ElementInspector({
             <span>Direction</span>
             <select
               value={binding.direction}
+              aria-label="Binding direction"
+              data-category={element.category}
               onChange={event => onPatchBinding({ direction: event.target.value as OverviewBindingDirection })}
             >
-              {DIRECTIONS.map(direction => (
+              {overviewAllowedDirections(element.category).map(direction => (
                 <option key={direction} value={direction}>
                   {direction}
                 </option>

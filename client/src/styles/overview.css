@@ -300,8 +300,9 @@
 
 .element-library__toolbar {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -309,6 +310,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 1 1 auto;
   min-width: 0;
   padding: 6px 8px;
   border: 1px solid var(--color-border);
@@ -338,13 +340,28 @@
 }
 
 .element-library__bulk-btn {
-  flex: 1 1 auto;
-  min-height: 28px;
+  flex: 0 0 auto;
+  min-height: 30px;
+  min-width: 30px;
   padding: 4px 8px;
   font-size: var(--text-meta);
   font-weight: var(--weight-semibold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.element-library__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* O1-C §11: single Expand/Collapse All toggle sits beside Search. */
+.element-library__toolbar .element-library__toggle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
 }
 
 .element-library__section {
@@ -807,6 +824,64 @@
 .overview-canvas--locked .overview-element__handle,
 .overview-canvas--locked .overview-element__badge {
   display: none;
+}
+
+/* --- O1-C resize handles (8 positions via NodeResizer) ------------------- */
+
+.react-flow__resize-control {
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+  border: 1px solid var(--color-canvas);
+  border-radius: 2px;
+}
+
+.react-flow__resize-control.line {
+  background: transparent;
+  border: none;
+}
+
+.react-flow__resize-control.top.left,
+.react-flow__resize-control.top.right,
+.react-flow__resize-control.bottom.left,
+.react-flow__resize-control.bottom.right {
+  width: 10px;
+  height: 10px;
+}
+
+.overview-canvas--locked .react-flow__resize-control {
+  display: none;
+}
+
+/* --- O1-C VIEW-mode control preview (UI-only) --------------------------- */
+
+.overview-element__preview--interactive {
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+}
+
+.overview-element__preview--interactive:hover {
+  border-color: var(--color-border-accent);
+  color: var(--color-text);
+}
+
+.overview-element__preview--switch.is-on {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  color: var(--color-accent-hover);
+}
+
+.overview-element__preview--button.is-pressed,
+.overview-element.is-pressed .overview-element__preview--button {
+  transform: translateY(1px);
+  background: var(--color-surface-4);
+  border-color: var(--color-accent);
+}
+
+.overview-element__preview--link.is-feedback {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
 }
 
 /* --- responsive: 1920 -> 1366 -> 1024 ------------------------------------ */

@@ -46,6 +46,8 @@ export interface OverviewCommandBarProps {
   onZoomOut: () => void;
   onLockSelected: () => void;
   onUnlockSelected: () => void;
+  /** Opens the Element delete confirmation for the current selection. */
+  onDeleteSelected: () => void;
 }
 
 /**
@@ -83,6 +85,7 @@ export function OverviewCommandBar({
   onZoomOut,
   onLockSelected,
   onUnlockSelected,
+  onDeleteSelected,
 }: OverviewCommandBarProps) {
   const saveLabel = overviewSaveLabel(saveState);
   const edit = mode === 'EDIT';
@@ -217,6 +220,15 @@ export function OverviewCommandBar({
               icon={<Unlock size={15} />}
               disabled={!hasSelection}
               onClick={onUnlockSelected}
+            />
+            <span className="command-divider command-divider--danger" aria-hidden="true" />
+            <IconButton
+              label="Delete Selected"
+              tooltip={hasSelection ? 'Delete selected element' : 'No element selected'}
+              variant="danger"
+              icon={<Trash2 size={15} />}
+              disabled={!hasSelection}
+              onClick={onDeleteSelected}
             />
           </div>
         </div>

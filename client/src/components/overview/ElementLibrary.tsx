@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, Minus, Plus, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, Minus, Plus, Search } from 'lucide-react';
 
+import { Tooltip } from '../ui/Tooltip.js';
 import {
   OVERVIEW_CATEGORY_LABELS,
   OVERVIEW_CATEGORY_TYPES,
@@ -9,6 +10,7 @@ import {
   type OverviewElementCategory,
   type OverviewElementType,
 } from '../../lib/overviewElements.js';
+import { resolveElementLibraryBulkToggle } from '../../lib/overviewState.js';
 
 export interface ElementLibraryProps {
   onAddElement: (type: OverviewElementType) => void;
@@ -53,7 +55,10 @@ export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
   );
 
   const visibleCount = filtered.length;
-  const allOpen = sections.every(section => open[section.category] || section.types.length === 0);
+  const allExpanded = (Object.keys(OVERVIEW_CATEGORY_TYPES) as OverviewElementCategory[]).every(
+    category => open[category],
+  );
+  const bulk = resolveElementLibraryBulkToggle(allExpanded);
   const searchActive = query.trim().length > 0;
 
   return (
@@ -69,24 +74,23 @@ export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
             onChange={event => setQuery(event.target.value)}
           />
         </label>
-        <div className="element-library__bulk" role="group" aria-label="Category expand controls">
+        <Tooltip label={bulk.label}>
           <button
             type="button"
-            className="element-library__bulk-btn"
-            onClick={() => setOpen(ALL_OPEN)}
-            disabled={allOpen}
+            className="element-library__bulk-btn element-library__toggle"
+            aria-label={bulk.ariaLabel}
+            aria-pressed={!allExpanded}
+            data-state={bulk.action}
+            data-testid="element-library-toggle"
+            onClick={() => setOpen(bulk.action === 'collapse' ? ALL_CLOSED : ALL_OPEN)}
           >
-            Expand All
+            {bulk.icon === 'collapse' ? (
+              <ChevronsDownUp size={14} aria-hidden="true" />
+            ) : (
+              <ChevronsUpDown size={14} aria-hidden="true" />
+            )}
           </button>
-          <button
-            type="button"
-            className="element-library__bulk-btn"
-            onClick={() => setOpen(ALL_CLOSED)}
-            disabled={sections.every(section => !open[section.category])}
-          >
-            Collapse All
-          </button>
-        </div>
+        </Tooltip>
       </div>
 
       {visibleCount === 0 ? (

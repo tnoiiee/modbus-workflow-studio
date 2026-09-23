@@ -18,9 +18,12 @@ import {
   layerOrderFromElements,
   normalizeOverviewRotation,
   nudgeOverviewElementToFreeSlot,
+  normalizeOverviewBindingDirection,
+  overviewAllowedDirections,
   overviewBringForward,
   overviewBringToFront,
   overviewDefaultBinding,
+  overviewDefaultDirection,
   overviewDefaultStyle,
   overviewSendBackward,
   overviewSendToBack,
@@ -416,8 +419,15 @@ describe('shared tooltip overlay contract', () => {
     // Four toggle buttons reference the shared class constant.
     expect(classUses).toBe(4);
     expect(pageSource).not.toContain('btn-icon btn-icon--sm');
-    const icons = pageSource.match(/PanelLeft(?:Close|Open) size=\{16\}/g) ?? [];
-    expect(icons).toHaveLength(4);
+    // Library (left) keeps PanelLeft; Inspector (right) uses PanelRight (O1-C §12).
+    const leftIcons = pageSource.match(/PanelLeft(?:Close|Open) size=\{16\}/g) ?? [];
+    const rightIcons = pageSource.match(/PanelRight(?:Close|Open) size=\{16\}/g) ?? [];
+    expect(leftIcons).toHaveLength(2);
+    expect(rightIcons).toHaveLength(2);
+    expect(pageSource).toContain('aria-label="Collapse Element Inspector"');
+    expect(pageSource).toContain('aria-label="Expand Element Inspector"');
+    expect(pageSource).toContain('<PanelRightClose size={16} />');
+    expect(pageSource).toContain('<PanelRightOpen size={16} />');
     const css = fs.readFileSync(path.join(process.cwd(), 'src', 'styles', 'overview.css'), 'utf8');
     expect(css).toContain('.overview-panel-toggle');
     expect(css).toContain('width: 28px');
@@ -438,5 +448,107 @@ describe('regression: O1-B contracts remain intact', () => {
   it('Workflow Command Bar stays scoped to Workflow', () => {
     const appSource = fs.readFileSync(path.join(process.cwd(), 'src', 'App.tsx'), 'utf8');
     expect(appSource).toContain('showWorkflowCommandBar(page)?');
+  });
+});
+
+/* ---- O1-C critical UX correction (Owner issues 7 & 9) ------------------ */
+
+describe('collision: rectangle intersection + bounds (issue 7)', () => {
+  it('detects overlap when only one axis ranges intersect partially', () => {
+    const existing = [{ x: 100, y: 100, width: 200, height: 80 }];
+    // Candidate shares x-range and y-range without matching exact x/y.
+    const base = { x: 150, y: 140 };
+    const size = { width: 120, height: 60 };
+    const pos = nudgeOverviewElementToFreeSlot(base, size, existing);
+    const overlaps = existing.some(other =>
+      pos.x < other.x + other.width &&
+      pos.x + size.width > other.x &&
+      pos.y < other.y + other.height &&
+      pos.y + size.height > other.y,
+    );
+    expect(overlaps).toBe(false);
+    expect(pos).not.toEqual(base);
+  });
+
+  it('repeated add never overlaps a previously placed element', () => {
+    const size = { width: 144, height: 48 };
+    const base = { x: 32, y: 32 };
+    const placed: Array<{ x: number; y: number; width: number; height: number }> = [];
+    for (let i = 0; i < 5; i += 1) {
+      const pos = nudgeOverviewElementToFreeSlot(base, size, placed);
+      const rect = { ...pos, ...size };
+      for (const other of placed) {
+        const overlap =
+          rect.x < other.x + other.width &&
+          rect.x + rect.width > other.x &&
+          rect.y < other.y + other.height &&
+          rect.y + rect.height > other.y;
+        expect(overlap).toBe(false);
+      }
+      placed.push(rect);
+    }
+    expect(placed).toHaveLength(5);
+  });
+
+  it('keeps the candidate inside Design Canvas bounds', () => {
+    const bounds = { width: 400, height: 300 };
+    const size = { width: 80, height: 40 };
+    // Existing block occupies the center so the nudge must search within bounds.
+    const existing = [{ x: 160, y: 130, width: 80, height: 40 }];
+    const pos = nudgeOverviewElementToFreeSlot({ x: 160, y: 130 }, size, existing, undefined, undefined, bounds);
+    expect(pos.x).toBeGreaterThanOrEqual(0);
+    expect(pos.y).toBeGreaterThanOrEqual(0);
+    expect(pos.x + size.width).toBeLessThanOrEqual(bounds.width);
+    expect(pos.y + size.height).toBeLessThanOrEqual(bounds.height);
+    const overlaps = existing.some(other =>
+      pos.x < other.x + other.width &&
+      pos.x + size.width > other.x &&
+      pos.y < other.y + other.height &&
+      pos.y + size.height > other.y,
+    );
+    expect(overlaps).toBe(false);
+  });
+
+  it('is deterministic for the same inputs', () => {
+    const existing = [{ x: 0, y: 0, width: 100, height: 100 }];
+    const size = { width: 100, height: 100 };
+    const a = nudgeOverviewElementToFreeSlot({ x: 0, y: 0 }, size, existing);
+    const b = nudgeOverviewElementToFreeSlot({ x: 0, y: 0 }, size, existing);
+    expect(a).toEqual(b);
+  });
+
+  it('never moves existing elements (pure function returns only the candidate)', () => {
+    const existing = [{ x: 0, y: 0, width: 50, height: 50 }];
+    const frozen = JSON.stringify(existing);
+    nudgeOverviewElementToFreeSlot({ x: 0, y: 0 }, { width: 50, height: 50 }, existing);
+    expect(JSON.stringify(existing)).toBe(frozen);
+  });
+});
+
+describe('binding direction by category (issue 9)', () => {
+  it('monitoring allows MONITOR and NONE only', () => {
+    expect([...overviewAllowedDirections('MONITORING')]).toEqual(['MONITOR', 'NONE']);
+    expect(overviewDefaultDirection('MONITORING')).toBe('MONITOR');
+    expect(overviewDefaultBinding('MONITORING').direction).toBe('MONITOR');
+  });
+
+  it('control allows COMMAND and NONE only', () => {
+    expect([...overviewAllowedDirections('CONTROL')]).toEqual(['COMMAND', 'NONE']);
+    expect(overviewDefaultDirection('CONTROL')).toBe('COMMAND');
+    expect(overviewDefaultBinding('CONTROL').direction).toBe('COMMAND');
+  });
+
+  it('display allows NONE only', () => {
+    expect([...overviewAllowedDirections('DISPLAY')]).toEqual(['NONE']);
+    expect(overviewDefaultDirection('DISPLAY')).toBe('NONE');
+    expect(overviewDefaultBinding('DISPLAY').direction).toBe('NONE');
+  });
+
+  it('normalizes invalid directions to the category default', () => {
+    expect(normalizeOverviewBindingDirection('MONITORING', 'COMMAND')).toBe('MONITOR');
+    expect(normalizeOverviewBindingDirection('CONTROL', 'MONITOR')).toBe('COMMAND');
+    expect(normalizeOverviewBindingDirection('DISPLAY', 'MONITOR')).toBe('NONE');
+    expect(normalizeOverviewBindingDirection('DISPLAY', 'COMMAND')).toBe('NONE');
+    expect(normalizeOverviewBindingDirection('CONTROL', 'COMMAND')).toBe('COMMAND');
   });
 });
