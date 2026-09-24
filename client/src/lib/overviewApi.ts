@@ -132,3 +132,12 @@ export function sourceDefinitionPath(source: SourceIdentity): string {
 }
 export const createSourceDefinition = (input: CreateDefinition) => overviewApi<SourceDefinition>('/api/source-definitions', { method: 'POST', body: JSON.stringify(input) });
 export const updateSourceDefinition = (source: SourceDefinition, metadata: Partial<DefinitionMetadata>) => overviewApi<SourceDefinition>(sourceDefinitionPath(definitionIdentity(source)), { method: 'PATCH', body: JSON.stringify(metadata) });
+
+export interface DefinitionReferenceSummary {
+  scope: 'SAVED_OVERVIEW_PAGES';
+  pageCount: number;
+  bindingCount: number;
+  references: Array<{ pageId: string; pageName: string; elementId: string; elementName: string; elementType: string }>;
+}
+export const fetchDefinitionReferences = (source: SourceIdentity) => overviewApi<DefinitionReferenceSummary>(`${sourceDefinitionPath(source)}/references`);
+export const deleteSourceDefinition = (source: SourceIdentity) => overviewApi<{ ok: boolean }>(sourceDefinitionPath(source), { method: 'DELETE' });

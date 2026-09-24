@@ -2,25 +2,34 @@
 
 ## Current application
 
-**v1.4.0-dev.1 — O2-A Tag/Variable Binding Foundation** (development, not release acceptance).
-Base `main`: `eed588481ae7e7376f9926e58dbd37f9076b5c2e`, merged PR #4, v1.3.0.
-Session branch: `arena/01a0d291-modbus-workflow-studio`.
+**v1.4.0-dev.2 — O2-A punchlist** (development checkpoint, not release acceptance).
+Base Remote checkpoint: `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390`, v1.4.0-dev.1.
+Branch: `arena/01a0d291-modbus-workflow-studio`.
+Owner reviewed dev.1: **APPROVED WITH PUNCHLIST**.
 
-Owner approved O2-A and targeted `App.tsx` navigation wiring. Implemented real persisted,
-configuration-only WORKFLOW_VARIABLE/SHARED_TAG definitions, metadata UI/API, stable binding
-identity, pure resolution/status and explicit type/capability matrix. Legacy free-text remains
-DRAFT. Definition refresh never modifies Page revision, dirty state or Undo. Preview controls
-remain independent; COMMAND bindings explicitly show CONTROL RUNTIME NOT ENABLED.
-NAVIGATION_LINK opens/selects the exact targetWorkflowId via the existing selector, without
-Run/Stop/Trigger/mode commands. Selector/Workflow Runtime/Modbus/WebSocket implementations unchanged.
+Implemented standalone Data Sources management, Delete confirmation with saved-reference impact,
+and the expressly pulled-forward real-time Font Size Draft preview/one-property Undo behavior.
+Existing stable identity/resolver remains unchanged. Delete never rewrites Page bindings. Overview
+session/Preview Control state stay independent; BOUND still means configuration + EDITOR PREVIEW.
+No Production Control or Monitoring Runtime.
 
-No Runtime Tag values, acquisition, snapshot/delta transport, MQTT/Sparkplug, Picture Box, live
-font-size changes or Production Control. O2-B, O2-C, O2-D remain planned, NOT implemented.
-No dependency version changes. Stage 1 PASS: client 314 tests, server 67 tests, both typechecks
-and Client build. Only Stage 1 validation authorized. Full Gates await Owner.
-Manual Review NOT STARTED; no commit/push/PR/tag/release/ZIP created for this checkpoint.
+O2-B not started. Only approved Font Size work is pulled forward from O2-C; Picture Box work and
+all other O2-C/O2-D implementation remain excluded. No new Modbus acquisition or WebSocket changes.
+No dependencies changed; known advisories remain unresolved without risk acceptance.
 
-[O2-A scope](SCOPE_O2-A_v1.4.0-dev.1.md) · [Acceptance / validation evidence](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.1.md).
+Owner accepted Stage 1: 348 client / 71 server tests, Client/Server typechecks and Client build PASS.
+Full Client 422 tests / Full Server 84 tests PASS; `npm run check` PASS, including both typechecks,
+complete test suites and both builds. Stage 1 commands were not manually rerun during delivery.
+Owner local Manual Review PENDING, especially multi-Element Font Size preview isolation.
+One commit and normal branch push are authorized only after all Full Gates/final diff checks pass.
+No PR, Tag, Release or ZIP. Final delivery SHA and remaining Gate results belong in the Owner handoff.
+
+[Scope](SCOPE_O2-A_PUNCHLIST_v1.4.0-dev.2.md) · [Validation / review checklist](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
+
+### Previous checkpoint validation (historical, not dev.2 evidence)
+
+v1.4.0-dev.1 Full Gates passed: 388 client / 80 server tests, typechecks/builds, strict hygiene,
+publish verification and diff check. Remote checkpoint above was delivered as one commit.
 
 ## Approved historical baseline
 

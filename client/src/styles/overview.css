@@ -1007,3 +1007,15 @@
 .source-binding__metadata dd { margin: 0; overflow-wrap: anywhere; }
 .source-binding p, .source-binding strong { overflow-wrap: anywhere; }
 .overview-element__resolution { position: absolute; bottom: 100%; left: 0; max-width: 250px; font-size: 10px; line-height: 1.2; background: #0b1822; color: #e6eef5; pointer-events: none; }
+
+/* O2-A punchlist: inherit the configured Font Size for all Element content.
+   Safety/status badges retain their own small label typography. */
+.overview-element__body .overview-element__preview,
+.overview-element__body .overview-element__label,
+.overview-element__body .overview-element__value { font-size: inherit; }
+.data-sources-page .data-sources-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.data-sources-page td, .data-sources-page th { vertical-align: top; }
+.data-sources-page td button { margin: 2px; }
+.data-sources-page small, .definition-impact-list small { overflow-wrap: anywhere; }
+.definition-impact-list { max-height: 30dvh; overflow-y: auto; padding-inline-start: 20px; }
+.definition-impact-list li { margin-block: 8px; }

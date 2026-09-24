@@ -1,24 +1,28 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.1
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.2
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current development version: **`v1.4.0-dev.1` — O2-A Tag/Variable Binding Foundation**.
-- Base: merged v1.3.0 Overview Designer Foundation, `eed588481ae7e7376f9926e58dbd37f9076b5c2e` (PR #4).
-- Real configuration-only WORKFLOW_VARIABLE / SHARED_TAG definitions with immutable IDs,
-  metadata editing and Enable/Disable; no synthetic production sources or Runtime values.
-- Overview stable binding selection, derived status/reason and explicit compatibility matrix.
-- BOUND means configuration compatible only. **CONTROL RUNTIME NOT ENABLED**.
-- View-only Navigation Link opens/selects by `targetWorkflowId`, never Start/Stop/Trigger.
-- Manage definitions from Overview Edit Mode. Catalog Save is independent of Page Save/Cancel.
-  Use Refresh Source definitions to re-resolve; refresh never changes Page revision/history.
-- O2-B/C/D remain unimplemented. No new polling, Runtime transport, MQTT/Sparkplug, Picture Box
-  or production control. Dependencies unchanged.
-- Stage 1 PASS: client 314 tests, server 67 tests, both typechecks and Client build.
-  Full Gates require Owner authorization. Manual Review NOT STARTED.
-- [O2-A scope / API / matrix](docs/SCOPE_O2-A_v1.4.0-dev.1.md) · [O2-A acceptance](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.1.md).
-- Historical: [O1 acceptance](docs/ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md), [v1.3.0 release notes](docs/RELEASE_NOTES_v1.3.0.md).
+- Current development version: **v1.4.0-dev.2 — O2-A punchlist**.
+- Base Remote checkpoint: `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390` (v1.4.0-dev.1),
+  Owner Manual Review **APPROVED WITH PUNCHLIST**.
+- **Data Sources** is a first-class sidebar page for WORKFLOW_VARIABLE / SHARED_TAG configuration,
+  independent of Overview Edit. Overview has an optional shortcut without discarding its Draft.
+- Delete requires confirmation and a saved-reference-impact summary; stored binding identities
+  remain unchanged and resolve MISSING after refresh. Disable remains a reversible alternative.
+- Font Size previews immediately in Edit; Enter/blur makes one Draft/Undo commit; Save persists,
+  Cancel restores. Only this Font Size subset is pulled forward from O2-C.
+- Stable identity/resolver unchanged. **BOUND + EDITOR PREVIEW**, not live values.
+  **CONTROL RUNTIME NOT ENABLED**. Workflow navigation never Start/Stop/Trigger.
+- No O2-B Runtime/transport/new polling, O2-C Picture Box work, MQTT/Sparkplug or production commands.
+- Dependencies unchanged. Owner accepted Stage 1: **348 client / 71 server tests**, both typechecks
+  and Client build PASS. Full test runs: **422 client / 84 server PASS**; `npm run check` PASS.
+- Owner browser Manual Review **PENDING**, including multi-Element Font Size preview isolation.
+  Delivery requires all Full Gates and final diff verification; no PR, Tag, Release or ZIP.
+- [Punchlist scope](docs/SCOPE_O2-A_PUNCHLIST_v1.4.0-dev.2.md) ·
+  [Validation / local review](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
+- Historical [O2-A foundation / matrix](docs/SCOPE_O2-A_v1.4.0-dev.1.md).
 
 ### Operational safety boundary
 

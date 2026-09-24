@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.0-dev.2] - O2-A approved punchlist (2026-09-24)
+
+- Base `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390`, v1.4.0-dev.1, Owner review APPROVED WITH PUNCHLIST.
+- Add first-class Data Sources sidebar page for both definition types outside Overview Edit.
+- Add explicit Delete confirmation and saved-reference-impact metadata; preserve binding identity,
+  Page configuration/revision and existing MISSING resolution after deletion.
+- Keep an Overview shortcut and preserve its session when visiting Data Sources.
+- Pull forward immediate Font Size Edit preview only: one property commit/Undo, Draft-only until
+  Save, Escape/local cancellation and Page Cancel restoration. Element text inherits configured size.
+- Preserve BOUND + EDITOR PREVIEW and disabled Production Control Runtime; no Runtime values.
+- Synchronize application version metadata; no dependency/resolution/integrity changes.
+- Owner accepted Stage 1: 348 client / 71 server tests, both typechecks and Client build PASS.
+- Full Client 422 tests / Full Server 84 tests PASS; `npm run check` PASS (both typechecks,
+  complete tests and both builds under its normal contract).
+- Owner browser Manual Review PENDING, including multi-Element Font Size preview isolation.
+- One commit and normal branch push authorized only after Full Gates and final diff verification.
+- No O2-B, Picture Box, MQTT/Sparkplug, production commands, PR, Tag, Release or ZIP.
+
 ## [1.4.0-dev.1] - O2-A Tag/Variable Binding Foundation (2026-09-24)
 
 - Based on merged v1.3.0 at `eed588481ae7e7376f9926e58dbd37f9076b5c2e`.

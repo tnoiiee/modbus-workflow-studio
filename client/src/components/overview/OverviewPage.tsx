@@ -1,4 +1,4 @@
-import { DefinitionCatalogEditor } from './DefinitionCatalogEditor.js';
+import { previewOverviewFontSize, type FontSizePreview } from '../../lib/overviewFontDraft.js';
 import { bindingPresentation, type BindingPresentation } from '../../lib/overviewBinding.js';
 import { fetchSourceDefinitions, fetchDefinitionWorkflows } from '../../lib/overviewApi.js';
 import type { SourceDefinition, DefinitionWorkflow } from '../../lib/sourceDefinitions.js';
@@ -113,13 +113,12 @@ function asElements(page: OverviewPageRecord | null): OverviewElement[] {
  * Save & Exit pipeline, page CRUD dialogs, and session-scoped panel collapse.
  * Persistence goes through `/api/overview-pages` only.
  */
-export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: boolean; onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void> } = {}) {
+export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSources }: { active?: boolean; onOpenDataSources?: () => void; onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void> } = {}) {
   // Catalog refresh is presentation state only: never patch Page/Draft/history.
   const [definitions, setDefinitions] = useState<SourceDefinition[]>([]);
   const [definitionWorkflows, setDefinitionWorkflows] = useState<DefinitionWorkflow[]>([]);
   const [catalogAvailable, setCatalogAvailable] = useState(false);
   const [catalogError, setCatalogError] = useState('');
-  const [catalogOpen, setCatalogOpen] = useState(false);
   const catalogRequest = useRef(0);
   const refreshCatalog = useCallback(async () => {
     const request = ++catalogRequest.current;
@@ -172,6 +171,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: b
   const [inspectorCollapsed, setInspectorCollapsed] = useState(() => getSessionPanelCollapsed('inspector'));
 
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [fontSizePreview, setFontSizePreview] = useState<FontSizePreview | null>(null);
   const [history, setHistory] = useState<OverviewDraftHistory>(() => emptyOverviewHistory());
 
   // Element delete confirmation (all paths route through this dialog).
@@ -198,6 +198,14 @@ export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: b
   const revision = displayedOverviewRevision(baseline?.revision ?? activePage?.revision);
   const draftElements = asElements(draft);
   const selectedElement = draftElements.find(el => el.id === selectedElementId) ?? null;
+  const previewFontSize = useCallback((fontSize: number | null) => {
+    setFontSizePreview(fontSize !== null && selectedElementId && mode === 'EDIT'
+      ? { elementId: selectedElementId, fontSize } : null);
+  }, [selectedElementId, mode]);
+  const canvasElements = useMemo(() => previewOverviewFontSize(draftElements,
+    active && fontSizePreview?.elementId === selectedElementId ? fontSizePreview : null, mode),
+  [draft?.elements, fontSizePreview, selectedElementId, mode, active]);
+
   const previousPresentation = useRef<BindingPresentation>();
   const bindingResolutions = useMemo(() => {
     const next = bindingPresentation(asElements(workingPage), { definitions, available: catalogAvailable }, previousPresentation.current);
@@ -1069,7 +1077,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: b
       <div className="overview-bars">
         <div className="overview-catalog-bar">
           <button type="button" onClick={() => void refreshCatalog()}>Refresh Source definitions</button>
-          {mode === 'EDIT' && <button type="button" onClick={() => setCatalogOpen(true)}>Manage Source definitions</button>}
+          {onOpenDataSources && <button type="button" onClick={onOpenDataSources}>Data Sources</button>}
           <span>Configuration only · No Monitoring or Control Runtime</span>
           {catalogError && <span role="alert">{catalogError}</span>}
         </div>
@@ -1119,7 +1127,6 @@ export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: b
         </div>
       ) : null}
 
-      {catalogOpen && mode === 'EDIT' && <DefinitionCatalogEditor definitions={definitions} workflows={definitionWorkflows} available={catalogAvailable} onClose={() => setCatalogOpen(false)} onChanged={refreshCatalog} />}
       <div className={workspaceClass}>
         {mode === 'EDIT' && libraryCollapsed ? (
           <div className="overview-rail overview-rail--library">
@@ -1171,7 +1178,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: b
           designWidth={workingPage?.designWidth ?? OVERVIEW_DEFAULT_WIDTH}
           designHeight={workingPage?.designHeight ?? OVERVIEW_DEFAULT_HEIGHT}
           backgroundColor={workingPage?.backgroundColor ?? OVERVIEW_DEFAULT_BACKGROUND}
-          elements={draftElements}
+          elements={canvasElements}
           selectedElementId={selectedElementId}
           viewport={viewport}
           onViewportChange={handleViewportChange}
@@ -1220,7 +1227,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: b
               ) : null}
             </div>
             {mode === 'EDIT' ? (
-              <ElementInspector key={selectedElement?.id ?? 'empty'} definitions={definitions} workflows={definitionWorkflows} resolution={selectedElement ? bindingResolutions[selectedElement.id] : undefined} element={selectedElement} {...inspectorHandlers} />
+              <ElementInspector key={selectedElement?.id ?? 'empty'} onPreviewFontSize={previewFontSize} definitions={definitions} workflows={definitionWorkflows} resolution={selectedElement ? bindingResolutions[selectedElement.id] : undefined} element={selectedElement} {...inspectorHandlers} />
             ) : (
               <p className="empty">Element Inspector is available in Edit Mode</p>
             )}

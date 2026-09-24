@@ -1,6 +1,15 @@
 # Roadmap
 
-## Current Owner direction — v1.4.0 Overview Binding and Monitoring
+## O2-A punchlist — v1.4.0-dev.2 (current)
+
+Owner accepted checkpoint `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390` with punchlist:
+Data Sources standalone page, Delete confirmation/reference impact, and immediate Font Size Draft
+rendering with one Undo commit. Only this Font Size subset is pulled forward from O2-C.
+No O2-B/Monitoring Runtime, Picture Box work or other O2-C/O2-D implementation is authorized.
+
+[Scope](SCOPE_O2-A_PUNCHLIST_v1.4.0-dev.2.md) · [Acceptance](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
+
+## Previous foundation direction — v1.4.0 Overview Binding and Monitoring
 
 Base: merged v1.3.0 Overview Designer Foundation (`eed588481ae7e7376f9926e58dbd37f9076b5c2e`).
 The Owner's current direction supersedes conflicting historical version assignments below.

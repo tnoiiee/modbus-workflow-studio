@@ -6,6 +6,7 @@ type IconComponent = typeof Zap;
 export type PageId =
   | 'Overview'
   | 'Workflow'
+  | 'Data Sources'
   | 'Devices'
   | 'Modbus Monitor'
   | 'Runtime Monitor'
@@ -32,6 +33,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'Overview', label: 'Overview', Icon: LayoutDashboard },
       { id: 'Workflow', label: 'Workflow', Icon: GitBranch },
+      { id: 'Data Sources', label: 'Data Sources', Icon: Database },
       { id: 'Devices', label: 'Devices', Icon: Database },
     ],
   },

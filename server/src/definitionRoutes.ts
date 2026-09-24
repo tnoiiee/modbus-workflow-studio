@@ -1,8 +1,9 @@
+import type { DefinitionReferenceSummary } from './definitionReferences.js';
 import type { Express, Request, Response } from 'express';
 import { ZodError } from 'zod';
 import { DefinitionCatalog, sourceIdentitySchema, type SourceIdentity } from './definitionCatalog.js';
 
-export function registerDefinitionRoutes(app: Express, catalog: DefinitionCatalog): void {
+export function registerDefinitionRoutes(app: Express, catalog: DefinitionCatalog, references: (identity: SourceIdentity) => DefinitionReferenceSummary): void {
   const handle = (action: (request: Request, response: Response) => void) => (request: Request, response: Response) => {
     try { action(request, response); }
     catch (error) {
@@ -26,6 +27,11 @@ export function registerDefinitionRoutes(app: Express, catalog: DefinitionCatalo
       const definition = catalog.get(identity(request));
       if (!definition) { response.status(404).json({ error: 'Source definition not found' }); return; }
       response.json(definition);
+    }));
+    app.get(`${route.path}/references`, handle((request, response) => {
+      const source = identity(request);
+      if (!catalog.get(source)) { response.status(404).json({ error: 'Source definition not found' }); return; }
+      response.json(references(source));
     }));
     app.patch(route.path, handle((request, response) => { response.json(catalog.update(identity(request), request.body)); }));
     app.delete(route.path, handle((request, response) => { catalog.delete(identity(request)); response.json({ ok: true }); }));

@@ -4,14 +4,18 @@ import { createSourceDefinition, updateSourceDefinition } from '../../lib/overvi
 import { SOURCE_CAPABILITIES, SOURCE_DATA_TYPES, definitionId, type DefinitionMetadata, type DefinitionWorkflow, type SourceDefinition } from '../../lib/sourceDefinitions.js';
 
 const defaults = (): DefinitionMetadata => ({ name: '', dataType: 'Boolean', capability: 'MONITOR_ONLY', description: '', unit: '', enabled: true });
-export function DefinitionCatalogEditor({ definitions, workflows, available, onClose, onChanged }: {
+export function DefinitionCatalogEditor({ definitions, workflows, available, onClose, onChanged, initialDefinition }: {
+  initialDefinition?: SourceDefinition;
   definitions: readonly SourceDefinition[]; workflows: readonly DefinitionWorkflow[]; available: boolean;
   onClose: () => void; onChanged: () => Promise<void>;
 }) {
-  const [selected, setSelected] = useState<SourceDefinition>();
-  const [sourceType, setSourceType] = useState<'WORKFLOW_VARIABLE' | 'SHARED_TAG'>('SHARED_TAG');
-  const [workflowId, setWorkflowId] = useState('');
-  const [metadata, setMetadata] = useState(defaults);
+  const [selected, setSelected] = useState<SourceDefinition | undefined>(initialDefinition);
+  const [sourceType, setSourceType] = useState<'WORKFLOW_VARIABLE' | 'SHARED_TAG'>(initialDefinition?.sourceType ?? 'SHARED_TAG');
+  const [workflowId, setWorkflowId] = useState(initialDefinition?.sourceType === 'WORKFLOW_VARIABLE' ? initialDefinition.workflowId : '');
+  const [metadata, setMetadata] = useState<DefinitionMetadata>(() => initialDefinition ? {
+    name: initialDefinition.name, dataType: initialDefinition.dataType, capability: initialDefinition.capability,
+    description: initialDefinition.description, unit: initialDefinition.unit, enabled: initialDefinition.enabled,
+  } : defaults());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');

@@ -1,3 +1,4 @@
+import { FontSizeField } from './FontSizeField.js';
 import { SourceBindingFields } from './SourceBindingFields.js';
 import { resolveOverviewBinding, type BindingResolution } from '../../lib/overviewBinding.js';
 import type { SourceDefinition, DefinitionWorkflow } from '../../lib/sourceDefinitions.js';
@@ -126,6 +127,7 @@ export interface ElementInspectorProps {
   resolution?: BindingResolution;
   onPatch: (patch: Partial<OverviewElement>) => void;
   onPatchStyle: (patch: Partial<OverviewElement['style']>) => void;
+  onPreviewFontSize?: (value: number | null) => void;
   onPatchBinding: (patch: Partial<OverviewElement['binding']>) => void;
   onToggleLock: () => void;
   onToggleVisible: () => void;
@@ -146,7 +148,7 @@ const DATA_TYPES: readonly OverviewBindingDataType[] = ['Boolean', 'Number', 'St
 export function ElementInspector({
   element, definitions = [], workflows = [], resolution,
   onPatch,
-  onPatchStyle,
+  onPatchStyle, onPreviewFontSize,
   onPatchBinding,
   onToggleLock,
   onToggleVisible,
@@ -297,15 +299,8 @@ export function ElementInspector({
           </label>
           <label className="element-inspector__field">
             <span>Font Size</span>
-            <CommitField
-              type="number"
-              min={8}
-              max={96}
-              step={1}
-              value={style.fontSize}
-              validate={value => value >= 8 && value <= 96}
-              onCommit={fontSize => onPatchStyle({ fontSize })}
-            />
+            <FontSizeField value={style.fontSize} onPreview={onPreviewFontSize}
+              onCommit={fontSize => onPatchStyle({ fontSize })} />
           </label>
           <label className="element-inspector__field">
             <span>Opacity</span>
