@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.3.0] - Overview Designer Foundation
+
+- Promotes Owner-approved Final O1 checkpoint `58c3586e1f433b44fca53bf2c183be6065a796e5` from `v1.3.0-dev.2`; Final O1 Owner Manual Review PASS.
+- Includes Overview Page management and Editor, Element Library/Inspector, Draft, Undo/Redo, Save/Cancel, View/Edit boundaries, independent Preview Control state, savedViewport, accessibility/responsive baseline and Draft Tag binding configuration.
+- Release preparation changes version metadata and documentation only; feature behavior, dependencies and API contracts are unchanged.
+- No Production Monitoring/Control Runtime, live Modbus values or Modbus writes from Overview, Tag Runtime, Variable Blocks, MQTT or Sparkplug implementation. MQTT Sparkplug B remains a future architecture plan only.
+- PR review/manual merge remains pending; no tag, GitHub Release or ZIP is created.
+
+## [1.3.0-dev.2] - O1-D configuration validation and accessibility
+
+- Complete configuration-only Tag metadata editing with derived NOT_BOUND/DRAFT status; no runtime resolution or connected claim.
+- Validate binding enums, identity/status consistency, direction and Element properties before Save; preserve invalid Draft without PUT.
+- Use native Library disclosure/list semantics, associated Inspector help and validation announcements, local Escape editing, and panel-toggle focus restoration.
+- Keep compact Inspector in layout rather than overlaying Canvas; bound dialog and command-bar overflow without modifying persisted geometry or savedViewport.
+- Synchronize application version values only; no dependency, Server validation, API or WebSocket structure changes.
+- Final O1 acceptance remains pending Owner Manual Review.
+
+## [1.3.0-dev.1] - O1-C Stabilization
+
+- View Mode omits Save Status and Page REV; Edit Mode retains configuration save semantics.
+- Switch state persists independently through revision-free GET/PATCH APIs with read-only legacy fallback.
+- Application version surfaces synchronized without dependency changes.
+- No Tag Runtime, Modbus writes, or O1-D changes.
+
 ## [1.2.11] - Monitor scheduler and WebSocket reliability
 
 ### Added

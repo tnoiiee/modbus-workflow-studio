@@ -1,0 +1,998 @@
+/* ---------------------------------------------------------------------------
+ * MODBUS WORKFLOW STUDIO — Overview (checkpoints O1-A + O1-B) styles
+ * Loaded after responsive.css so scaffold rules win the cascade.
+ * Fixed design resolution: 1920 x 1080. One combined Overview Command Bar.
+ * VIEW mode renders a locked, control-free operator surface; EDIT mode
+ * restores the three-pane editor with collapsible library/inspector rails.
+ * ------------------------------------------------------------------------- */
+
+.overview {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--color-canvas);
+}
+
+/* --- single combined command bar ----------------------------------------- */
+
+.overview-bars {
+  min-width: 0;
+  padding: var(--shell-canvas-inset) var(--shell-canvas-inset) var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.overview-command-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-3);
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Selective glassmorphism group cards — equal height, one control baseline.
+   Slightly transparent so portal tooltips remain legible over the cards. */
+.overview-command-bar .command-group,
+.overview-command-bar .overview-command-bar__group {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 64px;
+  min-width: 0;
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(16, 32, 45, 0.52);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--color-border-subtle);
+  border-right: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.overview-command-bar .command-group__label {
+  display: flex;
+  align-items: center;
+  min-height: 14px;
+  flex: 0 0 auto;
+}
+
+.overview-command-bar .command-group__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 34px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* SAVE STATUS stays logically last and hugs the far right when space allows. */
+.overview-command-bar .overview-command-bar__group--save-status {
+  margin-inline-start: auto;
+}
+
+.overview-page-select {
+  min-width: 180px;
+  max-width: 260px;
+  min-height: 34px;
+}
+
+.overview-bars .pill {
+  white-space: nowrap;
+}
+
+.overview-notice {
+  margin: var(--space-3) var(--shell-canvas-inset) 0;
+}
+
+/* --- workspace: library | canvas | inspector ----------------------------- */
+
+.overview__workspace {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--shell-library-width) minmax(0, 1fr) var(--shell-inspector-width);
+  gap: var(--shell-canvas-inset);
+  padding: var(--space-3) var(--shell-canvas-inset) var(--shell-canvas-inset);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* VIEW mode: hide editor panels and give the canvas the space back. */
+.overview--view .overview__workspace,
+.overview--view .overview__workspace--library-collapsed,
+.overview--view .overview__workspace--inspector-collapsed,
+.overview--view .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.overview--view .overview-library,
+.overview--view .overview-inspector,
+.overview--view .overview-rail {
+  display: none;
+}
+
+/* EDIT mode collapse: canvas expands into the recovered space. */
+.overview--edit .overview__workspace--library-collapsed {
+  grid-template-columns: 44px minmax(0, 1fr) var(--shell-inspector-width);
+}
+
+.overview--edit .overview__workspace--inspector-collapsed {
+  grid-template-columns: var(--shell-library-width) minmax(0, 1fr) 44px;
+}
+
+.overview--edit .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+
+.overview-panel {
+  min-height: 0;
+  overflow: auto;
+}
+
+.overview-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.overview-panel__head h3 {
+  margin: 0;
+}
+
+/* One shared Overview-scoped class for every Library/Inspector toggle.
+   Head Collapse and rail Expand must match exactly — override the generic
+   `.library button { width: 100% }` and button padding/font rules. */
+.overview-panel-toggle,
+.overview-panel__head .overview-panel-toggle,
+.overview-rail .overview-panel-toggle,
+.overview-library .overview-panel-toggle,
+.overview-inspector .overview-panel-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  max-width: 28px;
+  max-height: 28px;
+  flex: 0 0 28px;
+  padding: 0;
+  margin: 0;
+  gap: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  background-image: none;
+  color: var(--color-text-secondary);
+  font-size: 0;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.overview-panel-toggle:hover:not(:disabled),
+.overview-panel__head .overview-panel-toggle:hover:not(:disabled),
+.overview-rail .overview-panel-toggle:hover:not(:disabled) {
+  width: 28px;
+  height: 28px;
+  background: var(--color-surface-4);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+
+.overview-panel-toggle:active:not(:disabled),
+.overview-panel__head .overview-panel-toggle:active:not(:disabled),
+.overview-rail .overview-panel-toggle:active:not(:disabled) {
+  background: var(--color-surface-3);
+}
+
+.overview-panel-toggle:focus-visible,
+.overview-panel__head .overview-panel-toggle:focus-visible,
+.overview-rail .overview-panel-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.overview-panel-toggle svg,
+.overview-panel__head .overview-panel-toggle svg,
+.overview-rail .overview-panel-toggle svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  display: block;
+  pointer-events: none;
+}
+
+.overview-panel .empty {
+  color: var(--color-text-dim);
+  font-size: var(--text-label);
+  line-height: 1.5;
+}
+
+/* Compact rails when a panel is collapsed in Edit Mode. */
+.overview-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-1);
+  min-height: 0;
+  overflow: auto;
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm), var(--highlight-inner-soft);
+}
+
+.overview-rail__marker {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+  user-select: none;
+}
+
+/* --- canvas --------------------------------------------------------------- */
+
+.overview-canvas {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.overview-canvas__badges {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+
+.overview-canvas__badges .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+/* VIEW mode: keep the surface visually quiet for operators. */
+.overview-canvas--locked .react-flow__pane {
+  cursor: default;
+}
+
+.overview-canvas--locked .react-flow__minimap,
+.overview-canvas--locked .react-flow__controls {
+  display: none;
+}
+
+/* --- O1-C Element Library ----------------------------------------------- */
+
+.element-library {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.element-library__toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.element-library__search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-sunken);
+  color: var(--color-text-muted);
+}
+
+.element-library__search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-size: var(--text-label);
+}
+
+.element-library__search input:focus-visible {
+  outline: none;
+}
+
+.element-library__bulk {
+  display: flex;
+  gap: 6px;
+}
+
+.element-library__bulk-btn {
+  flex: 0 0 auto;
+  min-height: 30px;
+  min-width: 30px;
+  padding: 4px 8px;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.element-library__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+/* O1-C §11: single Expand/Collapse All toggle sits beside Search. */
+.element-library__toolbar .element-library__toggle {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
+.element-library__section {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  overflow: hidden;
+}
+
+.element-library__section-head {
+  min-width: 0;
+}
+
+.element-library__section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 0;
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  font-size: var(--text-label);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.element-library__section-toggle:hover {
+  color: var(--color-text);
+  background: var(--color-surface-3);
+}
+
+.element-library__section-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring-inset);
+}
+
+.element-library__section-toggle span:nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.element-library__count {
+  flex: 0 0 auto;
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-hover);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.element-library__list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.element-library__item {
+  min-width: 0;
+}
+
+.element-library__add {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  text-align: left;
+}
+
+.element-library__add:hover {
+  background: var(--state-hover);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.element-library__add:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.element-library__add-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.element-library__add-icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  color: var(--color-accent);
+}
+
+.element-library__empty,
+.element-library__empty-row {
+  padding: var(--space-3);
+  margin: 0;
+  color: var(--color-text-dim);
+  font-size: var(--text-label);
+}
+
+.element-library__empty-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+}
+
+/* --- O1-C Element Inspector --------------------------------------------- */
+
+.element-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.element-inspector__empty {
+  margin: 0;
+  padding: var(--space-4) var(--space-2);
+  color: var(--color-text-dim);
+  font-size: var(--text-label);
+  line-height: 1.5;
+}
+
+.element-inspector__identity,
+.element-inspector__group {
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-1);
+  min-width: 0;
+}
+
+.element-inspector__group legend {
+  padding: 0 6px;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.element-inspector__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.element-inspector__row--meta {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.element-inspector__id {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  font-family: var(--font-mono);
+}
+
+.element-inspector__row--toggles {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.element-inspector__toggle {
+  min-height: 30px;
+  padding: 4px 10px;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.element-inspector__toggle.is-active {
+  border-color: var(--color-border-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-hover);
+}
+
+.element-inspector__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  min-width: 0;
+}
+
+.element-inspector__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+
+.element-inspector__field--wide {
+  grid-column: 1 / -1;
+}
+
+.element-inspector__field input,
+.element-inspector__field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px 8px;
+  font-size: var(--text-label);
+}
+
+.element-inspector__field input[type='color'] {
+  min-height: 32px;
+  padding: 2px;
+}
+
+.element-inspector__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.element-inspector__actions button {
+  flex: 1 1 auto;
+  min-height: 30px;
+  padding: 4px 8px;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-semibold);
+}
+
+.element-inspector__actions--danger {
+  margin-top: 0;
+}
+
+.element-inspector__danger {
+  border-color: rgba(255, 114, 128, 0.5);
+  background: var(--color-danger-soft);
+  color: var(--color-danger-hover);
+}
+
+/* --- O1-C Element node renderer ----------------------------------------- */
+
+.overview-element {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  cursor: default;
+}
+
+.overview-element.is-editable {
+  cursor: grab;
+}
+
+.overview-element.is-editable:active {
+  cursor: grabbing;
+}
+
+.overview-element.is-locked {
+  cursor: default;
+}
+
+.overview-element.is-selected {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.overview-element__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: inherit;
+  padding: 6px 8px;
+  overflow: hidden;
+}
+
+.overview-element__preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview-element__preview--light {
+  gap: 6px;
+}
+
+.overview-element__lamp {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-neutral);
+  border: 2px solid var(--color-border-strong);
+  flex: 0 0 14px;
+}
+
+.overview-element__preview--badge {
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent-hover);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: auto;
+  margin: 0 auto;
+}
+
+.overview-element__preview--picture {
+  justify-content: center;
+  align-items: center;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--color-text-dim);
+  height: 100%;
+}
+
+.overview-element__preview--button,
+.overview-element__preview--switch,
+.overview-element__preview--link {
+  justify-content: center;
+  width: auto;
+  margin: 0 auto;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-3);
+  color: var(--color-text-secondary);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-meta);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.overview-element__preview--divider {
+  height: 1px;
+  background: var(--color-border-strong);
+  padding: 0;
+}
+
+.overview-element__label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-dim);
+}
+
+.overview-element__value {
+  font-size: var(--text-node-value);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.overview-element__badge {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 9px;
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+.overview-element__badge--preview {
+  background: rgba(47, 214, 255, 0.14);
+  border: 1px solid var(--color-border-accent);
+  color: var(--color-accent-hover);
+}
+
+.overview-element__badge--unbound {
+  background: var(--color-warning-soft);
+  border: 1px solid rgba(245, 181, 68, 0.45);
+  color: var(--color-warning);
+}
+
+.overview-element__lock {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: inline-flex;
+  color: var(--color-warning);
+  pointer-events: none;
+}
+
+.overview-element--hidden {
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--color-border);
+  background: rgba(7, 17, 25, 0.55);
+  color: var(--color-text-dim);
+}
+
+.overview-element__hidden-label {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.overview-element__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--color-accent);
+  border: 1px solid var(--color-canvas);
+}
+
+.overview-canvas--locked .overview-element__handle,
+.overview-canvas--locked .overview-element__badge {
+  display: none;
+}
+
+/* --- O1-C resize handles (8 positions via NodeResizer) ------------------- */
+
+.react-flow__resize-control {
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+  border: 1px solid var(--color-canvas);
+  border-radius: 2px;
+}
+
+.react-flow__resize-control.line {
+  background: transparent;
+  border: none;
+}
+
+.react-flow__resize-control.top.left,
+.react-flow__resize-control.top.right,
+.react-flow__resize-control.bottom.left,
+.react-flow__resize-control.bottom.right {
+  width: 10px;
+  height: 10px;
+}
+
+.overview-canvas--locked .react-flow__resize-control {
+  display: none;
+}
+
+/* --- O1-C VIEW-mode control preview (UI-only) --------------------------- */
+
+.overview-element__preview--interactive {
+  cursor: pointer;
+  appearance: none;
+  font: inherit;
+}
+
+.overview-element__preview--interactive:hover {
+  border-color: var(--color-border-accent);
+  color: var(--color-text);
+}
+
+.overview-element__preview--switch.is-on {
+  background: var(--color-accent-soft);
+  border-color: var(--color-border-accent);
+  color: var(--color-accent-hover);
+}
+
+.overview-element__preview--button.is-pressed,
+.overview-element.is-pressed .overview-element__preview--button {
+  transform: translateY(1px);
+  background: var(--color-surface-4);
+  border-color: var(--color-accent);
+}
+
+.overview-element__preview--link.is-feedback {
+  border-color: var(--color-accent);
+  color: var(--color-accent-hover);
+}
+
+/* --- responsive: 1920 -> 1366 -> 1024 ------------------------------------ */
+
+@media (max-width: 1440px) {
+  .overview-page-select {
+    min-width: 150px;
+    max-width: 220px;
+  }
+
+  .overview-command-bar {
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 1280px) {
+  .overview-bars {
+    padding: var(--space-3) var(--space-4) var(--space-2);
+  }
+
+  .overview-command-bar .overview-command-bar__group {
+    padding: var(--space-2);
+  }
+
+  /* Groups wrap; SAVE STATUS stays logically last via source order. */
+  .overview-command-bar .overview-command-bar__group--save-status {
+    margin-inline-start: auto;
+  }
+}
+
+/* Keep Inspector in layout instead of covering the canvas on tablet landscape.
+   Only panel tracks change; Element geometry and savedViewport are untouched. */
+@media (max-width: 1200px) {
+  .overview--edit .overview__workspace {
+    grid-template-columns: 174px minmax(0, 1fr) 248px;
+    gap: 8px;
+  }
+  .overview--edit .overview__workspace--library-collapsed {
+    grid-template-columns: 44px minmax(0, 1fr) 248px;
+  }
+  .overview--edit .overview__workspace--inspector-collapsed {
+    grid-template-columns: 174px minmax(0, 1fr) 44px;
+  }
+  .overview--edit .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
+  .overview-inspector {
+    position: static;
+    width: auto;
+    min-width: 0;
+  }
+  .element-inspector__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .overview-page-select {
+    min-width: 140px;
+    max-width: 180px;
+  }
+
+  .overview-command-bar .overview-command-bar__group--save-status {
+    margin-inline-start: 0;
+  }
+}
+
+/* --- accessibility: prefers-reduced-motion ------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .overview,
+  .overview * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* O1-D: scoped keyboard focus, readable metadata and short viewport dialogs. */
+.overview :is(button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent, #38bdf8);
+  outline-offset: 2px;
+}
+.element-inspector__binding-help {
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.overview .element-inspector [aria-invalid="true"] {
+  border-color: var(--color-danger, #f87171);
+}
+.overview .modal {
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+.overview .modal__body {
+  min-height: 0;
+  overflow-y: auto;
+}
+.overview .modal__footer {
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.overview .modal__error {
+  flex-basis: 100%;
+  max-height: 25dvh;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.overview-bars {
+  max-height: 40dvh;
+  overflow-y: auto;
+}

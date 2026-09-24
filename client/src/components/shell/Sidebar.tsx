@@ -1,9 +1,10 @@
-import { Activity, CircleGauge, Cog, Database, GitBranch, Save, ScrollText, ShieldAlert, Zap } from 'lucide-react';
+import { Activity, CircleGauge, Cog, Database, GitBranch, LayoutDashboard, Save, ScrollText, ShieldAlert, Zap } from 'lucide-react';
 import { APP_VERSION } from '../../version.js';
 
 type IconComponent = typeof Zap;
 
 export type PageId =
+  | 'Overview'
   | 'Workflow'
   | 'Devices'
   | 'Modbus Monitor'
@@ -24,11 +25,12 @@ interface NavGroup {
   items: NavItem[];
 }
 
-/** All eight baseline pages, in the baseline order, grouped for scanning. */
+/** All baseline pages plus Overview, in order, grouped for scanning. */
 const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Build',
     items: [
+      { id: 'Overview', label: 'Overview', Icon: LayoutDashboard },
       { id: 'Workflow', label: 'Workflow', Icon: GitBranch },
       { id: 'Devices', label: 'Devices', Icon: Database },
     ],

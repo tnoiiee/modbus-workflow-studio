@@ -1,6 +1,29 @@
 # Current Project State
 
-## Current source baseline
+## Current application
+
+`v1.3.0` — **Overview Designer Foundation**, release candidate based on
+Owner-approved Final O1 checkpoint `58c3586e1f433b44fca53bf2c183be6065a796e5`
+(`v1.3.0-dev.2`). O1-A through O1-D and Final O1 Owner Manual Review: PASS.
+
+Includes Overview Page management, Editor, Element Library/Inspector, Draft,
+Undo/Redo, Save/Cancel, View/Edit boundaries, independent Preview Control state,
+savedViewport, accessibility/responsive baseline and Draft Tag binding configuration.
+
+No Production Monitoring Runtime, live Modbus values in Overview, Production
+Control Runtime, Modbus writes from Overview, Tag Runtime, Variable Blocks,
+MQTT implementation or Sparkplug adapter. MQTT Sparkplug B is future planning only.
+
+Release-preparation commit is version/documentation only. The PR intentionally
+includes the approved O1 chain absent from `main` (`5c9a6a0`). Release PR Owner
+review and manual merge remain PENDING. No tag, GitHub Release or ZIP is created;
+v1.4 is NOT STARTED.
+
+[Release notes](RELEASE_NOTES_v1.3.0.md) ·
+[Final O1 acceptance](ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md) ·
+[O1 evidence](ACCEPTANCE_EVIDENCE/O1-v1.3.0-dev.2.md).
+
+## Historical source baseline
 
 `v1.2.11` Monitor Scheduler & WebSocket Reliability source baseline.
 
@@ -75,7 +98,7 @@ Audit observation on 2026-09-22:
 
 The findings are unresolved and do not receive implicit acceptance. Because v1.2.11 will not be released independently, remediation or explicit reviewed risk acceptance is mandatory before the v1.2.12 release.
 
-## Next planned version
+## Historical version plan
 
 v1.2.12 planning is complete and approved (owner decisions 2026-09-22). Source of truth:
 [SCOPE_v1.2.12.md](SCOPE_v1.2.12.md), [UI_DESIGN_SYSTEM_v1.2.12.md](UI_DESIGN_SYSTEM_v1.2.12.md),
