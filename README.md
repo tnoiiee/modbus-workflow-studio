@@ -1,14 +1,14 @@
-# MODBUS WORKFLOW STUDIO v1.3.0-dev.2
+# MODBUS WORKFLOW STUDIO v1.3.0
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current application version: `v1.3.0-dev.2`
-- Accepted Overview baseline: `7caf786f70b1bed1f0f903792a426d79ef166b75`
-- Release disposition: source/CI closure complete; no standalone v1.2.11 tag or ZIP; remaining acceptance carries into v1.2.12
+- Current application version: `v1.3.0`
+- Accepted Overview baseline: `58c3586e1f433b44fca53bf2c183be6065a796e5`
+- Release identity: **Overview Designer Foundation**. Release candidate prepared for Owner PR review and manual merge; no tag, GitHub Release or ZIP created.
 - Current scope: O1-D configuration-only Draft Tag binding, validation, Overview accessibility and responsive regression. O1-C independent Switch state and revision-free View controls are preserved. Tag Runtime and Variable Blocks are excluded.
-- Final O1 Owner acceptance: PENDING. See [O1 acceptance](docs/ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md).
+- Final O1 Owner Manual Review: **PASS** at `58c3586`. See [O1 acceptance](docs/ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md) and [release notes](docs/RELEASE_NOTES_v1.3.0.md).
 - Reliability defaults: monitor queue 32 jobs/device, one in-flight plus one pending scan/list, WebSocket 256 messages or 1 MiB/client, reconnect backoff 250 ms–30 s with jitter
 - Intended environment: trusted local or industrial LAN
 - Authentication: not included
@@ -16,6 +16,12 @@ Full-stack TypeScript application for designing and operating Modbus TCP workflo
 - Protocol addresses: zero-based
 
 Do not expose the application directly to the public Internet. Use an authenticated reverse proxy and appropriate network controls before broader deployment.
+
+## Overview Designer Foundation
+
+Includes Overview Page management, Overview Editor, Element Library and Inspector, Draft, Undo/Redo, Save and Cancel, View/Edit boundaries, independent Preview Control state, savedViewport, accessibility/responsive baseline and Draft Tag binding configuration.
+
+Does not include Production Monitoring Runtime, live Modbus values in Overview, Production Control Runtime, Modbus writes from Overview, Tag Runtime, Variable Blocks integration, MQTT implementation or an MQTT Sparkplug adapter. MQTT Sparkplug B is a future architecture plan only. Existing Workflow/Modbus capabilities below are not Overview runtime capabilities.
 
 ## Main capabilities
 
