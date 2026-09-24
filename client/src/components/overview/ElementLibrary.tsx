@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, ChevronsDownUp, ChevronsUpDown, Minus, Plus, Search } from 'lucide-react';
 
 import { Tooltip } from '../ui/Tooltip.js';
@@ -36,6 +36,7 @@ function matchesSearch(type: OverviewElementType, query: string): boolean {
  * Editor-only surface; no Tag binding or runtime interaction here.
  */
 export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
+  const libraryId = useId();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<CategoryState>(ALL_OPEN);
 
@@ -62,7 +63,7 @@ export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
   const searchActive = query.trim().length > 0;
 
   return (
-    <div className="element-library" aria-label="Element Library">
+    <div className="element-library" role="region" aria-label="Element Library">
       <div className="element-library__toolbar">
         <label className="element-library__search">
           <Search size={14} aria-hidden="true" />
@@ -99,18 +100,19 @@ export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
         </p>
       ) : null}
 
-      <div className="element-library__sections" role="tree" aria-label="Element categories">
+      <div className="element-library__sections" role="group" aria-label="Element categories">
         {sections.map(section => {
           if (section.types.length === 0 && searchActive) return null;
           const expanded = open[section.category];
           const count = section.types.length;
           return (
-            <section key={section.category} className="element-library__section" role="treeitem" aria-expanded={expanded}>
+            <section key={section.category} className="element-library__section" aria-label={OVERVIEW_CATEGORY_LABELS[section.category]}>
               <div className="element-library__section-head">
                 <button
                   type="button"
                   className="element-library__section-toggle"
                   aria-expanded={expanded}
+                  aria-controls={expanded ? `${libraryId}-${section.category}` : undefined}
                   aria-label={`${expanded ? 'Collapse' : 'Expand'} ${OVERVIEW_CATEGORY_LABELS[section.category]}`}
                   onClick={() =>
                     setOpen(current => ({ ...current, [section.category]: !current[section.category] }))
@@ -124,13 +126,12 @@ export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
                 </button>
               </div>
               {expanded ? (
-                <ul className="element-library__list" role="group">
+                <ul className="element-library__list" id={`${libraryId}-${section.category}`}>
                   {section.types.map(type => (
-                    <li key={type} className="element-library__item" role="none">
+                    <li key={type} className="element-library__item">
                       <button
                         type="button"
                         className="element-library__add"
-                        role="treeitem"
                         aria-label={`Add ${OVERVIEW_ELEMENT_LABELS[type]}`}
                         title={`Add ${OVERVIEW_ELEMENT_LABELS[type]}`}
                         onClick={() => onAddElement(type)}
@@ -143,7 +144,7 @@ export function ElementLibrary({ onAddElement }: ElementLibraryProps) {
                     </li>
                   ))}
                   {section.types.length === 0 ? (
-                    <li className="element-library__empty-row" role="none">
+                    <li className="element-library__empty-row">
                       <Minus size={12} aria-hidden="true" /> No matches
                     </li>
                   ) : null}

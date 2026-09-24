@@ -912,38 +912,28 @@
   }
 }
 
+/* Keep Inspector in layout instead of covering the canvas on tablet landscape.
+   Only panel tracks change; Element geometry and savedViewport are untouched. */
 @media (max-width: 1200px) {
-  .overview__workspace {
-    grid-template-columns: 194px minmax(0, 1fr);
+  .overview--edit .overview__workspace {
+    grid-template-columns: 174px minmax(0, 1fr) 248px;
+    gap: 8px;
   }
-
   .overview--edit .overview__workspace--library-collapsed {
-    grid-template-columns: 44px minmax(0, 1fr);
+    grid-template-columns: 44px minmax(0, 1fr) 248px;
   }
-
+  .overview--edit .overview__workspace--inspector-collapsed {
+    grid-template-columns: 174px minmax(0, 1fr) 44px;
+  }
+  .overview--edit .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+  }
   .overview-inspector {
-    position: absolute;
-    top: 0;
-    right: var(--shell-canvas-inset);
-    bottom: var(--shell-canvas-inset);
-    width: var(--shell-inspector-width);
-    z-index: 4;
-    box-shadow: var(--shadow-panel);
+    position: static;
+    width: auto;
+    min-width: 0;
   }
-
-  .overview-rail--inspector {
-    position: absolute;
-    top: 0;
-    right: var(--shell-canvas-inset);
-    bottom: var(--shell-canvas-inset);
-    width: 44px;
-    z-index: 4;
-  }
-
-  .overview--view .overview__workspace,
-  .overview--view .overview__workspace--library-collapsed,
-  .overview--view .overview__workspace--inspector-collapsed,
-  .overview--view .overview__workspace--library-collapsed.overview__workspace--inspector-collapsed {
+  .element-inspector__grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -967,4 +957,42 @@
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* O1-D: scoped keyboard focus, readable metadata and short viewport dialogs. */
+.overview :is(button, input, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent, #38bdf8);
+  outline-offset: 2px;
+}
+.element-inspector__binding-help {
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.overview .element-inspector [aria-invalid="true"] {
+  border-color: var(--color-danger, #f87171);
+}
+.overview .modal {
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+.overview .modal__body {
+  min-height: 0;
+  overflow-y: auto;
+}
+.overview .modal__footer {
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.overview .modal__error {
+  flex-basis: 100%;
+  max-height: 25dvh;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+}
+.overview-bars {
+  max-height: 40dvh;
+  overflow-y: auto;
 }

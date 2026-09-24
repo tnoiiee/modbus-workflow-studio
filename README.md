@@ -1,13 +1,14 @@
-# MODBUS WORKFLOW STUDIO v1.3.0-dev.1
+# MODBUS WORKFLOW STUDIO v1.3.0-dev.2
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current application version: `v1.3.0-dev.1`
-- Accepted Overview baseline: `4d254fc5362599732c2875cd735c45fa0a55ba51`
+- Current application version: `v1.3.0-dev.2`
+- Accepted Overview baseline: `7caf786f70b1bed1f0f903792a426d79ef166b75`
 - Release disposition: source/CI closure complete; no standalone v1.2.11 tag or ZIP; remaining acceptance carries into v1.2.12
-- Current scope: O1-C stabilization; independent persisted Switch control states, revision-free View controls. O1-D and Tag Runtime are excluded.
+- Current scope: O1-D configuration-only Draft Tag binding, validation, Overview accessibility and responsive regression. O1-C independent Switch state and revision-free View controls are preserved. Tag Runtime and Variable Blocks are excluded.
+- Final O1 Owner acceptance: PENDING. See [O1 acceptance](docs/ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md).
 - Reliability defaults: monitor queue 32 jobs/device, one in-flight plus one pending scan/list, WebSocket 256 messages or 1 MiB/client, reconnect backoff 250 ms–30 s with jitter
 - Intended environment: trusted local or industrial LAN
 - Authentication: not included

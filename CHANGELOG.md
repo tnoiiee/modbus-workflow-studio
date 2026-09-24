@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0-dev.2] - O1-D configuration validation and accessibility
+
+- Complete configuration-only Tag metadata editing with derived NOT_BOUND/DRAFT status; no runtime resolution or connected claim.
+- Validate binding enums, identity/status consistency, direction and Element properties before Save; preserve invalid Draft without PUT.
+- Use native Library disclosure/list semantics, associated Inspector help and validation announcements, local Escape editing, and panel-toggle focus restoration.
+- Keep compact Inspector in layout rather than overlaying Canvas; bound dialog and command-bar overflow without modifying persisted geometry or savedViewport.
+- Synchronize application version values only; no dependency, Server validation, API or WebSocket structure changes.
+- Final O1 acceptance remains pending Owner Manual Review.
+
 ## [1.3.0-dev.1] - O1-C Stabilization
 
 - View Mode omits Save Status and Page REV; Edit Mode retains configuration save semantics.

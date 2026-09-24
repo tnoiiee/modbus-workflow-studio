@@ -2,9 +2,16 @@
 
 ## Current application
 
-`v1.3.0-dev.1` — O1-C Stabilization, based on Owner-accepted `4d254fc5362599732c2875cd735c45fa0a55ba51`.
+`v1.3.0-dev.2` — O1-D, based on Owner-approved O1-C checkpoint
+`7caf786f70b1bed1f0f903792a426d79ef166b75` (`v1.3.0-dev.1`).
 
-View controls use independent persisted state without configuration revisions. Edit Save/Cancel and savedViewport retain their existing contract. Automated validation passed (client 253 tests, server 44 tests, typecheck/build, strict hygiene); Owner manual review remains pending. O1-D and Tag Runtime are excluded.
+O1-C Manual Review: PASS, explicitly accepted by Owner. O1-D covers configuration-only Draft Tag binding, validation, Overview accessibility, responsive regression and Final O1 acceptance preparation.
+
+Independent Switch control persistence, View/Edit boundaries, Page revision isolation, session, Save/Cancel, Undo/Redo and savedViewport remain protected. No Tag Runtime, Global Tag Registry, Variable Blocks, live values, production commands or Modbus writes are added. Server source changes are limited to version values.
+
+O1-D automated evidence: [evidence](ACCEPTANCE_EVIDENCE/O1-v1.3.0-dev.2.md).
+Browser accessibility, keyboard/focus, responsive review and Owner Final O1 acceptance are PENDING.
+[Acceptance scope](ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md).
 
 ## Historical source baseline
 

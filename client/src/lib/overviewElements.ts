@@ -44,6 +44,42 @@ export interface OverviewElementBinding {
   status: OverviewBindingStatus;
 }
 
+/** Configuration metadata only; no registry lookup or runtime connection. */
+export function validateOverviewBinding(category: OverviewElementCategory, value: unknown): string[] {
+  if (!value || typeof value !== 'object') return ['Binding configuration is required'];
+  const binding = value as Record<string, unknown>;
+  const errors: string[] = [];
+  if (typeof binding.tagId !== 'string') errors.push('Tag ID must be text');
+  if (typeof binding.tagName !== 'string') errors.push('Tag Name must be text');
+  if (!['Boolean', 'Number', 'String', 'Unknown'].includes(String(binding.dataType))) {
+    errors.push('Data Type must be Boolean, Number, String or Unknown');
+  }
+  if (!['NOT_BOUND', 'DRAFT'].includes(String(binding.status))) {
+    errors.push('Binding status must be NOT_BOUND or DRAFT');
+  }
+  if (!overviewAllowedDirections(category).includes(binding.direction as OverviewBindingDirection)) {
+    errors.push(`Binding direction must be ${overviewAllowedDirections(category).join(' or ')}`);
+  }
+  const tagId = typeof binding.tagId === 'string' ? binding.tagId.trim() : '';
+  if (binding.status === 'DRAFT' && !tagId) errors.push('DRAFT binding requires a non-empty Tag ID');
+  if (binding.status === 'NOT_BOUND' && tagId) errors.push('A Tag ID requires DRAFT status');
+  return errors;
+}
+
+/** One inspector commit; derive status from identity, never from runtime. */
+export function patchOverviewBinding(
+  category: OverviewElementCategory,
+  binding: OverviewElementBinding,
+  patch: Partial<OverviewElementBinding>,
+): OverviewElementBinding {
+  const next = { ...binding, ...patch };
+  if (patch.tagId !== undefined) next.tagId = patch.tagId.trim();
+  if (patch.tagName !== undefined) next.tagName = patch.tagName.trim();
+  if (patch.direction !== undefined) next.direction = normalizeOverviewBindingDirection(category, patch.direction);
+  next.status = next.tagId.trim() ? 'DRAFT' : 'NOT_BOUND';
+  return next;
+}
+
 /** Full O1-C Overview Element shape persisted in Page `elements`. */
 export interface OverviewElement {
   id: string;
@@ -526,27 +562,31 @@ export function validateOverviewElements(
     if (overviewTypeCategory(el.type) !== el.category) {
       errors.push(`Element category does not match Type ${el.type}`);
     }
+    if (typeof el.name !== 'string' || !el.name.trim()) errors.push(`Element ${el.id}: name is required`);
+    if (typeof el.locked !== 'boolean' || typeof el.visible !== 'boolean') errors.push(`Element ${el.id}: locked/visible must be boolean`);
     if (!Number.isFinite(el.width) || el.width <= 0) errors.push(`Element ${el.id}: width must be greater than zero`);
     if (!Number.isFinite(el.height) || el.height <= 0) errors.push(`Element ${el.id}: height must be greater than zero`);
     if (!Number.isFinite(el.x) || !Number.isFinite(el.y)) errors.push(`Element ${el.id}: x/y must be finite`);
     if (!Number.isFinite(el.rotation)) errors.push(`Element ${el.id}: rotation must be finite`);
     if (!Number.isInteger(el.zIndex)) errors.push(`Element ${el.id}: zIndex must be an integer`);
-    if (!Number.isFinite(el.style.opacity) || el.style.opacity < 0 || el.style.opacity > 1) {
-      errors.push(`Element ${el.id}: opacity must be between 0 and 1`);
+    if (!el.style || typeof el.style !== 'object') {
+      errors.push(`Element ${el.id}: style is required`);
+    } else {
+      if (!Number.isFinite(el.style.fontSize) || el.style.fontSize < 8 || el.style.fontSize > 96) errors.push(`Element ${el.id}: font size must be 8–96`);
+      if (!Number.isFinite(el.style.borderWidth) || el.style.borderWidth < 0 || el.style.borderWidth > 12) errors.push(`Element ${el.id}: border width must be 0–12`);
+      if (!Number.isFinite(el.style.borderRadius) || el.style.borderRadius < 0 || el.style.borderRadius > 64) errors.push(`Element ${el.id}: border radius must be 0–64`);
+      if (!['left', 'center', 'right'].includes(el.style.alignment)) errors.push(`Element ${el.id}: invalid alignment`);
+      if (typeof el.style.text !== 'string') errors.push(`Element ${el.id}: text must be a string`);
+      for (const color of ['textColor', 'backgroundColor', 'borderColor'] as const) {
+        if (typeof el.style[color] !== 'string' || !el.style[color].trim()) errors.push(`Element ${el.id}: ${color} must be a non-empty color`);
+      }
+      if (!Number.isFinite(el.style.opacity) || el.style.opacity < 0 || el.style.opacity > 1) {
+        errors.push(`Element ${el.id}: opacity must be between 0 and 1`);
+      }
     }
 
-    const direction = el.binding.direction;
-    if (el.category === 'MONITORING' && direction !== 'MONITOR' && direction !== 'NONE') {
-      errors.push(`Element ${el.id}: monitoring direction must be MONITOR or NONE`);
-    }
-    if (el.category === 'CONTROL' && direction !== 'COMMAND' && direction !== 'NONE') {
-      errors.push(`Element ${el.id}: control direction must be COMMAND or NONE`);
-    }
-    if (el.category === 'DISPLAY' && direction !== 'NONE') {
-      errors.push(`Element ${el.id}: display direction must be NONE`);
-    }
-    if (el.binding.status === 'DRAFT' && !el.binding.tagId.trim()) {
-      errors.push(`Element ${el.id}: DRAFT binding requires a non-empty Tag ID`);
+    for (const error of validateOverviewBinding(el.category, el.binding)) {
+      errors.push(`Element ${el.id}: ${error}`);
     }
   }
 

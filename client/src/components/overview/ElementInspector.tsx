@@ -1,4 +1,4 @@
-import { useEffect, useState, type InputHTMLAttributes } from 'react';
+import { useEffect, useId, useState, type InputHTMLAttributes } from 'react';
 import {
   BringToFront,
   Eye,
@@ -15,6 +15,7 @@ import {
   clampOverviewOpacity,
   normalizeOverviewRotation,
   overviewAllowedDirections,
+  validateOverviewBinding,
   type OverviewElement,
   type OverviewBindingDataType,
   type OverviewBindingDirection,
@@ -63,6 +64,11 @@ function CommitField({
       onChange={event => setLocal(event.target.value)}
       onBlur={commit}
       onKeyDown={event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          setLocal(String(value));
+        }
         if (event.key === 'Enter') {
           event.preventDefault();
           commit();
@@ -96,6 +102,11 @@ function CommitText({
       onChange={event => setLocal(event.target.value)}
       onBlur={commit}
       onKeyDown={event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          setLocal(String(value));
+        }
         if (event.key === 'Enter') {
           event.preventDefault();
           commit();
@@ -123,7 +134,7 @@ export interface ElementInspectorProps {
 const DATA_TYPES: readonly OverviewBindingDataType[] = ['Boolean', 'Number', 'String', 'Unknown'];
 
 /**
- * O1-C Element Inspector — identity, layout, appearance, binding placeholder.
+ * O1-C Element Inspector — identity, layout, appearance, configuration-only Draft Tag binding.
  * Every property commit mutates the Draft only (one commit = one Undo entry).
  */
 export function ElementInspector({
@@ -140,9 +151,11 @@ export function ElementInspector({
   onSendBackward,
   onSendToBack,
 }: ElementInspectorProps) {
+  const bindingHelpId = useId();
+  const bindingErrorId = useId();
   if (!element) {
     return (
-      <div className="element-inspector" aria-label="Element Inspector">
+      <div className="element-inspector" role="region" aria-label="Element Inspector">
         <p className="element-inspector__empty">Select an element on the canvas to edit its properties.</p>
       </div>
     );
@@ -151,9 +164,10 @@ export function ElementInspector({
   const style = element.style;
   const binding = element.binding;
   const disabled = element.locked;
+  const bindingErrors = validateOverviewBinding(element.category, binding);
 
   return (
-    <div className="element-inspector" aria-label="Element Inspector">
+    <div className="element-inspector" role="region" aria-label="Element Inspector">
       <div className="element-inspector__identity">
         <div className="element-inspector__row">
           <label className="element-inspector__field">
@@ -360,14 +374,24 @@ export function ElementInspector({
         </div>
       </fieldset>
 
-      <fieldset className="element-inspector__group" disabled={disabled}>
-        <legend>Binding (placeholder)</legend>
+      <fieldset className="element-inspector__group" disabled={disabled}
+        aria-describedby={`${bindingHelpId}${bindingErrors.length ? ` ${bindingErrorId}` : ''}`}
+        aria-invalid={bindingErrors.length > 0 || undefined}>
+        <legend>Draft Tag binding</legend>
+        <p id={bindingHelpId} className="element-inspector__binding-help">
+          Configuration only. DRAFT is not connected. No Tag lookup, live values or commands.
+          Status follows Tag ID; clear Tag ID to return to NOT_BOUND. Unknown data type is allowed for a draft.
+        </p>
+        <div id={bindingErrorId} role="status" aria-live="polite" aria-atomic="true">
+          {bindingErrors.length ? <ul>{bindingErrors.map(error => <li key={error}>{error}</li>)}</ul> : null}
+        </div>
         <div className="element-inspector__grid">
           <label className="element-inspector__field">
             <span>Tag ID</span>
             <CommitText
               type="text"
               value={binding.tagId}
+              aria-describedby={bindingHelpId}
               placeholder="Not bound"
               onCommit={tagId =>
                 onPatchBinding({

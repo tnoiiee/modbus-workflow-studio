@@ -68,6 +68,7 @@ import {
   snapOverviewCoordinate,
   undoOverviewHistory,
   validateOverviewElements,
+  patchOverviewBinding,
   OVERVIEW_TYPE_CATEGORY,
   type OverviewDraftHistory,
   type OverviewElement,
@@ -283,7 +284,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       asElements(draft),
     );
     if (validationErrors.length > 0) {
-      setSaveConfirmError(validationErrors.slice(0, 3).join(' · '));
+      setSaveConfirmError(`Cannot save: ${validationErrors.length} validation error(s). ${validationErrors.join(' · ')}`);
       setSaveConfirmPending(false);
       return;
     }
@@ -770,10 +771,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       applyElementMutation(elements =>
         elements.map(el => {
           if (el.id !== selectedElementId || el.locked) return el;
-          const nextBinding = { ...el.binding, ...patch };
-          if (patch.direction !== undefined) {
-            nextBinding.direction = normalizeOverviewBindingDirection(el.category, patch.direction);
-          }
+          const nextBinding = patchOverviewBinding(el.category, el.binding, patch);
           return { ...el, binding: nextBinding };
         }),
       );
@@ -946,7 +944,19 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     [activePageId, mode],
   );
 
+  const panelFocusRef = useRef<'library' | 'inspector' | null>(null);
+  const overviewRootRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const panel = panelFocusRef.current;
+    if (!panel) return;
+    overviewRootRef.current?.querySelector<HTMLButtonElement>(
+      `[aria-label="${(panel === 'library' ? libraryCollapsed : inspectorCollapsed) ? 'Expand' : 'Collapse'} Element ${panel === 'library' ? 'Library' : 'Inspector'}"]`,
+    )?.focus();
+    panelFocusRef.current = null;
+  }, [libraryCollapsed, inspectorCollapsed]);
+
   const handleToggleLibrary = useCallback(() => {
+    panelFocusRef.current = 'library';
     setLibraryCollapsed(current => {
       const next = toggleOverviewPanel(current);
       setSessionPanelCollapsed('library', next);
@@ -954,6 +964,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     });
   }, []);
   const handleToggleInspector = useCallback(() => {
+    panelFocusRef.current = 'inspector';
     setInspectorCollapsed(current => {
       const next = toggleOverviewPanel(current);
       setSessionPanelCollapsed('inspector', next);
@@ -1001,6 +1012,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   return (
     <section
       className={`overview${mode === 'VIEW' ? ' overview--view' : ' overview--edit'}`}
+      ref={overviewRootRef}
       aria-label="Overview"
       data-command-groups={groups.join(',')}
       data-save-status-last={isSaveStatusLastGroup(mode) ? 'true' : 'false'}
@@ -1150,7 +1162,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
               ) : null}
             </div>
             {mode === 'EDIT' ? (
-              <ElementInspector element={selectedElement} {...inspectorHandlers} />
+              <ElementInspector key={selectedElement?.id ?? 'empty'} element={selectedElement} {...inspectorHandlers} />
             ) : (
               <p className="empty">Element Inspector is available in Edit Mode</p>
             )}
