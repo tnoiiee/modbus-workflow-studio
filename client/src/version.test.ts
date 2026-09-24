@@ -9,8 +9,8 @@ function readJson(relative: string): { version?: string } {
 }
 
 describe('release version label', () => {
-  it('is the v1.3.0 label rendered by the shell', () => {
-    expect(APP_VERSION).toBe('1.3.0');
+  it('is the v1.4.0-dev.1 label rendered by the shell', () => {
+    expect(APP_VERSION).toBe('1.4.0-dev.1');
   });
 
   it('matches every package manifest', () => {
@@ -28,5 +28,15 @@ describe('release version label', () => {
     expect(lock.packages?.['']?.version).toBe(APP_VERSION);
     expect(lock.packages?.['client']?.version).toBe(APP_VERSION);
     expect(lock.packages?.['server']?.version).toBe(APP_VERSION);
+  });
+});
+
+
+describe('O2-A Server version surfaces', () => {
+  it('health API, hello and startup banner match the UI', () => {
+    const source = readFileSync(new URL('../../server/src/index.ts', import.meta.url), 'utf8');
+    expect(source).toContain(`hello',{version:'${APP_VERSION}'`);
+    expect(source).toContain(`allowWrites:ALLOW_WRITES,version:'${APP_VERSION}'`);
+    expect(source).toContain(`MODBUS WORKFLOW STUDIO v${APP_VERSION} on http`);
   });
 });

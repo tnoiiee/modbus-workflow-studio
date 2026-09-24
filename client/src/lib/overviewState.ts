@@ -489,12 +489,12 @@ export function buildElementDeleteDescription(name: string): string {
 export function buildElementDeleteFacts(element: {
   type: string;
   id: string;
-  binding: { status: string };
-}): string[] {
+  binding: { status?: string };
+}, resolvedStatus = element.binding.status ?? 'DRAFT'): string[] {
   return [
     `Element type: ${element.type}`,
     `Element ID: ${element.id}`,
-    `Binding status: ${element.binding.status}`,
+    `Binding status: ${resolvedStatus}`,
     'This change remains local until Save & Exit',
   ];
 }

@@ -1,3 +1,4 @@
+import type { BindingResolution } from '../../lib/overviewBinding.js';
 import { memo, useCallback, useState, type CSSProperties, type ReactNode } from 'react';
 import { NodeResizer, type NodeProps } from '@xyflow/react';
 import { Lock } from 'lucide-react';
@@ -11,6 +12,8 @@ export interface OverviewElementNodeData {
   selected: boolean;
   /** Confirmed independent Control-state value (View Mode rendering only). */
   controlValue?: boolean;
+  bindingResolution?: BindingResolution;
+  onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void>;
   [key: string]: unknown;
 }
 
@@ -22,6 +25,8 @@ export interface OverviewElementNodeData {
 function ElementNodeComponent({ data, selected }: NodeProps) {
   const element = (data as OverviewElementNodeData).element;
   const mode = (data as OverviewElementNodeData).mode;
+  const resolution = (data as OverviewElementNodeData).bindingResolution;
+  const onNavigateWorkflow = (data as OverviewElementNodeData).onNavigateWorkflow;
   const edit = mode === 'EDIT';
   const { style, binding, category, type } = element;
   const onControlStateChange = (data as OverviewElementNodeData).onControlStateChange as
@@ -93,11 +98,10 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
     (event: React.MouseEvent) => {
       if (edit) return;
       event.stopPropagation();
-      // Preview feedback only — no navigation until a valid target exists.
-      setLinkFeedback(true);
-      window.setTimeout(() => setLinkFeedback(false), 1200);
+      if (onNavigateWorkflow) void onNavigateWorkflow(element.targetWorkflowId);
+      else setLinkFeedback(true);
     },
-    [edit],
+    [edit, onNavigateWorkflow, element.targetWorkflowId],
   );
 
   if (!element.visible) {
@@ -174,12 +178,14 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
             Editor Preview
           </span>
         ) : null}
+        {resolution && category !== 'DISPLAY' && type !== 'NAVIGATION_LINK' ? <span className="overview-element__resolution" role="status" title={resolution.reason}>
+          {resolution.status}{resolution.controlRuntimeDisabled ? ' · CONTROL RUNTIME NOT ENABLED' : ''}
+        </span> : null}
         {category === 'CONTROL' ? (
           <span className="overview-element__badge overview-element__badge--unbound" aria-hidden="true">
-            {binding.status === 'DRAFT' ? 'DRAFT' : 'NOT BOUND'}
+            {type === 'NAVIGATION_LINK' ? 'NAVIGATION ONLY' : resolution?.status ?? (binding.status === 'DRAFT' ? 'DRAFT' : 'NOT BOUND')}
             {!edit && type === 'SWITCH' ? ' · PREVIEW' : ''}
             {!edit && type === 'PUSH_BUTTON' ? ' · PREVIEW' : ''}
-            {!edit && type === 'NAVIGATION_LINK' ? ' · PREVIEW' : ''}
           </span>
         ) : null}
       </div>
@@ -290,10 +296,10 @@ function renderPreview(element: OverviewElement, handlers: PreviewHandlers): Rea
           type="button"
           className={`overview-element__preview overview-element__preview--link overview-element__preview--interactive${handlers.linkFeedback ? ' is-feedback' : ''}`}
           data-preview-control="navigation-link"
-          aria-label="Navigation link preview"
+          aria-label="Open target Workflow"
           onClick={handlers.onLinkClick}
         >
-          {handlers.linkFeedback ? 'Preview · no target' : text || 'Link'}
+          {handlers.linkFeedback ? 'Missing Workflow target' : text || 'Link'}
         </button>
       );
     case 'STATIC_TEXT':

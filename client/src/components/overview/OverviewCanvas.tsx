@@ -1,3 +1,4 @@
+import type { BindingResolution } from '../../lib/overviewBinding.js';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Background,
@@ -46,6 +47,8 @@ function prefersReducedMotion(): boolean {
 }
 
 export interface OverviewCanvasProps {
+  bindingResolutions?: Readonly<Record<string, BindingResolution>>;
+  onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void>;
   mode: OverviewMode;
   designWidth: number;
   designHeight: number;
@@ -85,6 +88,7 @@ export interface OverviewCanvasProps {
  * Overview Elements are HMI components — no source/target Handles, no edges.
  */
 function OverviewCanvasBase({
+  bindingResolutions, onNavigateWorkflow,
   mode,
   designWidth,
   designHeight,
@@ -188,6 +192,8 @@ function OverviewCanvasBase({
           previous.selected === selected &&
           previous.data.mode === mode &&
           previous.draggable === (edit && !element.locked) &&
+          previous.data.bindingResolution === bindingResolutions?.[element.id] &&
+          previous.data.onNavigateWorkflow === onNavigateWorkflow &&
           previous.data.onControlStateChange === expectedControl &&
           (edit || previous.data.controlValue === expectedControlValue)
         ) {
@@ -210,6 +216,8 @@ function OverviewCanvasBase({
         resizable: edit && !element.locked,
         connectable: false,
           data: {
+          bindingResolution: bindingResolutions?.[element.id],
+          onNavigateWorkflow,
           element: liveResize || liveDrag
             ? { ...element, x: position.x, y: position.y, width, height }
             : element,
@@ -229,7 +237,7 @@ function OverviewCanvasBase({
     previousNodesRef.current = nextNodes;
     return nextNodes;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange, controlStates]);
+  }, [dragPositions, liveResizes, elements, edit, mode, selectedElementId, onControlStateChange, controlStates, bindingResolutions, onNavigateWorkflow]);
 
   const handleInit = useCallback(
     (instance: ReactFlowInstance<Node<OverviewElementNodeData>>) => {

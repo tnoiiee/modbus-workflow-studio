@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
+import { DefinitionCatalog } from '../src/definitionCatalog.js';
+import { OverviewPageManager } from '../src/overviewPages.js';
+import { createOverviewElement, patchOverviewBinding } from '../../client/src/lib/overviewElements.js';
+import { resolveOverviewBinding } from '../../client/src/lib/overviewBinding.js';
+import { definitionIdentity } from '../../client/src/lib/sourceDefinitions.js';
+const directories: string[] = [];
+afterEach(() => { for (const dir of directories.splice(0)) fs.rmSync(dir, { force: true, recursive: true }); });
+describe('O2-A real persisted definitions → binding resolution', () => {
+  it.each(['SHARED_TAG', 'WORKFLOW_VARIABLE'])('%s rename/disable/type change/delete never mutates Overview config', sourceType => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mws-binding-integration-')); directories.push(dir);
+    const workflowId = '11111111-1111-4111-8111-111111111111';
+    const catalog = new DefinitionCatalog(dir, id => id === workflowId);
+    const source = catalog.create({ sourceType, ...(sourceType === 'WORKFLOW_VARIABLE' ? { workflowId } : {}), name: 'Level', dataType: 'Number', capability: 'MONITOR_ONLY' });
+    const identity = definitionIdentity(source);
+    const e = createOverviewElement('NUMERIC_LABEL', { id: 'label', x: 0, y: 0 });
+    e.binding = patchOverviewBinding(e.category, e.binding, { source: identity, dataType: 'Number' });
+    const pages = new OverviewPageManager(dir), page = pages.create({ name: 'Test' });
+    pages.update(page.id, { expectedRevision: page.revision, elements: [e] });
+    const file = path.join(dir, 'overview-pages', `${page.id}.json`), bytes = fs.readFileSync(file, 'utf8');
+    const resolve = () => resolveOverviewBinding(e, { definitions: new DefinitionCatalog(dir, () => true).list(), available: true });
+    expect(resolve().status).toBe('BOUND');
+    catalog.update(identity, { name: 'Renamed' }); expect(resolve()).toMatchObject({ status: 'BOUND', definition: { name: 'Renamed' } });
+    catalog.update(identity, { enabled: false }); expect(resolve().status).toBe('INCOMPATIBLE');
+    catalog.update(identity, { enabled: true, dataType: 'Boolean' }); expect(resolve().status).toBe('INCOMPATIBLE');
+    catalog.delete(identity); expect(resolve().status).toBe('MISSING');
+    expect(fs.readFileSync(file, 'utf8')).toBe(bytes);
+  });
+});

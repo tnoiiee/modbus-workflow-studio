@@ -1,3 +1,6 @@
+import { SourceBindingFields } from './SourceBindingFields.js';
+import { resolveOverviewBinding, type BindingResolution } from '../../lib/overviewBinding.js';
+import type { SourceDefinition, DefinitionWorkflow } from '../../lib/sourceDefinitions.js';
 import { useEffect, useId, useState, type InputHTMLAttributes } from 'react';
 import {
   BringToFront,
@@ -118,6 +121,9 @@ function CommitText({
 
 export interface ElementInspectorProps {
   element: OverviewElement | null;
+  definitions?: readonly SourceDefinition[];
+  workflows?: readonly DefinitionWorkflow[];
+  resolution?: BindingResolution;
   onPatch: (patch: Partial<OverviewElement>) => void;
   onPatchStyle: (patch: Partial<OverviewElement['style']>) => void;
   onPatchBinding: (patch: Partial<OverviewElement['binding']>) => void;
@@ -138,7 +144,7 @@ const DATA_TYPES: readonly OverviewBindingDataType[] = ['Boolean', 'Number', 'St
  * Every property commit mutates the Draft only (one commit = one Undo entry).
  */
 export function ElementInspector({
-  element,
+  element, definitions = [], workflows = [], resolution,
   onPatch,
   onPatchStyle,
   onPatchBinding,
@@ -165,6 +171,7 @@ export function ElementInspector({
   const binding = element.binding;
   const disabled = element.locked;
   const bindingErrors = validateOverviewBinding(element.category, binding);
+  const resolved = resolution ?? resolveOverviewBinding(element, { definitions, available: false });
 
   return (
     <div className="element-inspector" role="region" aria-label="Element Inspector">
@@ -374,20 +381,30 @@ export function ElementInspector({
         </div>
       </fieldset>
 
-      <fieldset className="element-inspector__group" disabled={disabled}
+      {element.type === 'NAVIGATION_LINK' ? <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Workflow navigation</legend>
+        <p>Navigation only. No Tag identity, commands, or Runtime changes.</p>
+        <label>Target Workflow<select value={element.targetWorkflowId ?? ''} onChange={event => onPatch({ targetWorkflowId: event.target.value })}>
+          <option value="">No target</option>
+          {element.targetWorkflowId && !workflows.some(workflow => workflow.id === element.targetWorkflowId) && <option value={element.targetWorkflowId}>Missing target · {element.targetWorkflowId}</option>}
+          {workflows.map(workflow => <option key={workflow.id} value={workflow.id}>{workflow.name} · {workflow.id}</option>)}
+        </select></label>
+        <label>targetWorkflowId<input readOnly value={element.targetWorkflowId ?? ''} /></label>
+      </fieldset> : <fieldset className="element-inspector__group" disabled={disabled}
         aria-describedby={`${bindingHelpId}${bindingErrors.length ? ` ${bindingErrorId}` : ''}`}
         aria-invalid={bindingErrors.length > 0 || undefined}>
         <legend>Draft Tag binding</legend>
         <p id={bindingHelpId} className="element-inspector__binding-help">
-          Configuration only. DRAFT is not connected. No Tag lookup, live values or commands.
-          Status follows Tag ID; clear Tag ID to return to NOT_BOUND. Unknown data type is allowed for a draft.
+          Configuration only. DRAFT is not connected. BOUND verifies metadata only, never Runtime readiness.
+          No live values or commands. Unknown data type is allowed for a legacy draft.
         </p>
+        <SourceBindingFields element={element} definitions={definitions} workflows={workflows} resolution={resolved} onPatchBinding={onPatchBinding} />
         <div id={bindingErrorId} role="status" aria-live="polite" aria-atomic="true">
           {bindingErrors.length ? <ul>{bindingErrors.map(error => <li key={error}>{error}</li>)}</ul> : null}
         </div>
         <div className="element-inspector__grid">
           <label className="element-inspector__field">
-            <span>Tag ID</span>
+            <span>Legacy Tag ID (not identity)</span>
             <CommitText
               type="text"
               value={binding.tagId}
@@ -402,11 +419,11 @@ export function ElementInspector({
             />
           </label>
           <label className="element-inspector__field">
-            <span>Tag Name</span>
+            <span>Legacy Tag Name</span>
             <CommitText type="text" value={binding.tagName} onCommit={tagName => onPatchBinding({ tagName })} />
           </label>
           <label className="element-inspector__field">
-            <span>Data Type</span>
+            <span>Intended Data Type</span>
             <select
               value={binding.dataType}
               onChange={event => onPatchBinding({ dataType: event.target.value as OverviewBindingDataType })}
@@ -435,10 +452,10 @@ export function ElementInspector({
           </label>
           <label className="element-inspector__field">
             <span>Status</span>
-            <input type="text" value={binding.status} readOnly aria-readonly="true" />
+            <input type="text" value={resolved.status} readOnly aria-readonly="true" />
           </label>
         </div>
-      </fieldset>
+      </fieldset>}
 
       <div className="element-inspector__actions element-inspector__actions--danger">
         <button type="button" onClick={onDuplicate} aria-label="Duplicate element">

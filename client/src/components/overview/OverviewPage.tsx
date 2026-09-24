@@ -1,3 +1,7 @@
+import { DefinitionCatalogEditor } from './DefinitionCatalogEditor.js';
+import { bindingPresentation, type BindingPresentation } from '../../lib/overviewBinding.js';
+import { fetchSourceDefinitions, fetchDefinitionWorkflows } from '../../lib/overviewApi.js';
+import type { SourceDefinition, DefinitionWorkflow } from '../../lib/sourceDefinitions.js';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactFlowInstance } from '@xyflow/react';
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
@@ -109,7 +113,32 @@ function asElements(page: OverviewPageRecord | null): OverviewElement[] {
  * Save & Exit pipeline, page CRUD dialogs, and session-scoped panel collapse.
  * Persistence goes through `/api/overview-pages` only.
  */
-export function OverviewPage({ active = true }: { active?: boolean } = {}) {
+export function OverviewPage({ active = true, onNavigateWorkflow }: { active?: boolean; onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void> } = {}) {
+  // Catalog refresh is presentation state only: never patch Page/Draft/history.
+  const [definitions, setDefinitions] = useState<SourceDefinition[]>([]);
+  const [definitionWorkflows, setDefinitionWorkflows] = useState<DefinitionWorkflow[]>([]);
+  const [catalogAvailable, setCatalogAvailable] = useState(false);
+  const [catalogError, setCatalogError] = useState('');
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const catalogRequest = useRef(0);
+  const refreshCatalog = useCallback(async () => {
+    const request = ++catalogRequest.current;
+    setCatalogAvailable(false); setCatalogError('');
+    try {
+      const [sources, workflows] = await Promise.all([fetchSourceDefinitions(), fetchDefinitionWorkflows()]);
+      if (request !== catalogRequest.current) return;
+      setDefinitions(sources); setDefinitionWorkflows(workflows); setCatalogAvailable(true);
+    } catch (cause) {
+      if (request === catalogRequest.current) setCatalogError(cause instanceof Error ? cause.message : 'Catalog unavailable');
+    }
+  }, []);
+  useEffect(() => {
+    if (!active) return;
+    void refreshCatalog();
+    const refresh = () => { void refreshCatalog(); };
+    window.addEventListener('focus', refresh);
+    return () => { ++catalogRequest.current; window.removeEventListener('focus', refresh); };
+  }, [active, refreshCatalog]);
   const [pages, setPages] = useState<OverviewPageSummary[]>([]);
   const [activePageId, setActivePageId] = useState('');
   const [activePage, setActivePage] = useState<OverviewPageRecord | null>(null);
@@ -169,6 +198,21 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const revision = displayedOverviewRevision(baseline?.revision ?? activePage?.revision);
   const draftElements = asElements(draft);
   const selectedElement = draftElements.find(el => el.id === selectedElementId) ?? null;
+  const previousPresentation = useRef<BindingPresentation>();
+  const bindingResolutions = useMemo(() => {
+    const next = bindingPresentation(asElements(workingPage), { definitions, available: catalogAvailable }, previousPresentation.current);
+    previousPresentation.current = next;
+    return next.resolutions;
+  }, [workingPage?.elements, definitions, catalogAvailable]);
+  const handleNavigateWorkflow = useCallback(async (targetWorkflowId?: string) => {
+    if (mode !== 'VIEW') return;
+    setControlError(undefined);
+    try {
+      if (!onNavigateWorkflow) throw Error('Workflow navigation is unavailable.');
+      await onNavigateWorkflow(targetWorkflowId);
+    } catch (cause) { setControlError(cause instanceof Error ? cause.message : 'Missing Workflow target.'); }
+  }, [mode, onNavigateWorkflow]);
+
 
   /* ---- page list loading ------------------------------------------------ */
 
@@ -745,6 +789,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
               ...el.binding,
               direction: normalizeOverviewBindingDirection(nextCategory, el.binding.direction),
             };
+            if (nextType === 'NAVIGATION_LINK') {
+              next.binding = { tagId: '', tagName: '', dataType: 'Unknown', direction: 'NONE', status: 'NOT_BOUND' };
+            } else if (nextType !== el.type) {
+              delete next.targetWorkflowId;
+            }
           }
           return next;
         }),
@@ -1018,6 +1067,12 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       data-save-status-last={isSaveStatusLastGroup(mode) ? 'true' : 'false'}
     >
       <div className="overview-bars">
+        <div className="overview-catalog-bar">
+          <button type="button" onClick={() => void refreshCatalog()}>Refresh Source definitions</button>
+          {mode === 'EDIT' && <button type="button" onClick={() => setCatalogOpen(true)}>Manage Source definitions</button>}
+          <span>Configuration only · No Monitoring or Control Runtime</span>
+          {catalogError && <span role="alert">{catalogError}</span>}
+        </div>
         <OverviewCommandBar
           pages={pages}
           activePageId={activePageId}
@@ -1064,6 +1119,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         </div>
       ) : null}
 
+      {catalogOpen && mode === 'EDIT' && <DefinitionCatalogEditor definitions={definitions} workflows={definitionWorkflows} available={catalogAvailable} onClose={() => setCatalogOpen(false)} onChanged={refreshCatalog} />}
       <div className={workspaceClass}>
         {mode === 'EDIT' && libraryCollapsed ? (
           <div className="overview-rail overview-rail--library">
@@ -1109,6 +1165,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         )}
 
         <OverviewCanvas
+          bindingResolutions={bindingResolutions}
+          onNavigateWorkflow={handleNavigateWorkflow}
           mode={mode}
           designWidth={workingPage?.designWidth ?? OVERVIEW_DEFAULT_WIDTH}
           designHeight={workingPage?.designHeight ?? OVERVIEW_DEFAULT_HEIGHT}
@@ -1162,7 +1220,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
               ) : null}
             </div>
             {mode === 'EDIT' ? (
-              <ElementInspector key={selectedElement?.id ?? 'empty'} element={selectedElement} {...inspectorHandlers} />
+              <ElementInspector key={selectedElement?.id ?? 'empty'} definitions={definitions} workflows={definitionWorkflows} resolution={selectedElement ? bindingResolutions[selectedElement.id] : undefined} element={selectedElement} {...inspectorHandlers} />
             ) : (
               <p className="empty">Element Inspector is available in Edit Mode</p>
             )}
@@ -1398,7 +1456,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         open={elementDeleteTarget !== null}
         title="Delete Overview Element"
         description={elementDeleteTarget ? buildElementDeleteDescription(elementDeleteTarget.name) : ''}
-        facts={elementDeleteTarget ? buildElementDeleteFacts(elementDeleteTarget) : []}
+        facts={elementDeleteTarget ? buildElementDeleteFacts(elementDeleteTarget, bindingResolutions[elementDeleteTarget.id]?.status) : []}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         danger

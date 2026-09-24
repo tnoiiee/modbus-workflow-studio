@@ -120,3 +120,15 @@ export function patchOverviewControlState(
 export function deleteOverviewPage(id: string): Promise<{ ok: boolean }> {
   return overviewApi<{ ok: boolean }>(`/api/overview-pages/${id}`, { method: 'DELETE' });
 }
+
+// Definition metadata only. These endpoints never return Runtime values.
+import { definitionIdentity, type CreateDefinition, type DefinitionMetadata, type DefinitionWorkflow, type SourceDefinition, type SourceIdentity } from './sourceDefinitions.js';
+export const fetchSourceDefinitions = () => overviewApi<SourceDefinition[]>('/api/source-definitions');
+export const fetchDefinitionWorkflows = () => overviewApi<DefinitionWorkflow[]>('/api/workflows');
+export function sourceDefinitionPath(source: SourceIdentity): string {
+  return source.sourceType === 'SHARED_TAG'
+    ? `/api/source-definitions/shared-tags/${encodeURIComponent(source.sourceId)}`
+    : `/api/source-definitions/workflow-variables/${encodeURIComponent(source.workflowId)}/${encodeURIComponent(source.variableId)}`;
+}
+export const createSourceDefinition = (input: CreateDefinition) => overviewApi<SourceDefinition>('/api/source-definitions', { method: 'POST', body: JSON.stringify(input) });
+export const updateSourceDefinition = (source: SourceDefinition, metadata: Partial<DefinitionMetadata>) => overviewApi<SourceDefinition>(sourceDefinitionPath(definitionIdentity(source)), { method: 'PATCH', body: JSON.stringify(metadata) });

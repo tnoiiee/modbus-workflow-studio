@@ -996,3 +996,14 @@
   max-height: 40dvh;
   overflow-y: auto;
 }
+
+/* O2-A metadata configuration only; no Element geometry or viewport changes. */
+.overview-catalog-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 8px; font-size: 12px; }
+.source-catalog, .source-catalog fieldset, .source-binding { display: grid; gap: 10px; min-width: 0; }
+.source-catalog label, .source-binding label { display: grid; gap: 4px; min-width: 0; }
+.source-catalog select, .source-catalog input:not([type="checkbox"]), .source-catalog textarea,
+.source-binding select, .source-binding input { width: 100%; min-width: 0; }
+.source-binding__metadata { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; }
+.source-binding__metadata dd { margin: 0; overflow-wrap: anywhere; }
+.source-binding p, .source-binding strong { overflow-wrap: anywhere; }
+.overview-element__resolution { position: absolute; bottom: 100%; left: 0; max-width: 250px; font-size: 10px; line-height: 1.2; background: #0b1822; color: #e6eef5; pointer-events: none; }

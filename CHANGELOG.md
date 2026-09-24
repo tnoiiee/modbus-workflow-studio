@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.0-dev.1] - O2-A Tag/Variable Binding Foundation (2026-09-24)
+
+- Based on merged v1.3.0 at `eed588481ae7e7376f9926e58dbd37f9076b5c2e`.
+- Persisted configuration-only WORKFLOW_VARIABLE and SHARED_TAG catalogs, server-generated
+  immutable UUIDs, metadata CRUD API and minimal editor; Disable is the default UI removal action.
+- Explicit stable binding selection, type/capability compatibility, pure NOT_BOUND/DRAFT/BOUND/
+  MISSING/INCOMPATIBLE resolution and Inspector metadata/reasons. No automatic legacy matching.
+- Resolution refresh stays outside Page persistence/history/revision; new bindings omit derived status.
+- BOUND Control labels explicitly state Runtime is disabled; independent Preview state preserved.
+- Navigation Link uses separate targetWorkflowId and the existing Workflow selection path only.
+- O2-A targeted tests/docs and synchronized current version surfaces; dependencies unchanged.
+- No Runtime values, acquisition/transport, commands, MQTT/Sparkplug, O2-B/C/D or release activity.
+- Stage 1 checkpoint; Full Gates await Owner authorization. Manual Review NOT STARTED.
+
 ## [1.3.0] - Overview Designer Foundation
 
 - Promotes Owner-approved Final O1 checkpoint `58c3586e1f433b44fca53bf2c183be6065a796e5` from `v1.3.0-dev.2`; Final O1 Owner Manual Review PASS.

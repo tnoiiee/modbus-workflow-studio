@@ -2,26 +2,40 @@
 
 ## Current application
 
-`v1.3.0` — **Overview Designer Foundation**, release candidate based on
-Owner-approved Final O1 checkpoint `58c3586e1f433b44fca53bf2c183be6065a796e5`
-(`v1.3.0-dev.2`). O1-A through O1-D and Final O1 Owner Manual Review: PASS.
+**v1.4.0-dev.1 — O2-A Tag/Variable Binding Foundation** (development, not release acceptance).
+Base `main`: `eed588481ae7e7376f9926e58dbd37f9076b5c2e`, merged PR #4, v1.3.0.
+Session branch: `arena/01a0d291-modbus-workflow-studio`.
 
-Includes Overview Page management, Editor, Element Library/Inspector, Draft,
-Undo/Redo, Save/Cancel, View/Edit boundaries, independent Preview Control state,
-savedViewport, accessibility/responsive baseline and Draft Tag binding configuration.
+Owner approved O2-A and targeted `App.tsx` navigation wiring. Implemented real persisted,
+configuration-only WORKFLOW_VARIABLE/SHARED_TAG definitions, metadata UI/API, stable binding
+identity, pure resolution/status and explicit type/capability matrix. Legacy free-text remains
+DRAFT. Definition refresh never modifies Page revision, dirty state or Undo. Preview controls
+remain independent; COMMAND bindings explicitly show CONTROL RUNTIME NOT ENABLED.
+NAVIGATION_LINK opens/selects the exact targetWorkflowId via the existing selector, without
+Run/Stop/Trigger/mode commands. Selector/Workflow Runtime/Modbus/WebSocket implementations unchanged.
 
-No Production Monitoring Runtime, live Modbus values in Overview, Production
-Control Runtime, Modbus writes from Overview, Tag Runtime, Variable Blocks,
-MQTT implementation or Sparkplug adapter. MQTT Sparkplug B is future planning only.
+No Runtime Tag values, acquisition, snapshot/delta transport, MQTT/Sparkplug, Picture Box, live
+font-size changes or Production Control. O2-B, O2-C, O2-D remain planned, NOT implemented.
+No dependency version changes. Stage 1 PASS: client 314 tests, server 67 tests, both typechecks
+and Client build. Only Stage 1 validation authorized. Full Gates await Owner.
+Manual Review NOT STARTED; no commit/push/PR/tag/release/ZIP created for this checkpoint.
 
-Release-preparation commit is version/documentation only. The PR intentionally
-includes the approved O1 chain absent from `main` (`5c9a6a0`). Release PR Owner
-review and manual merge remain PENDING. No tag, GitHub Release or ZIP is created;
-v1.4 is NOT STARTED.
+[O2-A scope](SCOPE_O2-A_v1.4.0-dev.1.md) · [Acceptance / validation evidence](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.1.md).
 
-[Release notes](RELEASE_NOTES_v1.3.0.md) ·
-[Final O1 acceptance](ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md) ·
-[O1 evidence](ACCEPTANCE_EVIDENCE/O1-v1.3.0-dev.2.md).
+## Approved historical baseline
+
+v1.3.0 Overview Designer Foundation is merged (not merge-pending). Final O1 Owner Review PASS
+at `58c3586e1f433b44fca53bf2c183be6065a796e5`; released-version source is the merge above.
+Historical release-preparation documents may still describe the earlier PR-pending checkpoint.
+
+[Release notes](RELEASE_NOTES_v1.3.0.md) · [O1 acceptance](ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md).
+
+## Historical record — not current implementation authorization
+
+The following older plans/status/security observations are retained for traceability. Old version
+assignments (including cross-workflow execution under v1.3.0) do not override current Owner scope.
+The O2-A dependency installation reports 7 advisories (5 moderate, 1 high, 1 critical); no audit fix
+or risk acceptance was applied. This is not a fresh full security assessment.
 
 ## Historical source baseline
 

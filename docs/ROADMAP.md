@@ -1,5 +1,26 @@
 # Roadmap
 
+## Current Owner direction — v1.4.0 Overview Binding and Monitoring
+
+Base: merged v1.3.0 Overview Designer Foundation (`eed588481ae7e7376f9926e58dbd37f9076b5c2e`).
+The Owner's current direction supersedes conflicting historical version assignments below.
+
+- **O2-A / v1.4.0-dev.1:** approved configuration-only definition catalogs, stable binding,
+  source/type/capability resolution, Inspector and separate Workflow navigation wiring.
+  Implementation at Stage 1; no Full Gates/manual acceptance yet.
+- **O2-B:** planned, NOT authorized — continuous server-side acquisition, normalized Tag Runtime,
+  REST initial snapshot, WebSocket deltas, quality/timestamps/sequence and reconnect/gap recovery.
+- **O2-C:** planned, NOT authorized — Picture Box assets/modes and existing Element improvements.
+- **O2-D:** planned, NOT authorized — integration/accessibility/responsive regression and Final O2 Review.
+
+Transport-neutral boundaries support future multiple servers/sites and external Historian/control-room
+or HA deployments; none is implemented here. MQTT Sparkplug B is future adapter planning only.
+No Broker, Sparkplug types/encoding/topics/commands or Browser MQTT client in Core.
+
+[O2-A approved scope](SCOPE_O2-A_v1.4.0-dev.1.md) · [O2-A acceptance](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.1.md).
+
+## Historical plans — not authorization for the current session
+
 ## v1.2.11: Monitor Scheduler & WebSocket Reliability — source complete
 
 Delivered through follow-up PR #2 from source commit `a393cf3f2521abc41d21c13e5e6db02a481aa56a`:

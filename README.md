@@ -1,21 +1,31 @@
-# MODBUS WORKFLOW STUDIO v1.3.0
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.1
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current application version: `v1.3.0`
-- Accepted Overview baseline: `58c3586e1f433b44fca53bf2c183be6065a796e5`
-- Release identity: **Overview Designer Foundation**. Release candidate prepared for Owner PR review and manual merge; no tag, GitHub Release or ZIP created.
-- Current scope: O1-D configuration-only Draft Tag binding, validation, Overview accessibility and responsive regression. O1-C independent Switch state and revision-free View controls are preserved. Tag Runtime and Variable Blocks are excluded.
-- Final O1 Owner Manual Review: **PASS** at `58c3586`. See [O1 acceptance](docs/ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md) and [release notes](docs/RELEASE_NOTES_v1.3.0.md).
-- Reliability defaults: monitor queue 32 jobs/device, one in-flight plus one pending scan/list, WebSocket 256 messages or 1 MiB/client, reconnect backoff 250 ms–30 s with jitter
-- Intended environment: trusted local or industrial LAN
-- Authentication: not included
-- Modbus writes: disabled by default
-- Protocol addresses: zero-based
+- Current development version: **`v1.4.0-dev.1` — O2-A Tag/Variable Binding Foundation**.
+- Base: merged v1.3.0 Overview Designer Foundation, `eed588481ae7e7376f9926e58dbd37f9076b5c2e` (PR #4).
+- Real configuration-only WORKFLOW_VARIABLE / SHARED_TAG definitions with immutable IDs,
+  metadata editing and Enable/Disable; no synthetic production sources or Runtime values.
+- Overview stable binding selection, derived status/reason and explicit compatibility matrix.
+- BOUND means configuration compatible only. **CONTROL RUNTIME NOT ENABLED**.
+- View-only Navigation Link opens/selects by `targetWorkflowId`, never Start/Stop/Trigger.
+- Manage definitions from Overview Edit Mode. Catalog Save is independent of Page Save/Cancel.
+  Use Refresh Source definitions to re-resolve; refresh never changes Page revision/history.
+- O2-B/C/D remain unimplemented. No new polling, Runtime transport, MQTT/Sparkplug, Picture Box
+  or production control. Dependencies unchanged.
+- Stage 1 PASS: client 314 tests, server 67 tests, both typechecks and Client build.
+  Full Gates require Owner authorization. Manual Review NOT STARTED.
+- [O2-A scope / API / matrix](docs/SCOPE_O2-A_v1.4.0-dev.1.md) · [O2-A acceptance](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.1.md).
+- Historical: [O1 acceptance](docs/ACCEPTANCE_TESTS/O1-v1.3.0-dev.2.md), [v1.3.0 release notes](docs/RELEASE_NOTES_v1.3.0.md).
 
-Do not expose the application directly to the public Internet. Use an authenticated reverse proxy and appropriate network controls before broader deployment.
+### Operational safety boundary
+
+Intended for a trusted local or industrial LAN. Authentication is not included; do not expose
+this application directly to the public Internet. Use an authenticated reverse proxy and
+appropriate network controls. Modbus writes remain disabled by default; addresses are zero-based.
+Existing reliability limits and write-safety guards are unchanged by O2-A.
 
 ## Overview Designer Foundation
 

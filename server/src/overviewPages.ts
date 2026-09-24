@@ -1,3 +1,4 @@
+import { validateOverviewIdentity } from './overviewBindingConfig.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -94,7 +95,7 @@ export const overviewUpdateSchema = z.object({
   designHeight: z.number().int().min(1).max(16384).optional(),
   backgroundColor: z.string().regex(HEX_COLOR).optional(),
   elements: z
-    .array(z.object({ id: z.string().min(1), type: z.string().min(1) }).passthrough())
+    .array(z.object({ id: z.string().min(1), type: z.string().min(1) }).passthrough().superRefine(validateOverviewIdentity))
     .optional(),
   layerOrder: z.array(z.string().min(1)).optional(),
   savedViewport: savedViewportSchema.optional()
