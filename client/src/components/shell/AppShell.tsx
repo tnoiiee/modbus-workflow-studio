@@ -44,7 +44,7 @@ export function AppShell({
   const showNotice = Boolean(notice) && !isConnectionNotice(notice);
 
   return (
-    <div className="app app-shell">
+    <div className={`app app-shell${page === 'Data Sources' ? ' app-shell--data-sources' : ''}`}>
       <Sidebar page={page} onNavigate={onNavigate} />
       <main className="app-main">
         <PageHeader

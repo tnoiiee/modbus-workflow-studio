@@ -1,3 +1,4 @@
+import { overviewInspectorPresentation } from '../../lib/overviewWorkspace.js';
 import { previewOverviewFontSize, type FontSizePreview } from '../../lib/overviewFontDraft.js';
 import { bindingPresentation, type BindingPresentation } from '../../lib/overviewBinding.js';
 import { fetchSourceDefinitions, fetchDefinitionWorkflows } from '../../lib/overviewApi.js';
@@ -1032,10 +1033,12 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   const hasSelection = Boolean(selectedElementId);
   const canDeletePage = pages.length > 1 && Boolean(workingPage);
 
+  const inspectorPresentation = overviewInspectorPresentation(mode, selectedElement?.id ?? null, inspectorCollapsed);
   const workspaceClass = [
     'overview__workspace',
     libraryCollapsed && mode === 'EDIT' ? 'overview__workspace--library-collapsed' : '',
-    inspectorCollapsed && mode === 'EDIT' ? 'overview__workspace--inspector-collapsed' : '',
+    inspectorPresentation === 'hidden' ? 'overview__workspace--inspector-hidden' : '',
+    inspectorPresentation === 'collapsed' ? 'overview__workspace--inspector-collapsed' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -1191,7 +1194,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
           controlStates={mode === 'EDIT' ? undefined : Object.fromEntries(Object.entries(controlStates).filter(([, record]) => record.pageId === activePageId))}
         />
 
-        {mode === 'EDIT' && inspectorCollapsed ? (
+        {inspectorPresentation === 'hidden' ? null : inspectorPresentation === 'collapsed' ? (
           <div className="overview-rail overview-rail--inspector">
             <Tooltip label="Expand Element Inspector">
               <button

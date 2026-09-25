@@ -1,5 +1,8 @@
 # O2-A UX and Selection punchlist — v1.4.0-dev.3
 
+> Historical checkpoint: Owner subsequently reviewed dev.3 **APPROVED WITH PUNCHLIST**.
+> Current follow-up acceptance is [dev.4](O2-A-v1.4.0-dev.4.md); older pending entries below are historical.
+
 Base: `4c73b1e82db050224d7599e0357bd323f5c6b961`, v1.4.0-dev.2.
 Branch: `arena/01a0d291-modbus-workflow-studio`. Owner review of base: **APPROVED WITH PUNCHLIST**.
 

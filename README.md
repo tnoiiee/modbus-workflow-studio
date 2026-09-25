@@ -1,23 +1,25 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.3
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.4
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current development version: **v1.4.0-dev.3 — O2-A UX and Selection punchlist**.
-- Base Remote checkpoint: `4c73b1e82db050224d7599e0357bd323f5c6b961` (v1.4.0-dev.2),
-  Owner Manual Review **APPROVED WITH PUNCHLIST**.
-- Data Sources: searchable/filterable configuration list, compact identity disclosure, direct
-  Enable/Disable, on-demand saved-reference counts and focused Create/Edit with keyboard/focus support.
-- Inspector: consistent Geometry/Appearance/Text/Binding or Navigation groups; no selection shows
-  a compact neutral empty state. Existing field meanings, validation and Draft transactions preserved.
-- Intermittent selection **NOT REPRODUCED** in component callback investigation; no speculative
-  Canvas/selection/propagation changes. Owner browser reproduction remains PENDING.
-- Stable IDs, Delete/MISSING, reference calculation, APIs and persistence are unchanged.
+- Current development version: **v1.4.0-dev.4 — O2-A final workspace UX punchlist**.
+- Base Remote: `c8ef28b6c9d2160334d97565ae558d7cb03d891a` (v1.4.0-dev.3),
+  Owner Manual Review **APPROVED WITH PUNCHLIST**. dev.4 manual acceptance remains **PENDING**.
+- Selection first, drag second: only selected unlocked Elements can move. `onNodeClick` is
+  authoritative for pointer selection; blank Canvas deselects without changing Draft/history.
+- Deselect hides the entire Inspector and releases its layout column. Selecting an Element
+  restores its current fields; existing manual collapse preference and viewport are retained.
+- Confirmed duplicate Background SVG pattern IDs fixed on Overview only. Workflow Canvas,
+  viewport, MiniMap and runtime source remain unchanged. Browser pixel/navigation review pending.
+- Data Sources: full page description, unified source/search/status/action toolbar, readable
+  configuration-only notice, responsive metadata rows, Stable ID disclosure and named actions.
+- Stable IDs, Unit data, Delete/MISSING, reference calculation, APIs and persistence are unchanged.
   **BOUND + EDITOR PREVIEW** remains configuration-only; **CONTROL RUNTIME NOT ENABLED**.
-- No O2-B, additional O2-C/Picture Box work, O2-D, Runtime values/transport or dependency changes.
-- [dev.3 acceptance / investigation / manual review](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.3.md).
-- Historical [dev.2 validation](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
+- No O2-B/O2-C/O2-D, Runtime values/transport, Picture Box, commands or dependency changes.
+- [dev.4 acceptance and evidence limits](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.4.md).
+- Historical [dev.3 checkpoint](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.3.md).
 
 ### Operational safety boundary
 

@@ -1,5 +1,5 @@
 import type { BindingResolution } from '../../lib/overviewBinding.js';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import {
   Background,
   Controls,
@@ -191,7 +191,7 @@ function OverviewCanvasBase({
           previous.data.element === element &&
           previous.selected === selected &&
           previous.data.mode === mode &&
-          previous.draggable === (edit && !element.locked) &&
+          previous.draggable === (selected && !element.locked) &&
           previous.data.bindingResolution === bindingResolutions?.[element.id] &&
           previous.data.onNavigateWorkflow === onNavigateWorkflow &&
           previous.data.onControlStateChange === expectedControl &&
@@ -209,10 +209,14 @@ function OverviewCanvasBase({
       return {
         id: element.id,
         type: 'overviewElement',
+        // React Flow only adds nopan automatically to draggable nodes. Keep it
+        // on unselected nodes too so tiny first-click movement cannot pan and
+        // suppress the native click before onNodeClick gets to select them.
+        className: 'nopan',
         position,
         style: { width, height, zIndex: element.zIndex },
         selected,
-        draggable: edit && !element.locked,
+        draggable: selected && !element.locked,
         resizable: edit && !element.locked,
         connectable: false,
           data: {
@@ -271,11 +275,9 @@ function OverviewCanvasBase({
 
       // ---- Pass 1: starts + moves (live geometry only; no Draft / History) ----
       for (const change of changes) {
-        if (change.type === 'select') {
-          // Select true only — clearing is reserved for Pane click alone.
-          if (change.selected) onSelectElement(change.id);
-          continue;
-        }
+        // React Flow selection echoes must not select on pointer-down or duplicate
+        // onNodeClick. Keyboard activation has its own non-pointer path below.
+        if (change.type === 'select') continue;
 
         if (change.type === 'dimensions') {
           const width = change.dimensions?.width;
@@ -314,6 +316,11 @@ function OverviewCanvasBase({
             }
             continue;
           }
+
+          // Selection clicks cannot move an unselected element, even if a stale
+          // position change arrives. Resize anchors are handled above separately.
+          const element = elements.find(item => item.id === change.id);
+          if (change.id !== selectedElementId || !element || element.locked) continue;
 
           if (change.dragging === true) {
             setDragPositions(prev => {
@@ -354,8 +361,19 @@ function OverviewCanvasBase({
         if (commit) onResizeElement(change.id, commit);
       }
     },
-    [edit, elements, onMoveElement, onSelectElement, onResizeElement, syncLiveResizes],
+    [edit, elements, selectedElementId, onMoveElement, onResizeElement, syncLiveResizes],
   );
+
+  // Preserve keyboard selection without treating React Flow's pointer selection
+  // echoes as authoritative. Ignore controls inside nodes and leave arrow keys alone.
+  const handleNodeKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (!edit || (event.key !== 'Enter' && event.key !== ' ')) return;
+    const target = event.target as HTMLElement;
+    const node = target.closest?.<HTMLElement>('.react-flow__node');
+    if (node !== target || !node?.dataset.id) return;
+    event.preventDefault();
+    onSelectElement(node.dataset.id);
+  }, [edit, onSelectElement]);
 
   // Single-click selection: node click is authoritative; pane click alone clears.
   const handleNodeClick = useCallback(
@@ -382,6 +400,7 @@ function OverviewCanvasBase({
         onNodesChange={handleNodesChange}
         onInit={handleInit}
         onNodeClick={handleNodeClick}
+        onKeyDownCapture={handleNodeKeyDown}
         onPaneClick={handlePaneClick}
         onViewportChange={handleViewportChange}
         defaultViewport={viewport as Viewport}
@@ -403,7 +422,7 @@ function OverviewCanvasBase({
         selectNodesOnDrag={false}
         proOptions={{ hideAttribution: false }}
       >
-        {edit ? <Background gap={OVERVIEW_SNAP_GRID} /> : null}
+        {edit ? <Background id="overview-editor-grid" gap={OVERVIEW_SNAP_GRID} /> : null}
         {edit ? <Controls showInteractive={false} /> : null}
         {edit ? <MiniMap pannable zoomable ariaLabel="Overview canvas minimap" /> : null}
       </ReactFlow>

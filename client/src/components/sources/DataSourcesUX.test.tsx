@@ -49,7 +49,7 @@ async function loadedPage() { draw(DataSourcesPage); hooks.effects[0](); await f
 describe('dev.3 Data Sources interaction surface', () => {
   it('loads configuration lists, then source-type/search/status filters compose without API calls', async () => {
     let tree = await loadedPage(); expect(byType(tree, DefinitionTable).props.definitions).toHaveLength(2);
-    button(tree, 'Shared tags').props.onClick(); tree = draw(DataSourcesPage); expect(byType(tree, DefinitionTable).props.definitions).toEqual([shared]);
+    button(tree, 'Shared Tags').props.onClick(); tree = draw(DataSourcesPage); expect(byType(tree, DefinitionTable).props.definitions).toEqual([shared]);
     tree.find(node => node.type === 'input' && node.props.type === 'search')!.props.onChange({ target: { value: 'not found' } });
     tree = draw(DataSourcesPage); expect(tree.some(node => node.type === 'h3' && node.props.children === 'No matching definitions')).toBe(true);
     button(tree, 'Clear filters').props.onClick(); tree = draw(DataSourcesPage);
@@ -117,12 +117,12 @@ describe('dev.3 focused definition form and dialog accessibility', () => {
     byType(tree, 'form').props.onSubmit({ preventDefault: vi.fn() }); await flush();
     expect(api.createSourceDefinition).toHaveBeenCalledWith(expect.objectContaining({ sourceType: 'SHARED_TAG', name: 'New tag' }));
   });
-  it('existing Modal focuses initial input, cycles Tab, supports Escape and returns to invoker', () => {
+  it.each(['Create', 'Edit', 'Delete'])('%s Modal focuses initial input, cycles Tab, supports Escape and returns to invoker', title => {
     const listeners = new Map<string, any>(); const documentStub = { activeElement: null as any, addEventListener: (type: string, handler: any) => listeners.set(type, handler), removeEventListener: vi.fn() };
     class Focusable { focus = vi.fn(() => { documentStub.activeElement = this; }); }
     vi.stubGlobal('HTMLElement', Focusable); vi.stubGlobal('document', documentStub);
     const invoker = new Focusable(), first = new Focusable(), last = new Focusable(); documentStub.activeElement = invoker;
-    const close = vi.fn(); draw(() => Modal({ open: true, title: 'Edit', onClose: close, initialFocusRef: { current: first as any } }));
+    const close = vi.fn(); draw(() => Modal({ open: true, title, onClose: close, initialFocusRef: { current: first as any } }));
     hooks.slots[0].current = { querySelectorAll: () => [first, last], contains: (item: any) => [first, last].includes(item), focus: vi.fn() };
     hooks.effects[0](); const cleanup = hooks.effects[1](); expect(first.focus).toHaveBeenCalled();
     documentStub.activeElement = last; listeners.get('keydown')({ key: 'Tab', preventDefault: vi.fn() }); expect(documentStub.activeElement).toBe(first);
@@ -133,5 +133,38 @@ describe('dev.3 focused definition form and dialog accessibility', () => {
     const page = readFileSync(new URL('./DataSourcesPage.tsx', import.meta.url), 'utf8');
     expect(page).not.toMatch(/setDraft|setHistory|updateOverviewPage|setInterval|WebSocket|\/runtime|\/write/);
     expect(page).toContain('createRef.current?.focus()');
+  });
+});
+
+describe('dev.4 readable responsive definition rows', () => {
+  it('preserves Unit exactly, names every action, shows every critical cell and uses only loaded reference counts', () => {
+    const definition = { ...shared, unit: '  kPa / raw  ' }; const before = JSON.stringify(definition);
+    const tree = nodes(DefinitionTable({ definitions: [definition], workflows: [], busy: false, references: {}, onEdit: vi.fn(), onToggle: vi.fn(), onDelete: vi.fn(), onReferences: vi.fn() }));
+    expect(byType(tree, 'table').props.role).toBe('table');
+    expect(tree.filter(node => node.props.role === 'columnheader')).toHaveLength(8);
+    expect(tree.filter(node => node.props.role === 'rowheader')).toHaveLength(1);
+    expect(tree.filter(node => node.props.role === 'cell')).toHaveLength(7);
+    expect(tree.find(node => node.props['data-label'] === 'Unit')!.props.children).toBe('  kPa / raw  ');
+    expect(tree.some(node => node.props['data-label'] === 'Status')).toBe(true);
+    expect(button(tree, 'Edit').props['aria-label']).toBe('Edit Pressure'); expect(button(tree, 'Disable').props['aria-label']).toBe('Disable Pressure');
+    expect(button(tree, 'Delete').props['aria-label']).toBe('Delete Pressure');
+    expect(button(tree, 'Check references')).toBeDefined(); expect(api.fetchDefinitionReferences).not.toHaveBeenCalled();
+    expect(JSON.stringify(definition)).toBe(before);
+  });
+});
+
+describe('dev.4 removed invoker focus fallback', () => {
+  it('returns to Create or the toolbar after a filtered-away row, without stealing restored invoker focus', async () => {
+    const frames: Array<() => void> = []; vi.stubGlobal('requestAnimationFrame', (fn: () => void) => { frames.push(fn); return frames.length; });
+    const body = {}; const doc = { body, activeElement: body as object }; vi.stubGlobal('document', doc);
+    let tree = await loadedPage();
+    const create = { focus: vi.fn(), disabled: false }, toolbar = { focus: vi.fn() };
+    (tree.find(node => node.props['aria-label'] === 'Create Definition') as any).ref.current = create;
+    (tree.find(node => node.props['aria-label'] === 'Definition toolbar') as any).ref.current = toolbar;
+    byType(tree, DefinitionTable).props.onEdit(shared); tree = draw(DataSourcesPage);
+    byType(tree, DefinitionCatalogEditor).props.onClose(); frames.pop()!(); expect(create.focus).toHaveBeenCalledTimes(1);
+    create.disabled = true; byType(tree, DefinitionCatalogEditor).props.onClose(); frames.pop()!(); expect(toolbar.focus).toHaveBeenCalledTimes(1);
+    doc.activeElement = { invoker: true }; byType(tree, DefinitionCatalogEditor).props.onClose(); frames.pop()!();
+    expect(create.focus).toHaveBeenCalledTimes(1); expect(toolbar.focus).toHaveBeenCalledTimes(1);
   });
 });

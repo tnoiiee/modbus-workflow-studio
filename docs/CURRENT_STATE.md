@@ -2,28 +2,35 @@
 
 ## Current application
 
-**v1.4.0-dev.3 — O2-A frontend UX and Selection punchlist** (not release/manual acceptance).
-Base Remote checkpoint: `4c73b1e82db050224d7599e0357bd323f5c6b961`, v1.4.0-dev.2.
-Branch: `arena/01a0d291-modbus-workflow-studio`. Owner reviewed dev.2: **APPROVED WITH PUNCHLIST**.
+**v1.4.0-dev.4 — O2-A final workspace UX punchlist** (not release/manual acceptance).
+Base Remote: `c8ef28b6c9d2160334d97565ae558d7cb03d891a`, v1.4.0-dev.3.
+Branch: `arena/01a0d291-modbus-workflow-studio`. Owner reviewed dev.3: **APPROVED WITH PUNCHLIST**.
 
-Data Sources presentation/interaction and Inspector layout modernized. Search/type/status filtering,
-direct Enable/Disable, focused metadata forms, on-demand saved-reference counts and explicit empty states.
-No Server/API, persistence, stable identity, binding resolution, reference-calculation or Runtime changes.
-No Font Size transaction or Page/Canvas selection implementation changes.
+Selected-only drag with authoritative pointer click and keyboard activation; blank Canvas deselect
+hides the entire Inspector and releases its column. Presentation never changes saved geometry,
+Draft/history/revision or pan/zoom. Existing selected drag/resize and collapse preference retained.
+Data Sources has a complete shell description, unified responsive filter/search/action toolbar,
+configuration-only notice, readable metadata rows and keyboard-accessible named actions.
 
-Selection observation: **NOT REPRODUCED** in callback/SSR investigation; browser hit-testing unavailable.
-No speculative event-handler fixes. Owner Local Manual Review **PENDING**.
-O2-B/O2-C/O2-D not started; no Runtime values, new acquisition/transport, Picture Box or commands.
+Grid: duplicate Background SVG pattern IDs **REPRODUCED AND FIXED** (actual installed component,
+SSR URL-identity evidence). Overview gets a unique ID; protected Workflow Canvas is unchanged.
+This is not browser pixel/navigation/refresh evidence. Owner Local Manual Review **PENDING**.
+No Server/API behavior, identity/persistence, resolver, Unit, reference calculation or Runtime changes.
+O2-B/O2-C/O2-D **NOT STARTED**; no Runtime values, transport, Picture Box or commands.
 
-[dev.3 acceptance / investigation](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.3.md).
-Stage 1 / Full Gates are executed under current Owner atomic-delivery authorization and reported in
-the delivery handoff. Dependency advisories remain 5 moderate, 1 high, 1 critical, unresolved/unaccepted.
+[dev.4 acceptance / investigation / evidence limits](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.4.md).
+Current executed gates: Stage 1 targeted Client 403 tests / 21 files; Client typecheck PASS on one
+authorized type-alias correction/retry; Server typecheck and Client build PASS. Full Client 481 / 32,
+Full Server 84 / 9 and `npm run check` PASS. Final hygiene/publish/diff and actual Remote checkpoint
+are recorded in the delivery handoff; no browser manual acceptance is implied.
+Dependency advisories: 5 moderate, 1 high, 1 critical — Not resolved / Not accepted /
+Not part of this Punchlist. SSR useLayoutEffect and bundle-size warnings remain nonfatal.
 
 ### Previous checkpoint validation (historical)
 
-v1.4.0-dev.2: accepted Stage 1 348 client / 71 server tests; Full Client 422 / Server 84 tests,
-check, hygiene/publish and diff checks passed. Delivered at the base Remote checkpoint above.
-This history does not substitute for dev.3 validation.
+v1.4.0-dev.3 at the base above: Stage 1 384 Client tests / 20 files, both typechecks and Client build;
+Full Client 458 / 30, Full Server 84 / 9; check, strict hygiene, publish and diff checks PASS.
+This history does not substitute for dev.4 validation. O2-A final closure remains pending.
 
 ## Approved historical baseline
 

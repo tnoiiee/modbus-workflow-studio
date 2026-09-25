@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0-dev.4] - O2-A final workspace UX punchlist (2026-09-25)
+
+- Base `c8ef28b6c9d2160334d97565ae558d7cb03d891a`, v1.4.0-dev.3, approved with punchlist.
+- Require selection before drag; ignore React Flow selection echoes and unselected movement.
+  Preserve keyboard activation, selected drag/resize and one-gesture/one-Undo semantics.
+- Hide the whole deselected Inspector and reclaim Canvas width without viewport/geometry changes.
+- Reproduce duplicate SVG pattern IDs with the installed Background component; isolate Overview's
+  ID without editing protected Workflow Canvas or adding a grid/fitView. Browser review pending.
+- Move Data Sources actions into a unified responsive filter toolbar; show the complete shell
+  description, concise configuration boundary and responsive accessible metadata rows.
+- Keep APIs, stable identity, Unit data, binding/resolver/reference/CRUD semantics, Font Size,
+  savedViewport, independent Preview controls and Workflow/Modbus runtime unchanged.
+- Synchronize application versions only; no dependency updates. Owner Manual Review PENDING.
+- O2-B/O2-C/O2-D NOT STARTED. No PR, Tag, Release or ZIP.
+
 ## [1.4.0-dev.3] - O2-A frontend UX and Selection punchlist (2026-09-25)
 
 - Based on approved dev.2 checkpoint `4c73b1e82db050224d7599e0357bd323f5c6b961`.
