@@ -1,25 +1,25 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.4
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.5
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current development version: **v1.4.0-dev.4 — O2-A final workspace UX punchlist**.
-- Base Remote: `c8ef28b6c9d2160334d97565ae558d7cb03d891a` (v1.4.0-dev.3),
-  Owner Manual Review **APPROVED WITH PUNCHLIST**. dev.4 manual acceptance remains **PENDING**.
-- Selection first, drag second: only selected unlocked Elements can move. `onNodeClick` is
-  authoritative for pointer selection; blank Canvas deselects without changing Draft/history.
-- Deselect hides the entire Inspector and releases its layout column. Selecting an Element
-  restores its current fields; existing manual collapse preference and viewport are retained.
-- Confirmed duplicate Background SVG pattern IDs fixed on Overview only. Workflow Canvas,
-  viewport, MiniMap and runtime source remain unchanged. Browser pixel/navigation review pending.
-- Data Sources: full page description, unified source/search/status/action toolbar, readable
-  configuration-only notice, responsive metadata rows, Stable ID disclosure and named actions.
-- Stable IDs, Unit data, Delete/MISSING, reference calculation, APIs and persistence are unchanged.
-  **BOUND + EDITOR PREVIEW** remains configuration-only; **CONTROL RUNTIME NOT ENABLED**.
-- No O2-B/O2-C/O2-D, Runtime values/transport, Picture Box, commands or dependency changes.
-- [dev.4 acceptance and evidence limits](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.4.md).
-- Historical [dev.3 checkpoint](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.3.md).
+- **v1.4.0-dev.5 — O2-A Inspector motion and saved-reference UX**.
+- Base: `d801666b6a9a650f62a2d4c68eca530e0d894dd9` (dev.4), Owner **APPROVED WITH PUNCHLIST**.
+- Inspector uses a stable animated layout slot with the existing motion tokens. Deselect removes
+  fields immediately, releases width and preserves the Canvas instance/pan/zoom. Reduced motion
+  disables animation; lost Inspector focus returns to the Canvas without scrolling.
+- Saved-reference counts load automatically in sequential batches of at most 100 identities.
+  The approved read-only batch endpoint scans saved Pages once per request; no persistent cache.
+- Non-zero counts open a non-modal reference pane with readable Page/Element names, Element type,
+  saved binding direction and secondary IDs. Zero, missing, loading and failure states are distinct.
+- Details use the existing individual endpoints on demand and are cached only for the current
+  catalog generation. Refresh and Definition operations invalidate results; stale responses are ignored.
+- Unsaved browser Drafts are excluded. Definitions remain configuration-only; **BOUND + EDITOR
+  PREVIEW**, **CONTROL RUNTIME NOT ENABLED**. No changes to CRUD/Delete/MISSING, stable IDs,
+  persistence, resolver, Font Size transactions, Page revision, Workflow/Modbus runtime or WS behavior.
+- [dev.5 acceptance / API contract / evidence limits](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.5.md).
+  Owner Local Manual Review **PENDING**; O2-B/O2-C/O2-D **NOT STARTED**. No dependency changes.
 
 ### Operational safety boundary
 

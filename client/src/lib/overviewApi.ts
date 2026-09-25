@@ -137,7 +137,17 @@ export interface DefinitionReferenceSummary {
   scope: 'SAVED_OVERVIEW_PAGES';
   pageCount: number;
   bindingCount: number;
-  references: Array<{ pageId: string; pageName: string; elementId: string; elementName: string; elementType: string }>;
+  references: Array<{ pageId: string; pageName: string; elementId: string; elementName: string; elementType: string; direction?: 'MONITOR' | 'COMMAND' | 'NONE' }>;
 }
 export const fetchDefinitionReferences = (source: SourceIdentity) => overviewApi<DefinitionReferenceSummary>(`${sourceDefinitionPath(source)}/references`);
 export const deleteSourceDefinition = (source: SourceIdentity) => overviewApi<{ ok: boolean }>(sourceDefinitionPath(source), { method: 'DELETE' });
+
+
+export interface DefinitionReferenceBatch {
+  scope: 'SAVED_OVERVIEW_PAGES';
+  unsavedDraftsIncluded: false;
+  results: Array<{ source: SourceIdentity; found: boolean; pageCount: number; bindingCount: number }>;
+}
+export const fetchDefinitionReferenceBatch = (sources: readonly SourceIdentity[]) => overviewApi<DefinitionReferenceBatch>(
+  '/api/source-definitions/references/batch', { method: 'POST', body: JSON.stringify({ sources }) },
+);

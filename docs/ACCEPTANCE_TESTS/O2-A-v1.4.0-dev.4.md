@@ -1,5 +1,10 @@
 # O2-A v1.4.0-dev.4 — final workspace UX acceptance
 
+> Historical checkpoint: Owner reviewed dev.4 **APPROVED WITH PUNCHLIST**, with other tested O2-A
+> functionality passed. Follow-up acceptance: [dev.5](O2-A-v1.4.0-dev.5.md). Older pending entries below
+> describe the original delivery, not current Owner authorization.
+
+
 - Branch: `arena/01a0d291-modbus-workflow-studio`.
 - Approved base: `c8ef28b6c9d2160334d97565ae558d7cb03d891a`, v1.4.0-dev.3.
 - Owner dev.3 review: **APPROVED WITH PUNCHLIST**; dev.4 Owner Manual Review **PENDING**.

@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0-dev.5] - O2-A Inspector and reference UX (2026-09-26)
+
+- Based on `d801666b6a9a650f62a2d4c68eca530e0d894dd9`, dev.4 approved with punchlist.
+- Smooth Inspector width/gutter transitions using existing motion tokens; no retained hidden fields,
+  no Canvas remount/fitView, reduced-motion opt-out and focus recovery without scrolling.
+- Add Owner-authorized read-only POST `/api/source-definitions/references/batch`: 1–100 strict
+  stable identities, first-occurrence deduplication/order, one saved-page scan, explicit found/zero.
+- Add optional saved `direction` to existing reference details; omit missing/invalid legacy values
+  without rewriting saved data. Existing fields, Delete impact and endpoint behavior retained.
+- Automatic bounded sequential count loading, non-blocking errors, generation guards and on-demand
+  details in an accessible non-modal reading pane. Unsaved browser Drafts explicitly excluded.
+- Existing Definition actions and protected Overview/Workflow/Devices/runtime contracts preserved.
+- Synchronize application versions only; no dependency changes. Manual review pending, not release
+  acceptance; O2-B/O2-C/O2-D not started. No PR, Tag, Release or ZIP.
+
 ## [1.4.0-dev.4] - O2-A final workspace UX punchlist (2026-09-25)
 
 - Base `c8ef28b6c9d2160334d97565ae558d7cb03d891a`, v1.4.0-dev.3, approved with punchlist.

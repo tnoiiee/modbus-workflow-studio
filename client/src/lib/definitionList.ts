@@ -1,8 +1,8 @@
-import { definitionId, type SourceDefinition, type DefinitionWorkflow } from './sourceDefinitions.js';
+import { definitionId, type SourceDefinition, type SourceIdentity, type DefinitionWorkflow } from './sourceDefinitions.js';
 
 export type SourceTypeFilter = 'ALL' | SourceDefinition['sourceType'];
 export type DefinitionStatusFilter = 'ALL' | 'ENABLED' | 'DISABLED';
-export const definitionKey = (source: SourceDefinition): string => source.sourceType === 'SHARED_TAG'
+export const definitionKey = (source: SourceIdentity): string => source.sourceType === 'SHARED_TAG'
   ? `SHARED_TAG:${source.sourceId}` : `WORKFLOW_VARIABLE:${source.workflowId}:${source.variableId}`;
 /** Presentation-only filtering. Never mutates Catalog records or resolves a binding by name. */
 export function filterDefinitions(definitions: readonly SourceDefinition[], workflows: readonly DefinitionWorkflow[], query: string, type: SourceTypeFilter, status: DefinitionStatusFilter): SourceDefinition[] {

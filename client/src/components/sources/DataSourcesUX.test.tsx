@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { DataSourcesPage, DefinitionTable } from './DataSourcesPage.js';
 import { DefinitionCatalogEditor } from '../overview/DefinitionCatalogEditor.js';
 import { DeleteDefinitionDialog } from './DeleteDefinitionDialog.js';
+import { ReferenceDetails } from './ReferenceDetails.js';
+import { definitionKey } from '../../lib/definitionList.js';
+import { definitionIdentity } from '../../lib/sourceDefinitions.js';
 import { Modal } from '../ui/Modal.js';
 import type { SourceDefinition } from '../../lib/sourceDefinitions.js';
 import * as api from '../../lib/overviewApi.js';
@@ -24,7 +27,7 @@ vi.mock('react', async importOriginal => {
     useCallback: (fn: any) => fn, useMemo: (fn: () => any) => fn(),
   };
 });
-vi.mock('../../lib/overviewApi.js', () => ({ fetchSourceDefinitions: vi.fn(), fetchDefinitionWorkflows: vi.fn(), fetchDefinitionReferences: vi.fn(), updateSourceDefinition: vi.fn(), createSourceDefinition: vi.fn() }));
+vi.mock('../../lib/overviewApi.js', () => ({ fetchSourceDefinitions: vi.fn(), fetchDefinitionWorkflows: vi.fn(), fetchDefinitionReferences: vi.fn(), fetchDefinitionReferenceBatch: vi.fn(), updateSourceDefinition: vi.fn(), createSourceDefinition: vi.fn() }));
 const shared: SourceDefinition = { sourceType: 'SHARED_TAG', sourceId: 's1', name: 'Pressure', description: 'Outlet', unit: 'bar', dataType: 'Number', capability: 'MONITOR_ONLY', enabled: true };
 const variable: SourceDefinition = { ...shared, sourceType: 'WORKFLOW_VARIABLE', workflowId: 'w1', variableId: 'v1', name: 'Trip' };
 function nodes(node: ReactNode): ReactElement<any>[] {
@@ -42,6 +45,7 @@ beforeEach(() => {
   vi.mocked(api.fetchSourceDefinitions).mockResolvedValue([shared, variable]);
   vi.mocked(api.fetchDefinitionWorkflows).mockResolvedValue([{ id: 'w1', name: 'Kiln' }]);
   vi.mocked(api.updateSourceDefinition).mockResolvedValue(shared); vi.mocked(api.createSourceDefinition).mockResolvedValue(shared);
+  vi.mocked(api.fetchDefinitionReferenceBatch).mockImplementation(async sources => ({ scope: 'SAVED_OVERVIEW_PAGES', unsavedDraftsIncluded: false, results: sources.map(source => ({ source, found: true, pageCount: 1, bindingCount: 2 })) }));
   vi.mocked(api.fetchDefinitionReferences).mockResolvedValue({ scope: 'SAVED_OVERVIEW_PAGES', pageCount: 1, bindingCount: 2, references: [] });
 });
 afterEach(() => vi.unstubAllGlobals());
@@ -72,8 +76,9 @@ describe('dev.3 Data Sources interaction surface', () => {
     byType(tree, DeleteDefinitionDialog).props.onClose(); expect(draw(DataSourcesPage).some(node => node.type === DeleteDefinitionDialog)).toBe(false);
     expect(api.updateSourceDefinition).not.toHaveBeenCalled();
   });
-  it('reference counts are fetched on request only, with exact identity and no background sweep', async () => {
+  it('reference counts load automatically in one batch; details load only for the activated identity', async () => {
     let tree = await loadedPage(); expect(api.fetchDefinitionReferences).not.toHaveBeenCalled();
+    expect(api.fetchDefinitionReferenceBatch).toHaveBeenCalledWith([definitionIdentity(shared), definitionIdentity(variable)]);
     byType(tree, DefinitionTable).props.onReferences(variable); await flush(); tree = draw(DataSourcesPage);
     expect(api.fetchDefinitionReferences).toHaveBeenCalledWith({ sourceType: 'WORKFLOW_VARIABLE', workflowId: 'w1', variableId: 'v1' });
     expect(byType(tree, DefinitionTable).props.references['WORKFLOW_VARIABLE:w1:v1'].count).toBe(2);
@@ -148,7 +153,7 @@ describe('dev.4 readable responsive definition rows', () => {
     expect(tree.some(node => node.props['data-label'] === 'Status')).toBe(true);
     expect(button(tree, 'Edit').props['aria-label']).toBe('Edit Pressure'); expect(button(tree, 'Disable').props['aria-label']).toBe('Disable Pressure');
     expect(button(tree, 'Delete').props['aria-label']).toBe('Delete Pressure');
-    expect(button(tree, 'Check references')).toBeDefined(); expect(api.fetchDefinitionReferences).not.toHaveBeenCalled();
+    expect(tree.some(node => node.props.children === 'Loading references…')).toBe(true); expect(api.fetchDefinitionReferences).not.toHaveBeenCalled();
     expect(JSON.stringify(definition)).toBe(before);
   });
 });
@@ -166,5 +171,78 @@ describe('dev.4 removed invoker focus fallback', () => {
     create.disabled = true; byType(tree, DefinitionCatalogEditor).props.onClose(); frames.pop()!(); expect(toolbar.focus).toHaveBeenCalledTimes(1);
     doc.activeElement = { invoker: true }; byType(tree, DefinitionCatalogEditor).props.onClose(); frames.pop()!();
     expect(create.focus).toHaveBeenCalledTimes(1); expect(toolbar.focus).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('dev.5 automatic summary and on-demand reading pane', () => {
+  it('rerenders/search do not reload counts; Refresh refreshes counts and invalidates details', async () => {
+    let tree = await loadedPage(); const table = byType(tree, DefinitionTable);
+    table.props.onReferences(shared); await flush(); tree = draw(DataSourcesPage);
+    expect(byType(tree, ReferenceDetails).props.state.data.bindingCount).toBe(2);
+    byType(tree, DefinitionTable).props.onReferences(shared); await flush(); expect(api.fetchDefinitionReferences).toHaveBeenCalledTimes(1);
+    draw(DataSourcesPage); expect(api.fetchDefinitionReferenceBatch).toHaveBeenCalledTimes(1);
+    tree.find(node => node.props['aria-label'] === 'Refresh definitions')!.props.onClick(); await flush(); tree = draw(DataSourcesPage);
+    expect(api.fetchDefinitionReferenceBatch).toHaveBeenCalledTimes(2); expect(tree.some(node => node.type === ReferenceDetails)).toBe(false);
+    byType(tree, DefinitionTable).props.onReferences(shared); await flush(); expect(api.fetchDefinitionReferences).toHaveBeenCalledTimes(2);
+  });
+  it.each(['toggle', 'save', 'delete'])('%s refreshes reference counts using the catalog, never a detail sweep', async operation => {
+    let tree = await loadedPage();
+    if (operation === 'toggle') byType(tree, DefinitionTable).props.onToggle(shared);
+    else if (operation === 'save') { byType(tree, DefinitionTable).props.onEdit(shared); tree = draw(DataSourcesPage); byType(tree, DefinitionCatalogEditor).props.onChanged(); }
+    else { byType(tree, DefinitionTable).props.onDelete(shared); tree = draw(DataSourcesPage); byType(tree, DeleteDefinitionDialog).props.onDeleted(); }
+    await flush(); expect(api.fetchDefinitionReferenceBatch).toHaveBeenCalledTimes(2); expect(api.fetchDefinitionReferences).not.toHaveBeenCalled();
+  });
+  it('reference failure is non-blocking and Retry reloads counts without presenting zero', async () => {
+    vi.mocked(api.fetchDefinitionReferenceBatch).mockRejectedValueOnce(Error('offline')); let tree = await loadedPage();
+    const table = byType(tree, DefinitionTable); expect(table.props.busy).toBe(false); expect(table.props.references[definitionKey(shared)]).toEqual({ error: 'Counts unavailable' });
+    table.props.onEdit(shared); expect(byType(draw(DataSourcesPage), DefinitionCatalogEditor)).toBeDefined();
+    table.props.onRetryReferences(); await flush(); tree = draw(DataSourcesPage); expect(byType(tree, DefinitionTable).props.references[definitionKey(shared)].count).toBe(2);
+  });
+  it('old catalog responses cannot overwrite refreshed counts', async () => {
+    let finish!: (value: api.DefinitionReferenceBatch) => void;
+    vi.mocked(api.fetchDefinitionReferenceBatch).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    let tree = await loadedPage(); expect(byType(tree, DefinitionTable).props.references[definitionKey(shared)].loading).toBe(true);
+    tree.find(node => node.props['aria-label'] === 'Refresh definitions')!.props.onClick(); await flush();
+    finish({ scope: 'SAVED_OVERVIEW_PAGES', unsavedDraftsIncluded: false, results: [{ source: definitionIdentity(shared), found: true, pageCount: 9, bindingCount: 99 }] });
+    await flush(); tree = draw(DataSourcesPage); expect(byType(tree, DefinitionTable).props.references[definitionKey(shared)].count).toBe(2);
+  });
+  it('unmount invalidates count and detail responses', async () => {
+    let finish!: (value: api.DefinitionReferenceBatch) => void, finishDetail!: (value: api.DefinitionReferenceSummary) => void;
+    vi.mocked(api.fetchDefinitionReferenceBatch).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    vi.mocked(api.fetchDefinitionReferences).mockImplementationOnce(() => new Promise(resolve => { finishDetail = resolve; }));
+    draw(DataSourcesPage); const cleanup = hooks.effects[0](); await flush(); let tree = draw(DataSourcesPage);
+    byType(tree, DefinitionTable).props.onReferences(shared); tree = draw(DataSourcesPage);
+    cleanup(); const before = JSON.stringify(hooks.slots);
+    finish({ scope: 'SAVED_OVERVIEW_PAGES', unsavedDraftsIncluded: false, results: [] }); finishDetail({ scope: 'SAVED_OVERVIEW_PAGES', bindingCount: 99, pageCount: 9, references: [] });
+    await flush(); expect(JSON.stringify(hooks.slots)).toBe(before);
+  });
+  it('switching details shows the current source only; loads only activated identities and caches per session', async () => {
+    let finish!: (value: api.DefinitionReferenceSummary) => void;
+    vi.mocked(api.fetchDefinitionReferences).mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+    let tree = await loadedPage(); byType(tree, DefinitionTable).props.onReferences(shared); tree = draw(DataSourcesPage);
+    expect(byType(tree, ReferenceDetails).props.state.loading).toBe(true);
+    byType(tree, DefinitionTable).props.onReferences(variable); await flush();
+    finish({ scope: 'SAVED_OVERVIEW_PAGES', bindingCount: 8, pageCount: 1, references: [] }); await flush(); tree = draw(DataSourcesPage);
+    expect(byType(tree, ReferenceDetails).props.definition).toBe(variable); expect(byType(tree, ReferenceDetails).props.state.data.bindingCount).toBe(2);
+    expect(api.fetchDefinitionReferences).toHaveBeenCalledTimes(2);
+  });
+  it('detail failure supports local retry and closing returns focus to the invoker, with toolbar fallback', async () => {
+    const frames: Array<() => void> = []; vi.stubGlobal('requestAnimationFrame', (fn: () => void) => { frames.push(fn); return 1; });
+    vi.mocked(api.fetchDefinitionReferences).mockRejectedValueOnce(Error('offline'));
+    let tree = await loadedPage(); const toolbar = { focus: vi.fn() }, invoker = { isConnected: true, disabled: false, focus: vi.fn() };
+    (tree.find(node => node.props['aria-label'] === 'Definition toolbar') as any).ref.current = toolbar;
+    byType(tree, DefinitionTable).props.onReferences(shared, invoker); await flush(); tree = draw(DataSourcesPage);
+    expect(byType(tree, ReferenceDetails).props.state.error).toContain('Unable to load');
+    byType(tree, ReferenceDetails).props.onRetry(); await flush(); tree = draw(DataSourcesPage); expect(byType(tree, ReferenceDetails).props.state.data).toBeDefined();
+    byType(tree, ReferenceDetails).props.onClose(); frames.pop()!(); expect(invoker.focus).toHaveBeenCalledWith({ preventScroll: true });
+    invoker.isConnected = false; byType(tree, ReferenceDetails).props.onClose(); frames.pop()!(); expect(toolbar.focus).toHaveBeenCalledWith({ preventScroll: true });
+  });
+  it('the non-modal details pane enters focus at Close, supports Escape and never intercepts Tab', () => {
+    const close = vi.fn(); const tree = draw(() => ReferenceDetails({ definition: shared, state: { loading: true }, onClose: close, onRetry: vi.fn() }));
+    const focus = vi.fn(); (tree.find(node => node.props['aria-label'] === 'Close saved references') as any).ref.current = { focus };
+    hooks.effects[0](); expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    const pane = tree.find(node => node.props.role === 'dialog')!; expect(pane.props['aria-modal']).toBe('false');
+    const preventDefault = vi.fn(), stopPropagation = vi.fn(); pane.props.onKeyDown({ key: 'Tab', preventDefault, stopPropagation }); expect(preventDefault).not.toHaveBeenCalled();
+    pane.props.onKeyDown({ key: 'Escape', preventDefault, stopPropagation }); expect(close).toHaveBeenCalledTimes(1); expect(preventDefault).toHaveBeenCalledTimes(1);
   });
 });

@@ -391,6 +391,8 @@ function OverviewCanvasBase({
     <div
       className={`canvas overview-canvas${edit ? '' : ' overview-canvas--locked'}`}
       data-mode={mode}
+      tabIndex={-1}
+      aria-label="Overview canvas"
       style={{ backgroundColor }}
     >
       <ReactFlow

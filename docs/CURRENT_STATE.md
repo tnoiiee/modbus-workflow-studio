@@ -2,35 +2,36 @@
 
 ## Current application
 
-**v1.4.0-dev.4 — O2-A final workspace UX punchlist** (not release/manual acceptance).
-Base Remote: `c8ef28b6c9d2160334d97565ae558d7cb03d891a`, v1.4.0-dev.3.
-Branch: `arena/01a0d291-modbus-workflow-studio`. Owner reviewed dev.3: **APPROVED WITH PUNCHLIST**.
+**v1.4.0-dev.5 — O2-A Inspector and saved-reference UX** (not release/manual acceptance).
+Base: `d801666b6a9a650f62a2d4c68eca530e0d894dd9`, v1.4.0-dev.4.
+Branch: `arena/01a0d291-modbus-workflow-studio`. Owner dev.4 review: **APPROVED WITH PUNCHLIST**.
+Owner separately authorized the read-only batch contract and additive saved binding direction;
+the earlier API Material Blocker is resolved. No other backend expansion is authorized.
 
-Selected-only drag with authoritative pointer click and keyboard activation; blank Canvas deselect
-hides the entire Inspector and releases its column. Presentation never changes saved geometry,
-Draft/history/revision or pan/zoom. Existing selected drag/resize and collapse preference retained.
-Data Sources has a complete shell description, unified responsive filter/search/action toolbar,
-configuration-only notice, readable metadata rows and keyboard-accessible named actions.
+Inspector uses a stable animated layout slot with immediately unmounted hidden fields. Canvas
+instance/pan/zoom/geometry/history remain unchanged; reduced-motion and lost-focus recovery supported.
+Data Sources loads automatic saved counts via sequential batches of at most 100 stable identities,
+then loads only activated reference details in a non-modal pane. Errors never become false zero.
+Refresh/CRUD invalidate session details/counts; stale catalog/unmount responses cannot publish.
+The server enumerates/scans saved Pages once per batch; no persistent cache/background indexing.
 
-Grid: duplicate Background SVG pattern IDs **REPRODUCED AND FIXED** (actual installed component,
-SSR URL-identity evidence). Overview gets a unique ID; protected Workflow Canvas is unchanged.
-This is not browser pixel/navigation/refresh evidence. Owner Local Manual Review **PENDING**.
-No Server/API behavior, identity/persistence, resolver, Unit, reference calculation or Runtime changes.
-O2-B/O2-C/O2-D **NOT STARTED**; no Runtime values, transport, Picture Box or commands.
+Existing single-source reference fields/404/Delete impact remain compatible, with optional saved
+`direction`. Invalid/missing legacy direction is absent, never inferred or persisted. No Definition
+or Page persistence, stable identity, resolver, runtime, Modbus or WS behavior changes.
 
-[dev.4 acceptance / investigation / evidence limits](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.4.md).
-Current executed gates: Stage 1 targeted Client 403 tests / 21 files; Client typecheck PASS on one
-authorized type-alias correction/retry; Server typecheck and Client build PASS. Full Client 481 / 32,
-Full Server 84 / 9 and `npm run check` PASS. Final hygiene/publish/diff and actual Remote checkpoint
-are recorded in the delivery handoff; no browser manual acceptance is implied.
-Dependency advisories: 5 moderate, 1 high, 1 critical — Not resolved / Not accepted /
-Not part of this Punchlist. SSR useLayoutEffect and bundle-size warnings remain nonfatal.
+[dev.5 acceptance / API contract / evidence limits](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.5.md).
+Executed: Stage 1 targeted Client **443 / 25**, targeted Server **37 / 4**, both typechecks and
+Client build PASS. Full Client **517 / 35**, Full Server **110 / 10**, `npm run check` PASS;
+no validation retries. Final strict hygiene/publish/diff and actual Remote are in the delivery
+handoff. Browser pointer/motion/layout/focus and manual acceptance are not claimed.
+Owner Local Manual Review **PENDING**; O2-B/O2-C/O2-D **NOT STARTED**; PR **NOT OPENED**.
+Dependency advisories: **5 moderate, 1 high, 1 critical — Not resolved / Not accepted /
+Not part of this Punchlist**. Known SSR useLayoutEffect and JS bundle-size warnings remain.
 
 ### Previous checkpoint validation (historical)
 
-v1.4.0-dev.3 at the base above: Stage 1 384 Client tests / 20 files, both typechecks and Client build;
-Full Client 458 / 30, Full Server 84 / 9; check, strict hygiene, publish and diff checks PASS.
-This history does not substitute for dev.4 validation. O2-A final closure remains pending.
+Dev.4: Stage 1 Client 403 tests / 21 files; Full Client 481 / 32, Server 84 / 9; both typechecks,
+builds/check, strict hygiene/publish and diff checks PASS. These are historical, not dev.5 results.
 
 ## Approved historical baseline
 

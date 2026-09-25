@@ -5,7 +5,7 @@ import http from 'node:http';
 import express from 'express';
 import { beforeEach, afterEach, describe, expect, it } from 'vitest';
 import { DefinitionCatalog } from '../src/definitionCatalog.js';
-import { definitionReferences } from '../src/definitionReferences.js';
+import { definitionReferences, definitionReferenceBatch } from '../src/definitionReferences.js';
 import { registerDefinitionRoutes } from '../src/definitionRoutes.js';
 import { OverviewPageManager } from '../src/overviewPages.js';
 import { definitionIdentity } from '../../client/src/lib/sourceDefinitions.js';
@@ -18,7 +18,7 @@ let dir: string, catalog: DefinitionCatalog, pages: OverviewPageManager, server:
 beforeEach(async () => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mws-definition-impact-'));
   catalog = new DefinitionCatalog(dir, id => [workflowA, workflowB].includes(id)); pages = new OverviewPageManager(dir);
-  const app = express(); app.use(express.json()); registerDefinitionRoutes(app, catalog, identity => definitionReferences(pages, identity));
+  const app = express(); app.use(express.json()); registerDefinitionRoutes(app, catalog, identity => definitionReferences(pages, identity), sources => definitionReferenceBatch(pages, catalog, sources));
   server = http.createServer(app); await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   base = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/source-definitions`;
 });

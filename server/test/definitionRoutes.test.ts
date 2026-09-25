@@ -1,5 +1,5 @@
 import { OverviewPageManager } from '../src/overviewPages.js';
-import { definitionReferences } from '../src/definitionReferences.js';
+import { definitionReferences, definitionReferenceBatch } from '../src/definitionReferences.js';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -15,7 +15,8 @@ const input = { sourceType: 'SHARED_TAG', name: 'Temperature', dataType: 'Number
 const request = (pathname = '', method = 'GET', body?: unknown) => fetch(url + pathname, { method, headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
 beforeEach(async () => {
   dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mws-definition-routes-'));
-  const app = express(); app.use(express.json()); registerDefinitionRoutes(app, new DefinitionCatalog(dir, id => id === workflowId), identity => definitionReferences(new OverviewPageManager(dir), identity));
+  const catalog = new DefinitionCatalog(dir, id => id === workflowId), pages = new OverviewPageManager(dir);
+  const app = express(); app.use(express.json()); registerDefinitionRoutes(app, catalog, identity => definitionReferences(pages, identity), sources => definitionReferenceBatch(pages, catalog, sources));
   server = http.createServer(app); await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   url = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/source-definitions`;
 });

@@ -1155,3 +1155,74 @@
 .app-shell--data-sources .app-main { grid-template-rows: auto minmax(0, 1fr); }
 .app-shell--data-sources .page-header__title { white-space: normal; overflow: visible; text-overflow: clip; }
 .data-sources-page .data-sources-toolbar:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; }
+
+/* dev.5 — saved usage is primary metadata; details are a non-modal reading pane. */
+.data-sources-page { position: relative; }
+.data-sources-page .definition-reference { display: inline-flex; align-items: center; gap: 6px; padding: 5px 0; font-weight: 600; font-variant-numeric: tabular-nums; text-decoration: none; }
+.data-sources-page .definition-reference:hover { text-decoration: underline; text-underline-offset: 3px; }
+.definition-reference-loading, .definition-reference-zero { color: var(--color-text-muted); font-size: 12px; }
+.definition-reference-error { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; }
+.definition-reference-error button { padding: 2px 6px; }
+.reference-details {
+  position: fixed; z-index: 80; inset-block: calc(var(--shell-header-height) + 12px) 16px; right: 16px;
+  width: min(440px, calc(100vw - 32px)); display: flex; flex-direction: column; min-height: 0;
+  background: var(--color-surface-panel); color: var(--color-text); border: 1px solid var(--color-border-accent);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 18px; gap: 12px;
+  animation: reference-details-enter var(--motion-normal) var(--ease-standard);
+}
+.reference-details__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.reference-details__head > div { min-width: 0; }
+.reference-details h2 { margin: 0 0 5px; font-size: 12px; font-weight: 500; color: var(--color-text-muted); }
+.reference-details__name { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; }
+.reference-details__scope { font-size: 12px; line-height: 1.5; margin: 0; color: var(--color-text-muted); }
+.reference-details__body { overflow: auto; min-height: 0; flex: 1; padding-right: 4px; }
+.reference-details__summary { font-size: 12px; color: var(--color-text-muted); margin: 0 0 16px; }
+.reference-details__page { margin-bottom: 20px; }
+.reference-details__page h3 { display: flex; align-items: baseline; gap: 6px; font-size: 13px; margin: 0 0 10px; overflow-wrap: anywhere; }
+.reference-details__page ul { list-style: none; padding: 0 0 0 12px; border-left: 2px solid var(--color-border-subtle); margin: 0; }
+.reference-details__page li { padding: 0 0 14px; overflow-wrap: anywhere; font-size: 13px; }
+.reference-details__page li:last-child { padding-bottom: 0; }
+.reference-details__metadata { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 4px 0; color: var(--color-text-muted); font-size: 12px; }
+.reference-details details { font-size: 11px; color: var(--color-text-muted); }
+.reference-details summary { cursor: pointer; width: fit-content; max-width: 100%; }
+.reference-details code { display: block; white-space: normal; overflow-wrap: anywhere; margin-top: 5px; }
+.reference-details__identity { max-height: 110px; overflow: auto; flex-shrink: 0; }
+.reference-details :is(button, summary):focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+@keyframes reference-details-enter { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
+@media (max-width: 520px) { .reference-details { right: 8px; width: calc(100vw - 16px); bottom: 8px; padding: 14px; } }
+@media (prefers-reduced-motion: reduce) { .reference-details { animation: none; } }
+
+/* Stable track topology lets the Inspector release width without remounting Flow.
+   The gutter belongs to its track, so a closed panel leaves no phantom gap. */
+.overview__workspace--motion {
+  --overview-library-size: var(--shell-library-width);
+  --overview-inspector-size: var(--shell-inspector-width);
+  --overview-panel-gap: var(--shell-canvas-inset);
+  --overview-inspector-track: calc(var(--overview-inspector-size) + var(--overview-panel-gap));
+}
+.overview--edit .overview__workspace.overview__workspace--motion {
+  grid-template-columns: var(--overview-library-size) var(--overview-panel-gap) minmax(0, 1fr) var(--overview-inspector-track);
+  column-gap: 0;
+  transition: grid-template-columns var(--motion-normal) var(--ease-standard);
+}
+.overview__workspace--motion.overview__workspace--library-collapsed { --overview-library-size: 44px; }
+.overview__workspace--motion.overview__workspace--inspector-collapsed { --overview-inspector-track: calc(44px + var(--overview-panel-gap)); }
+.overview__workspace--motion.overview__workspace--inspector-hidden { --overview-inspector-track: 0px; }
+.overview--edit .overview__workspace--motion > :is(.overview-library, .overview-rail--library) { grid-column: 1; grid-row: 1; }
+.overview--edit .overview__workspace--motion > .overview-canvas { grid-column: 3; grid-row: 1; }
+.overview-inspector-slot {
+  grid-column: 4; grid-row: 1; min-width: 0; min-height: 0; overflow: hidden;
+  padding-inline-start: var(--overview-panel-gap); opacity: 1;
+  transition: opacity var(--motion-fast) var(--ease-standard), padding-inline-start var(--motion-normal) var(--ease-standard);
+}
+.overview-inspector-slot[data-visible='false'] { opacity: 0; visibility: hidden; pointer-events: none; padding-inline-start: 0; }
+.overview-inspector-slot > .overview-inspector { width: var(--overview-inspector-size); height: 100%; max-width: none; transition: none; }
+.overview-inspector-slot > .overview-rail--inspector { width: 44px; height: 100%; }
+.overview--view .overview-inspector-slot { display: none; }
+.overview-canvas:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+@media (max-width: 1200px) {
+  .overview__workspace--motion { --overview-library-size: 174px; --overview-inspector-size: 248px; --overview-panel-gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .overview--edit .overview__workspace.overview__workspace--motion, .overview-inspector-slot { transition: none; }
+}

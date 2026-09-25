@@ -9,8 +9,8 @@ function readJson(relative: string): { version?: string } {
 }
 
 describe('release version label', () => {
-  it('is the v1.4.0-dev.4 label rendered by the shell', () => {
-    expect(APP_VERSION).toBe('1.4.0-dev.4');
+  it('is the v1.4.0-dev.5 label rendered by the shell', () => {
+    expect(APP_VERSION).toBe('1.4.0-dev.5');
   });
 
   it('matches every package manifest', () => {
