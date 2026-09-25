@@ -164,7 +164,7 @@ export function ElementInspector({
   if (!element) {
     return (
       <div className="element-inspector" role="region" aria-label="Element Inspector">
-        <p className="element-inspector__empty">Select an element on the canvas to edit its properties.</p>
+        <div className="element-inspector__empty" role="status"><strong>No element selected</strong><p>Select an element on the canvas to edit its properties.</p></div>
       </div>
     );
   }
@@ -178,6 +178,7 @@ export function ElementInspector({
   return (
     <div className="element-inspector" role="region" aria-label="Element Inspector">
       <div className="element-inspector__identity">
+        <h4 className="element-inspector__section-title">Element</h4>
         <div className="element-inspector__row">
           <label className="element-inspector__field">
             <span>Element Name</span>
@@ -221,7 +222,7 @@ export function ElementInspector({
       </div>
 
       <fieldset className="element-inspector__group" disabled={disabled}>
-        <legend>Layout</legend>
+        <legend>Geometry</legend>
         <div className="element-inspector__grid">
           <label className="element-inspector__field">
             <span>X</span>
@@ -293,15 +294,6 @@ export function ElementInspector({
       <fieldset className="element-inspector__group" disabled={disabled}>
         <legend>Appearance</legend>
         <div className="element-inspector__grid">
-          <label className="element-inspector__field element-inspector__field--wide">
-            <span>Text</span>
-            <CommitText type="text" value={style.text} onCommit={text => onPatchStyle({ text })} />
-          </label>
-          <label className="element-inspector__field">
-            <span>Font Size</span>
-            <FontSizeField value={style.fontSize} onPreview={onPreviewFontSize}
-              onCommit={fontSize => onPatchStyle({ fontSize })} />
-          </label>
           <label className="element-inspector__field">
             <span>Opacity</span>
             <CommitField
@@ -312,14 +304,6 @@ export function ElementInspector({
               value={style.opacity}
               format={clampOverviewOpacity}
               onCommit={opacity => onPatchStyle({ opacity })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Text Color</span>
-            <input
-              type="color"
-              value={toHexColor(style.textColor, '#e6eef5')}
-              onChange={event => onPatchStyle({ textColor: event.target.value })}
             />
           </label>
           <label className="element-inspector__field">
@@ -360,6 +344,29 @@ export function ElementInspector({
               value={style.borderRadius}
               validate={value => value >= 0 && value <= 64}
               onCommit={borderRadius => onPatchStyle({ borderRadius })}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Text</legend>
+        <div className="element-inspector__grid">
+          <label className="element-inspector__field element-inspector__field--wide">
+            <span>Text</span>
+            <CommitText type="text" value={style.text} onCommit={text => onPatchStyle({ text })} />
+          </label>
+          <label className="element-inspector__field">
+            <span>Font Size</span>
+            <FontSizeField value={style.fontSize} onPreview={onPreviewFontSize}
+              onCommit={fontSize => onPatchStyle({ fontSize })} />
+          </label>
+          <label className="element-inspector__field">
+            <span>Text Color</span>
+            <input
+              type="color"
+              value={toHexColor(style.textColor, '#e6eef5')}
+              onChange={event => onPatchStyle({ textColor: event.target.value })}
             />
           </label>
           <label className="element-inspector__field">
@@ -452,7 +459,7 @@ export function ElementInspector({
         </div>
       </fieldset>}
 
-      <div className="element-inspector__actions element-inspector__actions--danger">
+      <div className="element-inspector__actions element-inspector__actions--danger" role="group" aria-label="Element actions">
         <button type="button" onClick={onDuplicate} aria-label="Duplicate element">
           <Copy size={14} /> Duplicate
         </button>

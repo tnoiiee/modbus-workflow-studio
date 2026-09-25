@@ -1,28 +1,23 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.2
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.3
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- Current development version: **v1.4.0-dev.2 — O2-A punchlist**.
-- Base Remote checkpoint: `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390` (v1.4.0-dev.1),
+- Current development version: **v1.4.0-dev.3 — O2-A UX and Selection punchlist**.
+- Base Remote checkpoint: `4c73b1e82db050224d7599e0357bd323f5c6b961` (v1.4.0-dev.2),
   Owner Manual Review **APPROVED WITH PUNCHLIST**.
-- **Data Sources** is a first-class sidebar page for WORKFLOW_VARIABLE / SHARED_TAG configuration,
-  independent of Overview Edit. Overview has an optional shortcut without discarding its Draft.
-- Delete requires confirmation and a saved-reference-impact summary; stored binding identities
-  remain unchanged and resolve MISSING after refresh. Disable remains a reversible alternative.
-- Font Size previews immediately in Edit; Enter/blur makes one Draft/Undo commit; Save persists,
-  Cancel restores. Only this Font Size subset is pulled forward from O2-C.
-- Stable identity/resolver unchanged. **BOUND + EDITOR PREVIEW**, not live values.
-  **CONTROL RUNTIME NOT ENABLED**. Workflow navigation never Start/Stop/Trigger.
-- No O2-B Runtime/transport/new polling, O2-C Picture Box work, MQTT/Sparkplug or production commands.
-- Dependencies unchanged. Owner accepted Stage 1: **348 client / 71 server tests**, both typechecks
-  and Client build PASS. Full test runs: **422 client / 84 server PASS**; `npm run check` PASS.
-- Owner browser Manual Review **PENDING**, including multi-Element Font Size preview isolation.
-  Delivery requires all Full Gates and final diff verification; no PR, Tag, Release or ZIP.
-- [Punchlist scope](docs/SCOPE_O2-A_PUNCHLIST_v1.4.0-dev.2.md) ·
-  [Validation / local review](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
-- Historical [O2-A foundation / matrix](docs/SCOPE_O2-A_v1.4.0-dev.1.md).
+- Data Sources: searchable/filterable configuration list, compact identity disclosure, direct
+  Enable/Disable, on-demand saved-reference counts and focused Create/Edit with keyboard/focus support.
+- Inspector: consistent Geometry/Appearance/Text/Binding or Navigation groups; no selection shows
+  a compact neutral empty state. Existing field meanings, validation and Draft transactions preserved.
+- Intermittent selection **NOT REPRODUCED** in component callback investigation; no speculative
+  Canvas/selection/propagation changes. Owner browser reproduction remains PENDING.
+- Stable IDs, Delete/MISSING, reference calculation, APIs and persistence are unchanged.
+  **BOUND + EDITOR PREVIEW** remains configuration-only; **CONTROL RUNTIME NOT ENABLED**.
+- No O2-B, additional O2-C/Picture Box work, O2-D, Runtime values/transport or dependency changes.
+- [dev.3 acceptance / investigation / manual review](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.3.md).
+- Historical [dev.2 validation](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
 
 ### Operational safety boundary
 

@@ -2,34 +2,28 @@
 
 ## Current application
 
-**v1.4.0-dev.2 — O2-A punchlist** (development checkpoint, not release acceptance).
-Base Remote checkpoint: `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390`, v1.4.0-dev.1.
-Branch: `arena/01a0d291-modbus-workflow-studio`.
-Owner reviewed dev.1: **APPROVED WITH PUNCHLIST**.
+**v1.4.0-dev.3 — O2-A frontend UX and Selection punchlist** (not release/manual acceptance).
+Base Remote checkpoint: `4c73b1e82db050224d7599e0357bd323f5c6b961`, v1.4.0-dev.2.
+Branch: `arena/01a0d291-modbus-workflow-studio`. Owner reviewed dev.2: **APPROVED WITH PUNCHLIST**.
 
-Implemented standalone Data Sources management, Delete confirmation with saved-reference impact,
-and the expressly pulled-forward real-time Font Size Draft preview/one-property Undo behavior.
-Existing stable identity/resolver remains unchanged. Delete never rewrites Page bindings. Overview
-session/Preview Control state stay independent; BOUND still means configuration + EDITOR PREVIEW.
-No Production Control or Monitoring Runtime.
+Data Sources presentation/interaction and Inspector layout modernized. Search/type/status filtering,
+direct Enable/Disable, focused metadata forms, on-demand saved-reference counts and explicit empty states.
+No Server/API, persistence, stable identity, binding resolution, reference-calculation or Runtime changes.
+No Font Size transaction or Page/Canvas selection implementation changes.
 
-O2-B not started. Only approved Font Size work is pulled forward from O2-C; Picture Box work and
-all other O2-C/O2-D implementation remain excluded. No new Modbus acquisition or WebSocket changes.
-No dependencies changed; known advisories remain unresolved without risk acceptance.
+Selection observation: **NOT REPRODUCED** in callback/SSR investigation; browser hit-testing unavailable.
+No speculative event-handler fixes. Owner Local Manual Review **PENDING**.
+O2-B/O2-C/O2-D not started; no Runtime values, new acquisition/transport, Picture Box or commands.
 
-Owner accepted Stage 1: 348 client / 71 server tests, Client/Server typechecks and Client build PASS.
-Full Client 422 tests / Full Server 84 tests PASS; `npm run check` PASS, including both typechecks,
-complete test suites and both builds. Stage 1 commands were not manually rerun during delivery.
-Owner local Manual Review PENDING, especially multi-Element Font Size preview isolation.
-One commit and normal branch push are authorized only after all Full Gates/final diff checks pass.
-No PR, Tag, Release or ZIP. Final delivery SHA and remaining Gate results belong in the Owner handoff.
+[dev.3 acceptance / investigation](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.3.md).
+Stage 1 / Full Gates are executed under current Owner atomic-delivery authorization and reported in
+the delivery handoff. Dependency advisories remain 5 moderate, 1 high, 1 critical, unresolved/unaccepted.
 
-[Scope](SCOPE_O2-A_PUNCHLIST_v1.4.0-dev.2.md) · [Validation / review checklist](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
+### Previous checkpoint validation (historical)
 
-### Previous checkpoint validation (historical, not dev.2 evidence)
-
-v1.4.0-dev.1 Full Gates passed: 388 client / 80 server tests, typechecks/builds, strict hygiene,
-publish verification and diff check. Remote checkpoint above was delivered as one commit.
+v1.4.0-dev.2: accepted Stage 1 348 client / 71 server tests; Full Client 422 / Server 84 tests,
+check, hygiene/publish and diff checks passed. Delivered at the base Remote checkpoint above.
+This history does not substitute for dev.3 validation.
 
 ## Approved historical baseline
 

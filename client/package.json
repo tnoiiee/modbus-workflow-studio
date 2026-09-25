@@ -1,6 +1,6 @@
 {
   "name": "@mws/client",
-  "version": "1.4.0-dev.2",
+  "version": "1.4.0-dev.3",
   "private": true,
   "type": "module",
   "scripts": {

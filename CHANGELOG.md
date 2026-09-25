@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.4.0-dev.3] - O2-A frontend UX and Selection punchlist (2026-09-25)
+
+- Based on approved dev.2 checkpoint `4c73b1e82db050224d7599e0357bd323f5c6b961`.
+- Modernize Data Sources search/type/status filters, readable metadata rows, compact IDs, direct
+  Enable/Disable, on-demand saved-reference counts, focused Create/Edit and accessibility.
+- Group Inspector fields consistently and provide compact deselected presentation without stale inputs.
+- Intermittent selection NOT REPRODUCED in callback investigation; no speculative selection changes.
+- Preserve all existing APIs, identity/resolver/persistence, Delete/MISSING, Font Size transactions,
+  Page state, independent Preview controls and Runtime contracts. Version metadata only on Server.
+- Owner browser Manual Review PENDING; no new dependencies or O2-B/O2-C/O2-D work.
+
 ## [1.4.0-dev.2] - O2-A approved punchlist (2026-09-24)
 
 - Base `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390`, v1.4.0-dev.1, Owner review APPROVED WITH PUNCHLIST.
