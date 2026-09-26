@@ -2,6 +2,42 @@
 
 ## Current application
 
+**v1.4.0-dev.7 — O2-B1 validation and Traffic UX punchlist**.
+Approved base: `55335b00ff7cf20c3fee14a09ebd46e52fb476d1` / dev.6.
+Branch: `arena/01a0d291-modbus-workflow-studio`.
+Owner **O2-B1 APPROVED WITH PUNCHLIST**, Manual Disconnect **PASS**.
+Owner confirms A/B were changing UI columns: **CLIENT NORMALIZATION DEFECT**.
+
+Frontend inline acquisition validation/compatibility and dedicated Traffic presentation only;
+Server production differences are version literals only. Runtime acceptance evidence extends
+existing tests and a private test-only child harness, not an app observer or delivery contract.
+No production persistence/Store/lifecycle/queue/WS/REST change. Browser Tag values remain absent.
+Overview stays EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED; Variable producer deferred.
+No cross-owner dedup, producer identity, transaction grouping, runtime API or console observer.
+
+New [scope](SCOPE_O2-B1_v1.4.0-dev.7.md) and
+[acceptance/evidence](ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.7.md) supersede the historical checkpoint
+for this punchlist. Execution gate results are recorded there after running, not inferred.
+**dev.7 validation complete — Owner Local Manual Review PENDING.**
+Stage 1 all PASS (Client 59/3 + 29/3 + 517/35; Server 140/7 + 110/10), both typechecks/builds PASS.
+Previously completed Full Client **605/41**, Full Server **250/17**, `npm run check` PASS.
+Those accepted application gates were not rerun for the final fixture-only correction.
+Owner-authorized contextual scanner correction removes 14 ordinary-code false positives without
+new allowlists, bypasses or production-runtime edits. Initial focused run stopped at 55/56 because
+one positive JSON fixture was stored literally in test source. Owner-authorized runtime string
+assembly now preserves the same positive case without a self-scan collision: **56/56 PASS**.
+Strict hygiene retry **PASS (445 files, 0 errors, 0 warnings)**; verify:publish and diff check PASS.
+Complete change set: **31 files**. No dependency graph change; Server production diff is version
+literals only. One normal development-branch commit/push authorized; no PR, Tag, Release or ZIP.
+Historical failed attempts and exact current evidence are preserved in the acceptance document.
+Client bundle 657.32 kB (gzip 192.52); 66 existing SSR useLayoutEffect warnings remain.
+Owner Local Manual Review **PENDING** (runtime boundary, browser/keyboard/layout, simulator/soak).
+O2-B2/B3/C/D **NOT STARTED**. No PR, Tag, Release or ZIP.
+Dependencies restored once with `npm ci --include=optional --ignore-scripts`, no graph change.
+Advisories: **5 moderate / 1 high / 1 critical — not resolved, not accepted, not in punchlist**.
+
+## Historical dev.6 checkpoint
+
 **v1.4.0-dev.6 — O2-B1 Acquisition and Tag Runtime Foundation**.
 Approved base: `20b929bb5bdd82673173764efab1effc98c2aa5a`, v1.4.0-dev.5.
 Branch: `arena/01a0d291-modbus-workflow-studio`.

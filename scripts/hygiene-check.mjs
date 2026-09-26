@@ -33,6 +33,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { pathToFileURL } from 'node:url';
 
 const SCRIPT_RELATIVE_PATH = 'scripts/hygiene-check.mjs';
 const MAX_CONTENT_SCAN_BYTES = 2 * 1024 * 1024; // 2 MiB — larger files are not content-scanned
@@ -268,9 +269,9 @@ const CONTENT_RULES = [
     severity: 'error',
     docsSeverity: 'warn',
     sourceFileSeverity: 'warn',
-    re: /(password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|private[_-]?key|client[_-]?secret|auth[_-]?token)["']?\s*[:=]\s*["']?([^\s"',;#]{8,})/i,
+    re: /(password|passwd|pwd|secret|token|api[_-]?key|apikey|access[_-]?key|private[_-]?key|client[_-]?secret|auth[_-]?token)["']?\s*([:=])\s*(["'`]?)([^\s"'`,;#]+)/gi,
     message: 'Credential-like value assigned in a file. Confirm it is not a real secret.',
-    valueGroup: 2,
+    valueGroup: 4,
   },
   {
     id: 'private-network-address',
@@ -514,7 +515,48 @@ function scanPath(relativePath, severityOverride) {
   return findings;
 }
 
-function scanContent(relativePath, buffer) {
+/** Only disambiguate unquoted JS/TS syntax, never literal/configuration values.
+ * This is lexical evidence, not an identifier/name allowlist or a language parser.
+ * Provider keys, JWTs, credentialed URLs, etc. still scan the entire original line.
+ * A typed initializer is re-examined at its '=' rather than hidden by its type.
+ */
+function sourceAssignmentMatch(match, line, relativePath) {
+  if (!/\.(?:[cm]?[jt]s|[jt]sx)$/i.test(relativePath) || match[3]) return match;
+  const valueStart = match.index + match[0].length - match[4].length;
+  const tail = line.slice(valueStart);
+  // A reference, qualified reference, or generic type; deliberately no string literals.
+  const reference = /^[A-Za-z_$][\w$]*(?:\??\.[A-Za-z_$][\w$]*)*(?:<\s*[A-Za-z_$][\w$.,<> |\[\]?]*>)?(?:\[\])*/.exec(tail);
+  if (!reference) return match;
+  const rest = tail.slice(reference[0].length).trimStart();
+  if (match[2] === ':' && /^=(?!=|>)/.test(rest)) {
+    // Preserve detection of `name: Type = "literal"`, including parameter defaults.
+    const initializer = /^=\s*(["'`]?)([^\s"'`,;#]{8,})/.exec(rest);
+    if (!initializer) return null;
+    const next = [...match];
+    next.index = valueStart + tail.length - rest.length;
+    next[0] = initializer[0]; next[2] = '='; next[3] = initializer[1]; next[4] = initializer[2];
+    return sourceAssignmentMatch(next, line, relativePath);
+  }
+  if (rest.startsWith('(')) {
+    // A call is not itself a secret, but do not hide opaque literal arguments.
+    // Uppercase symbolic state names in calls are code evidence, not an exception
+    // for direct assignments; independent provider/embedded-secret rules still run.
+    const expression = rest.split(';', 1)[0];
+    for (const literal of expression.matchAll(/(["'`])((?:\\.|(?!\1)[^\\])*)\1/g)) {
+      const value = literal[2];
+      if (value.length >= 8 && !/^[A-Z]+(?:_[A-Z]+)*$/.test(value) && !isPlaceholder(value)) {
+        const opaque = [...match]; opaque[3] = literal[1]; opaque[4] = value;
+        return opaque;
+      }
+    }
+  }
+  // Delimiters establish code-reference/type syntax. Bare config scalars have no such
+  // evidence; config/docs/shell files never take this branch regardless of spelling.
+  if (/^(?:[;,)}\]]|\(|\?\.|\||&|=>|$)/.test(rest)) return null;
+  return match;
+}
+
+export function scanContent(relativePath, buffer) {
   const findings = [];
   if (SELF_IGNORE.has(relativePath)) return findings;
   const extension = path.extname(relativePath).toLowerCase();
@@ -529,22 +571,28 @@ function scanContent(relativePath, buffer) {
       if (ruleFindings >= 5) break;
       const line = lines[index];
       if (line.includes('hygiene-allow')) continue;
-      const match = rule.re.exec(line);
-      if (!match) continue;
-      const raw = rule.valueGroup ? match[rule.valueGroup] : match[0];
-      if (rule.valueGroup && isPlaceholder(raw)) continue;
-      let severity = rule.severity;
-      if (isMarkdown && rule.docsSeverity) severity = rule.docsSeverity;
-      if (isSource && rule.sourceFileSeverity) severity = rule.sourceFileSeverity;
-      findings.push({
-        rule: rule.id,
-        severity,
-        path: relativePath,
-        line: index + 1,
-        evidence: mask(raw),
-        message: rule.message,
-      });
-      ruleFindings += 1;
+      // Examine later candidates after a harmless type/expression on the same line.
+      // Keep the pre-existing bounded five findings per rule/file and severity policy.
+      const matches = rule.id === 'assigned-secret' ? line.matchAll(rule.re) : [rule.re.exec(line)];
+      for (const candidate of matches) {
+        if (!candidate || ruleFindings >= 5) continue;
+        const match = rule.id === 'assigned-secret' ? sourceAssignmentMatch(candidate, line, relativePath) : candidate;
+        if (!match) continue;
+        const raw = rule.valueGroup ? match[rule.valueGroup] : match[0];
+        if (rule.valueGroup && (raw.length < 8 || isPlaceholder(raw))) continue;
+        let severity = rule.severity;
+        if (isMarkdown && rule.docsSeverity) severity = rule.docsSeverity;
+        if (isSource && rule.sourceFileSeverity) severity = rule.sourceFileSeverity;
+        findings.push({
+          rule: rule.id,
+          severity,
+          path: relativePath,
+          line: index + 1,
+          evidence: mask(raw),
+          message: rule.message,
+        });
+        ruleFindings += 1;
+      }
     }
   }
   return findings;
@@ -787,4 +835,5 @@ function main() {
   process.exit(errors.length === 0 ? 0 : 1);
 }
 
-main();
+// Importable pure content scan for Node-only regression tests; CLI behavior is unchanged.
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();

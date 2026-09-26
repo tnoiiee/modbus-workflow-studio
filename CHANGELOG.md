@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.0-dev.7] - O2-B1 validation and Traffic UX punchlist (2026-09-26)
+
+- Approved base `55335b00ff7cf20c3fee14a09ebd46e52fb476d1`, O2-B1 approved with punchlist.
+- Frontend-only raw numeric drafts, immediate associated errors and first-invalid Save focus;
+  zero-based Address 0 accepted. All mapping selects preserve invalid stale values visibly.
+- Explicit FC/codec compatibility; codec changes only derived Width with notice. Scale/Offset
+  never silently reset; invalid loaded Width has an explicit repair action.
+- Fix CLIENT NORMALIZATION DEFECT: Traffic no longer chooses columns from the first row's keys.
+  Stable fields, proven origins, bounded escaped previews/details, 50-row pages and local keys.
+- Extend automated persistence/Control-state/revision/Draft-history and delayed completion evidence;
+  two-process memory-only Store restart harness plus actual Server restart/no-autoconnect test.
+- Production Server code changes only version values. No API/WS/logger/runtime behavior changes.
+- Root/client/server/UI/health/hello/banner versions synchronized; dependency graph unchanged.
+- Owner-authorized hygiene scanner contextual matching distinguishes ordinary code from
+  credential literals without new exclusions; Node-only regression suite 56/56 PASS.
+  Positive self-scan fixture assembled at runtime, preserving assigned-secret detection.
+  Strict hygiene retry, verify:publish and diff check PASS; accepted application gates retained.
+- Owner Manual Disconnect PASS retained; new Owner Local Manual Review PENDING.
+  O2-B2/B3/C/D not started. No diagnostics delivery, controls, MQTT, release or ZIP.
+
+
 ## [1.4.0-dev.6] - O2-B1 Acquisition and Tag Runtime Foundation (2026-09-26)
 
 - Approved base `20b929bb5bdd82673173764efab1effc98c2aa5a`, O2-A approved / Owner Manual Review PASS.

@@ -634,13 +634,13 @@ describe('O1-C critical UX source contracts (issues 1, 2, 5, 6, 10, 13, 14)', ()
     expect(css).toMatch(/\.element-library__search\s*\{[^}]*min-width:\s*0/s);
   });
 
-  it('version is v1.4.0-dev.6 across canonical sources (issue 13)', () => {
+  it('version is v1.4.0-dev.7 across canonical sources (issue 13)', () => {
     const version = read(['version.ts']);
-    expect(version).toContain("'1.4.0-dev.6'");
+    expect(version).toContain("'1.4.0-dev.7'");
     const rootPkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), '..', 'package.json'), 'utf8'));
     const clientPkg = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
-    expect(rootPkg.version).toBe('1.4.0-dev.6');
-    expect(clientPkg.version).toBe('1.4.0-dev.6');
+    expect(rootPkg.version).toBe('1.4.0-dev.7');
+    expect(clientPkg.version).toBe('1.4.0-dev.7');
   });
 
   it('does not touch protected Workflow/Modbus/Tag/Variable surfaces (issue 14)', () => {

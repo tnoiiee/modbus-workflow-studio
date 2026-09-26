@@ -1,0 +1,27 @@
+.traffic-page { min-width: 0; margin: 12px; }
+.traffic-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.traffic-toolbar h3 { margin: 0 0 4px; }
+.traffic-toolbar p, .traffic-caveat { font-size: 12px; line-height: 1.5; }
+.traffic-toolbar nav { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.traffic-table-scroll { overflow: auto; max-height: 65vh; border: 1px solid var(--color-border, #d3dce6); border-radius: 6px; }
+.traffic-table { width: 100%; min-width: 1200px; border-collapse: collapse; table-layout: fixed; }
+.traffic-table th { position: sticky; top: 0; background: var(--color-surface, #fff); z-index: 1; text-align: left; }
+.traffic-table th, .traffic-table td { padding: 10px; vertical-align: top; font-size: 12px; border-bottom: 1px solid var(--color-border, #d3dce6); overflow-wrap: anywhere; }
+.traffic-table th:nth-child(1) { width: 180px; }
+.traffic-table th:nth-child(4), .traffic-table th:nth-child(10) { width: 220px; }
+.traffic-table th:nth-child(2), .traffic-table th:nth-child(3), .traffic-table th:nth-child(9) { width: 130px; }
+.traffic-table th:nth-child(n+5):nth-child(-n+8) { width: 88px; }
+.traffic-cell-text { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.6; }
+.traffic-phase { display: inline-block; padding: 3px 6px; border: 1px solid currentColor; border-radius: 4px; font-weight: 600; }
+.traffic-phase--error { color: var(--color-danger-hover, #b91c1c); }
+.traffic-origin { font-weight: 600; display: block; }
+.traffic-partial { display: block; font-size: 10px; line-height: 1.4; }
+.traffic-details { max-height: 24rem; overflow: auto; padding: 8px; }
+.traffic-details dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.traffic-details dl > div { min-width: 0; }
+.traffic-details dt { font-weight: 600; }
+.traffic-details dd { margin: 4px 0 0; }
+.traffic-details pre { white-space: pre-wrap; overflow-wrap: anywhere; overflow: auto; max-height: 10rem; margin: 0; }
+.traffic-page :is(button, pre, .traffic-table-scroll):focus-visible { outline: 2px solid var(--color-primary, #1675cf); outline-offset: 2px; }
+.traffic-empty { padding: 24px; text-align: center; }
+@media (max-width: 720px) { .traffic-details dl { grid-template-columns: minmax(0, 1fr); } }

@@ -1,0 +1,7 @@
+.acquisition-form .acquisition-field { display: grid; align-content: start; gap: 5px; min-width: 0; }
+.acquisition-form .acquisition-field small { font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; }
+.acquisition-form [aria-invalid="true"] { border-color: var(--color-danger-hover, #b91c1c); }
+.acquisition-form .acquisition-impact { min-height: 1.5em; font-size: 12px; margin: 0; }
+.acquisition-form code { overflow-wrap: anywhere; }
+.acquisition-form .acquisition-field button { white-space: normal; }
+.acquisition-form input[type="checkbox"] { width: auto; justify-self: start; }

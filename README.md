@@ -1,24 +1,30 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.6
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.7
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.6 — O2-B1 Acquisition and Tag Runtime Foundation**; Owner accepted Stage 1;
-  development checkpoint preparation authorized. Owner Local Manual Review **PENDING**; not final release acceptance.
-- Base: `20b929bb5bdd82673173764efab1effc98c2aa5a`, dev.5, **O2-A APPROVED / Owner Manual Review PASS**.
-- Bounded Modbus TCP framing, separate Shared Tag acquisition configuration/UI/API, continuous
-  server-side read-only acquisition and normalized in-memory Tag Runtime Store.
-- Data Sources → a Shared Tag's **Acquisition** action manages its mapping, independently of
-  Definition metadata and Overview Save/Cancel. Existing Device connection must already be connected.
-- No auto-connect, cross-owner deduplication, Variable producer, runtime snapshot/Tag WS delivery
-  or Overview live rendering. Overview retains **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**.
-- [O2-B1 scope, limits and known limitations](docs/SCOPE_O2-B1_v1.4.0-dev.6.md) ·
-  [Stage 1 acceptance / exact test evidence](docs/ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.6.md).
-- Full Client **523/36**, Full Server **247/16**, and `npm run check` PASS.
-  Strict hygiene and verify:publish **PASS (411 files, 0 errors/warnings)**; diff check PASS.
-  Exact gate evidence is in the acceptance document.
-  No dependency upgrades. Only one development commit and normal branch push are authorized; no PR/Tag/Release.
+- **v1.4.0-dev.7 — O2-B1 validation and Traffic presentation punchlist**.
+- Approved base: `55335b00ff7cf20c3fee14a09ebd46e52fb476d1`, dev.6.
+  O2-B1 **APPROVED WITH PUNCHLIST**; Owner Manual Disconnect **PASS**.
+  New Owner Local Manual Review **PENDING**, including runtime persistence boundaries.
+- Acquisition configuration: accessible inline validation, preserved partial numeric edits,
+  explicit stale enum values and compatible choices; guarded Save, Server final authority.
+- Dedicated Traffic presentation: stable columns for all origins, bounded safe previews/details,
+  50 rows per page, view-local arrival keys; no transaction grouping or deduplication.
+- Production Server behavior unchanged. No producer/REST/WS/retention/queue changes.
+  Shared Tag/Workflow/Monitor reads can still duplicate physical reads across owners.
+- No runtime diagnostics endpoint/console observer, Tag WS, Browser Tag values or auto-connect.
+  Overview remains **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**.
+- [dev.7 scope](docs/SCOPE_O2-B1_v1.4.0-dev.7.md) ·
+  [dev.7 gates and Owner-local acceptance](docs/ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.7.md).
+  Historical [dev.6 foundation](docs/SCOPE_O2-B1_v1.4.0-dev.6.md) remains unchanged.
+- Hygiene fixture correction completed: focused suite **56/56 PASS**, strict hygiene retry
+  **PASS (445 files, 0 errors/warnings)**, verify:publish and diff check PASS.
+  Previously completed Full Client **605/41**, Full Server **250/17**, `npm run check` PASS;
+  these accepted application gates were not rerun for the fixture-only correction.
+- Dependency versions/resolution/integrity unchanged; advisories remain out of scope.
+  Development checkpoint only: no PR, Tag, Release or ZIP.
 
 ### Operational safety boundary
 
