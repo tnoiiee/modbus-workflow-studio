@@ -1,6 +1,20 @@
 # Roadmap
 
-## O2-A punchlist — v1.4.0-dev.2 (current)
+## Current approved staging — O2-B1 / v1.4.0-dev.6
+
+O2-A dev.5 is APPROVED / Owner Manual Review PASS. O2-B1 implements acquisition and runtime
+foundation only: TCP framing, Shared Tag mapping, server acquisition, normalized memory store.
+Stage 1 ACCEPTED by Owner; Full Gates and one normal development checkpoint delivery authorized.
+Owner Local Manual Review remains PENDING; this is not final release acceptance.
+[Scope](SCOPE_O2-B1_v1.4.0-dev.6.md) · [Acceptance](ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.6.md).
+
+- O2-B2 (future version): REST snapshot, Tag WS subscription/delta, replay/gap/reconnect.
+- O2-B3 (future version): Overview live rendering, quality/value/age, final O2-B integration.
+- O2-C/O2-D remain deferred. No authorization for any of these later checkpoints.
+
+Everything below is historical and does not override this staging or the latest Owner instruction.
+
+## Historical O2-A punchlist — v1.4.0-dev.2
 
 Owner accepted checkpoint `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390` with punchlist:
 Data Sources standalone page, Delete confirmation/reference impact, and immediate Font Size Draft

@@ -1,38 +1,38 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.5
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.6
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.5 — O2-A Inspector motion and saved-reference UX**.
-- Base: `d801666b6a9a650f62a2d4c68eca530e0d894dd9` (dev.4), Owner **APPROVED WITH PUNCHLIST**.
-- Inspector uses a stable animated layout slot with the existing motion tokens. Deselect removes
-  fields immediately, releases width and preserves the Canvas instance/pan/zoom. Reduced motion
-  disables animation; lost Inspector focus returns to the Canvas without scrolling.
-- Saved-reference counts load automatically in sequential batches of at most 100 identities.
-  The approved read-only batch endpoint scans saved Pages once per request; no persistent cache.
-- Non-zero counts open a non-modal reference pane with readable Page/Element names, Element type,
-  saved binding direction and secondary IDs. Zero, missing, loading and failure states are distinct.
-- Details use the existing individual endpoints on demand and are cached only for the current
-  catalog generation. Refresh and Definition operations invalidate results; stale responses are ignored.
-- Unsaved browser Drafts are excluded. Definitions remain configuration-only; **BOUND + EDITOR
-  PREVIEW**, **CONTROL RUNTIME NOT ENABLED**. No changes to CRUD/Delete/MISSING, stable IDs,
-  persistence, resolver, Font Size transactions, Page revision, Workflow/Modbus runtime or WS behavior.
-- [dev.5 acceptance / API contract / evidence limits](docs/ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.5.md).
-  Owner Local Manual Review **PENDING**; O2-B/O2-C/O2-D **NOT STARTED**. No dependency changes.
+- **v1.4.0-dev.6 — O2-B1 Acquisition and Tag Runtime Foundation**; Owner accepted Stage 1;
+  development checkpoint preparation authorized. Owner Local Manual Review **PENDING**; not final release acceptance.
+- Base: `20b929bb5bdd82673173764efab1effc98c2aa5a`, dev.5, **O2-A APPROVED / Owner Manual Review PASS**.
+- Bounded Modbus TCP framing, separate Shared Tag acquisition configuration/UI/API, continuous
+  server-side read-only acquisition and normalized in-memory Tag Runtime Store.
+- Data Sources → a Shared Tag's **Acquisition** action manages its mapping, independently of
+  Definition metadata and Overview Save/Cancel. Existing Device connection must already be connected.
+- No auto-connect, cross-owner deduplication, Variable producer, runtime snapshot/Tag WS delivery
+  or Overview live rendering. Overview retains **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**.
+- [O2-B1 scope, limits and known limitations](docs/SCOPE_O2-B1_v1.4.0-dev.6.md) ·
+  [Stage 1 acceptance / exact test evidence](docs/ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.6.md).
+- Full Client **523/36**, Full Server **247/16**, and `npm run check` PASS.
+  Strict hygiene and verify:publish **PASS (411 files, 0 errors/warnings)**; diff check PASS.
+  Exact gate evidence is in the acceptance document.
+  No dependency upgrades. Only one development commit and normal branch push are authorized; no PR/Tag/Release.
 
 ### Operational safety boundary
 
 Intended for a trusted local or industrial LAN. Authentication is not included; do not expose
 this application directly to the public Internet. Use an authenticated reverse proxy and
 appropriate network controls. Modbus writes remain disabled by default; addresses are zero-based.
-Existing reliability limits and write-safety guards are unchanged by O2-A.
+Existing write-safety guards and relative Workflow/Monitor priority are preserved. Shared Tag
+acquisition has its own bounded, lower-priority read class; manual disconnect remains authoritative.
 
 ## Overview Designer Foundation
 
 Includes Overview Page management, Overview Editor, Element Library and Inspector, Draft, Undo/Redo, Save and Cancel, View/Edit boundaries, independent Preview Control state, savedViewport, accessibility/responsive baseline and Draft Tag binding configuration.
 
-Does not include Production Monitoring Runtime, live Modbus values in Overview, Production Control Runtime, Modbus writes from Overview, Tag Runtime, Variable Blocks integration, MQTT implementation or an MQTT Sparkplug adapter. MQTT Sparkplug B is a future architecture plan only. Existing Workflow/Modbus capabilities below are not Overview runtime capabilities.
+Does not include Production Monitoring Runtime, live Modbus values in Overview, Production Control Runtime, Modbus writes from Overview, Tag Runtime delivery to Overview, Variable Blocks integration, MQTT implementation or an MQTT Sparkplug adapter. MQTT Sparkplug B is a future architecture plan only. Existing Workflow/Modbus capabilities below are not Overview runtime capabilities.
 
 ## Main capabilities
 

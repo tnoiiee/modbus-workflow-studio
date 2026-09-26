@@ -1,6 +1,6 @@
 {
   "name": "modbus-workflow-studio",
-  "version": "1.4.0-dev.5",
+  "version": "1.4.0-dev.6",
   "private": true,
   "workspaces": [
     "client",

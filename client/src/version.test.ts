@@ -9,8 +9,8 @@ function readJson(relative: string): { version?: string } {
 }
 
 describe('release version label', () => {
-  it('is the v1.4.0-dev.5 label rendered by the shell', () => {
-    expect(APP_VERSION).toBe('1.4.0-dev.5');
+  it('is the v1.4.0-dev.6 label rendered by the shell', () => {
+    expect(APP_VERSION).toBe('1.4.0-dev.6');
   });
 
   it('matches every package manifest', () => {
@@ -32,7 +32,7 @@ describe('release version label', () => {
 });
 
 
-describe('O2-A Server version surfaces', () => {
+describe('O2-B1 Server version surfaces', () => {
   it('health API, hello and startup banner match the UI', () => {
     const source = readFileSync(new URL('../../server/src/index.ts', import.meta.url), 'utf8');
     expect(source).toContain(`hello',{version:'${APP_VERSION}'`);

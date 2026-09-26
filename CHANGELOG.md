@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.0-dev.6] - O2-B1 Acquisition and Tag Runtime Foundation (2026-09-26)
+
+- Approved base `20b929bb5bdd82673173764efab1effc98c2aa5a`, O2-A approved / Owner Manual Review PASS.
+- Connection-owned bounded MBAP stream parser, fragmented/coalesced frames, transaction/context
+  correlation, timeout/cancellation retirement and stale completion guards.
+- Separate persisted Shared Tag mapping schema/configuration-only CRUD API and Data Sources editor.
+- Server-owned read-only acquisition, conservative identical-range dedup, bounded scheduling and
+  lowest-priority acquisition admission on existing shared DeviceConnection queues.
+- Transport-neutral, memory-only Tag Runtime Store with five qualities, explicit no-sample state,
+  last-good semantics, source/receive times, epoch/sequence and generation invalidation.
+- No new auto-connect policy; manual disconnect remains authoritative. Cross-owner duplicate
+  reads remain possible. No String codec or WORKFLOW_VARIABLE producer.
+- No O2-B2 REST snapshot/Tag WS delivery, O2-B3 Overview live rendering, controls or later phases.
+- Owner accepted Stage 1 and authorized Full Gates plus one normal development checkpoint delivery.
+  Full Client 523/36, Full Server 247/16, check, strict hygiene, verify:publish and diff checks PASS;
+  Owner Local Manual Review PENDING.
+- Application version metadata synchronized; dependency versions/resolution/integrity unchanged.
+
+
 ## [1.4.0-dev.5] - O2-A Inspector and reference UX (2026-09-26)
 
 - Based on `d801666b6a9a650f62a2d4c68eca530e0d894dd9`, dev.4 approved with punchlist.

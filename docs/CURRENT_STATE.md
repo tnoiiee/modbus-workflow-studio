@@ -2,31 +2,43 @@
 
 ## Current application
 
-**v1.4.0-dev.5 — O2-A Inspector and saved-reference UX** (not release/manual acceptance).
-Base: `d801666b6a9a650f62a2d4c68eca530e0d894dd9`, v1.4.0-dev.4.
-Branch: `arena/01a0d291-modbus-workflow-studio`. Owner dev.4 review: **APPROVED WITH PUNCHLIST**.
-Owner separately authorized the read-only batch contract and additive saved binding direction;
-the earlier API Material Blocker is resolved. No other backend expansion is authorized.
+**v1.4.0-dev.6 — O2-B1 Acquisition and Tag Runtime Foundation**.
+Approved base: `20b929bb5bdd82673173764efab1effc98c2aa5a`, v1.4.0-dev.5.
+Branch: `arena/01a0d291-modbus-workflow-studio`.
+Owner **O2-A APPROVED / Local Manual Review PASS** supersedes older pending-review text.
 
-Inspector uses a stable animated layout slot with immediately unmounted hidden fields. Canvas
-instance/pan/zoom/geometry/history remain unchanged; reduced-motion and lost-focus recovery supported.
-Data Sources loads automatic saved counts via sequential batches of at most 100 stable identities,
-then loads only activated reference details in a non-modal pane. Errors never become false zero.
-Refresh/CRUD invalidate session details/counts; stale catalog/unmount responses cannot publish.
-The server enumerates/scans saved Pages once per batch; no persistent cache/background indexing.
+O2-B1 includes TCP framing hardening, separate acquisition configuration/UI/API, independent
+Shared Tag acquisition and a normalized memory-only Tag Runtime Store. No auto-connect or
+cross-owner read broker. Store update observers are transport-neutral; no Tag delivery protocol.
+WORKFLOW_VARIABLE producers remain deferred without changing Definition resolution.
+Overview remains EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED, with no live rendering or
+Page/Draft/revision/state persistence change.
 
-Existing single-source reference fields/404/Delete impact remain compatible, with optional saved
-`direction`. Invalid/missing legacy direction is absent, never inferred or persisted. No Definition
-or Page persistence, stable identity, resolver, runtime, Modbus or WS behavior changes.
+Stage 1 final: TCP **36/1**, configuration **50/1**, scheduler/runtime/lifecycle **47/3**,
+server regression **114/11**, client targeted regression **372/18** (tests/files), both typechecks
+and both builds PASS. Two initial test commands failed on test-only matcher/version assertions,
+then passed after corrections; details and exact selectors in acceptance documentation.
+Client bundle warning: **645.10 kB**; SSR `useLayoutEffect` warnings remain. No browser/manual interaction or hardware/soak PASS claimed.
+Owner **ACCEPTED Stage 1** and authorized Full Gates, one commit and normal development-branch push.
+Full Client **523/36**, Full Server **247/16**, `npm run check` PASS (both typechecks, tests and builds).
+Strict hygiene and verify:publish **PASS — 411 files, 0 errors, 0 warnings** each; diff check PASS.
+No production/test source correction was required for these Full Gates; no passing gate was retried.
+Owner Local Manual Review **PENDING**, including hardware/simulator and extended/soak review.
+Development checkpoint only; no PR, Tag, Release or ZIP.
 
-[dev.5 acceptance / API contract / evidence limits](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.5.md).
-Executed: Stage 1 targeted Client **443 / 25**, targeted Server **37 / 4**, both typechecks and
-Client build PASS. Full Client **517 / 35**, Full Server **110 / 10**, `npm run check` PASS;
-no validation retries. Final strict hygiene/publish/diff and actual Remote are in the delivery
-handoff. Browser pointer/motion/layout/focus and manual acceptance are not claimed.
-Owner Local Manual Review **PENDING**; O2-B/O2-C/O2-D **NOT STARTED**; PR **NOT OPENED**.
-Dependency advisories: **5 moderate, 1 high, 1 critical — Not resolved / Not accepted /
-Not part of this Punchlist**. Known SSR useLayoutEffect and JS bundle-size warnings remain.
+[Approved O2-B1 scope](SCOPE_O2-B1_v1.4.0-dev.6.md) ·
+[Stage 1 acceptance/evidence](ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.6.md).
+O2-B2, O2-B3, O2-C and O2-D remain NOT IMPLEMENTED / NOT AUTHORIZED.
+Dependency advisory baseline: **5 moderate, 1 high, 1 critical — Not resolved / Not accepted /
+Not part of this checkpoint**. The one authorized dependency restore (`npm ci --include=optional --ignore-scripts`) reported
+these same advisories. No audit fix or upgrade was performed.
+
+### Approved dev.5 checkpoint (historical)
+
+O2-A Inspector motion/focus and automatic saved-reference batch/count/details UX were delivered
+at `20b929bb5bdd82673173764efab1effc98c2aa5a`. Owner subsequently supplied Manual Review PASS.
+Historical full Client **517/35**, Server **110/10**, typechecks/builds/check and hygiene/publish
+passed. Those are not dev.6 Full Gates results.
 
 ### Previous checkpoint validation (historical)
 
