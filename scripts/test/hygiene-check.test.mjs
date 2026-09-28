@@ -149,3 +149,99 @@ test('regression test source is scanned too; synthetic fixtures require no exclu
   const relative = 'scripts/test/hygiene-check.test.mjs';
   assert.deepEqual(scan(fs.readFileSync(path.join(root, relative), 'utf8'), relative), []);
 });
+
+
+// Dev.12: counter-expression fixtures are synthetic code, never actual credentials.
+const counters = [
+  ['prefix increment', '++this.request'],
+  ['prefix with whitespace', '++ this.request'],
+  ['postfix increment', 'this.request++'],
+  ['postfix with whitespace', 'this.request ++'],
+  ['arithmetic counter', 'counter + 1'],
+  ['qualified arithmetic counter', 'this.request + 1'],
+  ['compact arithmetic counter', 'this.request+1'],
+  ['arithmetic subtraction', 'generationCounter - 1'],
+  ['function-call expression', 'getGeneration()'],
+  ['method-call expression', 'this.getGeneration(context)'],
+  ['property expression', 'this.request'],
+  ['cancellation-token expression', 'cancellationSource.getToken(signal)'],
+];
+const assignmentCode = expression => ['const to', 'ken = ', expression, ';'].join('');
+for (const [label, expression] of counters) test(`dev.12 ordinary syntax: ${label}`, () => {
+  for (const extension of ['ts', 'tsx', 'js', 'jsx', 'mjs', 'cjs', 'mts', 'cts']) {
+    assert.deepEqual(scan(assignmentCode(expression), `src/lifecycle.${extension}`), []);
+  }
+});
+
+test('dev.12 typed counter initializers and object counter properties are clean', () => {
+  for (const [, expression] of counters) {
+    assert.deepEqual(scan(`const token: GenerationCounter = ${expression};`), []);
+    assert.deepEqual(scan(`const state = { token: ${expression} };`), []);
+  }
+});
+
+test('dev.12 approved Catalog generation counter and entire file scan clean without edits', () => {
+  const relative = 'client/src/lib/overviewCatalog.ts';
+  const content = fs.readFileSync(path.join(root, relative), 'utf8');
+  assert.equal(content.split(/\r?\n/)[35].trim(), assignmentCode('++this.request'));
+  assert.deepEqual(scan(content, relative), []);
+});
+
+for (const [label, expression] of counters.slice(0, 8)) test(`dev.12 quoted counter-shaped value still detected: ${label}`, () => {
+  for (const quote of ["'", '"', '`']) {
+    const findings = assignments(assignmentCode(quote + expression.replace(/\s+/g, '') + quote));
+    assert.equal(findings.length, 1); assert.equal(findings[0].line, 1);
+  }
+});
+
+const counterLiterals = [
+  ['typed opaque initializer', `const token: GenerationCounter = '${material}';`],
+  ['counter followed by credential assignment', assignmentCode('++this.request') + ` const password = '${material}';`],
+  ['postfix followed by credential assignment', assignmentCode('this.request++') + ` const apiKey = '${material}';`],
+  ['prefix plus literal', assignmentCode(`++this.request + '${material}'`)],
+  ['postfix plus literal', assignmentCode(`this.request++ + '${material}'`)],
+  ['arithmetic plus literal', assignmentCode(`this.request + 1 + '${material}'`)],
+  ['arithmetic with literal', assignmentCode(`this.request + '${material}'`)],
+  ['indexed reference literal', assignmentCode(`this.request['${material}']`)],
+  ['opaque call argument', assignmentCode(`getGeneration('${material}')`)],
+];
+for (const [label, code] of counterLiterals) test(`dev.12 conservative literal guard: ${label}`, () => {
+  for (const file of ['src/counter.ts', 'server/test/counter.test.ts']) assert.ok(assignments(code, file).length > 0, file);
+});
+
+test('dev.12 counter-like sensitive configuration remains detected, not source-exempt', () => {
+  for (const expression of ['++this.request', 'this.request++', 'this.request+1', 'getGeneration()']) {
+    for (const file of ['settings.json', 'settings.yaml', '.env', 'settings.ini', 'settings.toml', 'settings.sh', 'notes.md']) {
+      assert.equal(assignments(['token', '=', expression].join(''), file).length, 1, file);
+    }
+  }
+});
+
+test('dev.12 independent embedded-provider rules still inspect counter lines', () => {
+  for (const [rule, value] of known) {
+    assert.ok(scan(assignmentCode('++this.request') + ` const embedded = "${value}";`).some(f => f.rule === rule), rule);
+  }
+});
+
+test('dev.12 useful deterministic finding locations after counter lines', () => {
+  const lines = [assignmentCode('++this.request'), assignmentCode('this.request++'), assignmentCode('this.request + 1'), assignmentCode(`'${material}'`)];
+  const code = lines.join('\n'), first = scan(code, 'src/generation.ts');
+  assert.equal(first.length, 1); assert.equal(first[0].path, 'src/generation.ts'); assert.equal(first[0].line, 4);
+  assert.deepEqual(scan(code, 'src/generation.ts'), first); assert.ok(!first[0].evidence.includes(material));
+});
+
+test('dev.12 strict worktree CLI includes untracked counters and still blocks credentials', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mws-counter-scan-'));
+  try {
+    execFileSync('git', ['init', '--quiet', directory]);
+    const file = path.join(directory, 'generation.ts');
+    const cli = () => spawnSync(process.execPath, [scanner, '--worktree', '--strict', '--json'], { cwd: directory, encoding: 'utf8' });
+    fs.writeFileSync(file, counters.map(([, expression]) => assignmentCode(expression)).join('\n'));
+    const clean = cli(); assert.equal(clean.status, 0, clean.stderr);
+    assert.equal(JSON.parse(clean.stdout).filesChecked, 1); assert.equal(JSON.parse(clean.stdout).errors, 0);
+    fs.appendFileSync(file, '\n' + assignmentCode(`'${material}'`));
+    const rejected = cli(); assert.equal(rejected.status, 1); const report = JSON.parse(rejected.stdout);
+    assert.equal(report.errors, 1); assert.equal(report.warnings, 0); assert.equal(report.findings[0].severity, 'error');
+    assert.equal(report.findings[0].line, counters.length + 1); assert.ok(!rejected.stdout.includes(material));
+  } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});

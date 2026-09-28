@@ -1,6 +1,38 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.11
+## Current application — v1.4.0-dev.12
+
+O2-B3 HMI Presentation Polish, approved base
+`2e90a03c75259f7e0e3cc0f2afd372ac87c478fd` / dev.11, branch
+`arena/01a0d291-modbus-workflow-studio`. Owner approved dev.11 functionality/lifecycle,
+including focus without new Snapshot/socket, Edit/inactive disposal and clean View re-entry.
+
+View Monitoring now prioritizes configured caption, value/unit and concise abnormal status.
+Empty Text has no invented caption. Detailed Binding/identity/transport/reason/timestamps
+remain on demand; last-good/current sample full precision and accessible Details retained.
+Page status compacted with health counts, visible failures/limits/disabled/trust boundary.
+
+Only presentation changes. Catalog/lifecycle, B2, Binding matrix, Store, acquisition, Device,
+quality/availability semantics, Page/Draft/history/geometry/viewport and Preview controls
+are locked. Production Server version-only. No dependency upgrades. O2-C/O2-D NOT STARTED.
+
+[Scope](SCOPE_O2-B3_v1.4.0-dev.12.md) · [Acceptance](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.12.md).
+Stage 1 **981/65 PASS**; Full Client **872/55**, Server **305/21**, root check **PASS**.
+Owner accepted these results and authorized only a narrow scanner correction plus focused
+regressions to resolve the counter-expression false positive. Focused scanner suite **91 PASS**
+on first attempt. No allowlist/suppression/bypass added. Catalog, lifecycle and accepted HMI
+production/tests unchanged during continuation; accepted application gates not rerun.
+Strict retry **568 files / 0 errors / 0 warnings**, complete worktree scan **276/0/0**,
+verify:publish and diff check **PASS**. Final explicit staging/staged hygiene and Remote
+verification are required before declaring delivery. **Owner Local Manual Review for
+dev.12 PENDING**. Final Remote SHA/clean-tree verification belongs in the delivery handoff.
+Headless/SSR/callback checks are not browser, screen-reader, hardware or soak certification.
+Known SSR/chunk warnings and advisories 5 moderate / 1 high / 1 critical remain unresolved.
+Trusted network or authenticated proxy only; no PR/Tag/Release/ZIP.
+
+The entries below are historical; their pending states do not override the latest Owner review.
+
+## Historical dev.11 checkpoint (Owner subsequently approved Runtime/manual lifecycle)
 
 Approved O2-B3 Client focus/Catalog-refresh hotfix, base
 `64746ff670abce0539a844afe8f8c254f342b77e` / dev.10; branch

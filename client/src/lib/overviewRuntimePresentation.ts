@@ -58,3 +58,36 @@ export function runtimePresentation(element: OverviewElement, resolution: Bindin
     fullValue: value === null ? 'No process value' : typeof value === 'boolean' ? value ? 'TRUE' : 'FALSE' : String(Object.is(value, -0) ? 0 : value),
   };
 }
+
+/** Operator wording only. Canonical value/quality/availability projection above is unchanged. */
+export function operatorRuntimeStatus(p: ReturnType<typeof runtimePresentation>, age: string) {
+  const history = p.historical ? 'Last good · ' : '';
+  if (p.displayState === 'Invalid sample') return 'Invalid sample';
+  if (p.availability === 'Unsupported producer' || p.reason.startsWith('General String acquisition')) return 'Unsupported producer';
+  if (p.binding !== 'BOUND') return ({ NOT_BOUND: 'Not configured', DRAFT: 'Configuration pending', MISSING: 'Source unavailable', INCOMPATIBLE: 'Configuration mismatch' } as Record<string, string>)[p.binding] ?? 'Not configured';
+  if (p.availability === 'Device disconnected' || p.quality === 'DISCONNECTED') return `${history}Device disconnected`;
+  if (p.quality === 'BAD') return `${history}BAD sample`;
+  if (!['Available', 'Awaiting Snapshot', 'No sample yet'].includes(p.availability)) return `${history}${p.availability}`;
+  if (p.value === null) return 'Awaiting data';
+  const cached = p.cached && !p.historical ? 'Cached · ' : history;
+  if (p.quality === 'STALE') return `${cached}STALE · ${age.startsWith('Received at ') ? 'Age paused; see details' : age}`;
+  if (p.quality === 'UNCERTAIN') return `${cached}UNCERTAIN`;
+  if (p.historical) return 'Last good · Awaiting data';
+  return p.cached ? 'Cached · latest received' : '';
+}
+/** Diagnostic readout, not a new value producer or coercion path. */
+export function runtimeDiagnosticValue(value: unknown, dataType: string | undefined) {
+  return dataType === 'Number' && typeof value === 'number' && Number.isFinite(value) ? String(Object.is(value, -0) ? 0 : value)
+    : dataType === 'Boolean' && typeof value === 'boolean' ? value ? 'TRUE' : 'FALSE' : 'Unavailable';
+}
+/** Page summary reads existing cache on the existing age tick, not per-sample observers. */
+export function runtimeHealthCounts(items: readonly (ClientTagItem | undefined)[]) {
+  const counts = { stale: 0, unavailable: 0, uncertain: 0 };
+  for (const item of items) {
+    const sample = item?.sample;
+    if (!item || item.availability !== 'AVAILABLE' || !sample?.hasValue || sample.quality === 'BAD' || sample.quality === 'DISCONNECTED') counts.unavailable++;
+    else if (sample.quality === 'STALE') counts.stale++;
+    else if (sample.quality === 'UNCERTAIN') counts.uncertain++;
+  }
+  return counts;
+}

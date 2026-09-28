@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0-dev.12] - O2-B3 HMI Presentation Polish (2026-09-28)
+
+- Operator-first read-only Monitoring: configured caption only, primary value/unit, compact
+  abnormal status without repeated diagnostics. No invented caption for empty Text.
+- Retain explicit uncertain/stale/failed/disconnected, last-good and cached labeling; readable
+  TRUE/FALSE indicator, compact Badge, no fabricated String or no-sample zero/false.
+- Keep full diagnostics in existing Details modal, with explicit full-precision latest sample
+  and historical last-good fields. Preserve keyboard close/Escape/focus return.
+- Compact Page transport/Tag summary, nonzero health counts, persistent trust boundary and
+  disclosure for diagnostics/Details access on small Elements.
+- No lifecycle, Catalog hotfix, B2, Binding, persistence, geometry or control behavior change.
+  Server and dependency metadata changes are application version only. Dev.12 manual review pending.
+
 ## [1.4.0-dev.11] - O2-B3 focus / Catalog-refresh lifecycle hotfix (2026-09-28)
 
 - Preserve last confirmed Catalog and healthy Runtime during background refresh and failure.

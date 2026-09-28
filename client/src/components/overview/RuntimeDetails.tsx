@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom';
 import type { OverviewElement } from '../../lib/overviewElements.js';
 import type { BindingResolution } from '../../lib/overviewBinding.js';
-import { runtimePresentation, presentationAge } from '../../lib/overviewRuntimePresentation.js';
+import { runtimePresentation, presentationAge, runtimeDiagnosticValue } from '../../lib/overviewRuntimePresentation.js';
 import { Modal } from '../ui/Modal.js';
 import { useOverviewRuntime, useRuntimeClock, useRuntimeItem, useRuntimeStatus } from './OverviewRuntimeProvider.js';
 export function RuntimeDetails({ element, resolution, onClose }: { element: OverviewElement; resolution?: BindingResolution; onClose: () => void }) {
@@ -17,6 +17,8 @@ export function RuntimeDetails({ element, resolution, onClose }: { element: Over
       <dt>Producer availability</dt><dd>{p.availability}</dd>
       <dt>Browser transport</dt><dd>{status.transport} · {status.message}</dd>
       <dt>{p.label} — full precision</dt><dd>{p.fullValue} {p.unit}</dd>
+      <dt>Latest received sample — full precision (quality applies)</dt><dd>{item?.sample?.hasValue ? runtimeDiagnosticValue(item.sample.value, item.sample.dataType) : 'Unavailable'}</dd>
+      <dt>Last-good value — historical, not current</dt><dd>{runtimeDiagnosticValue(item?.sample?.lastGoodValue, item?.sample?.dataType)}</dd>
       <dt>Sample quality</dt><dd>{p.quality ?? 'No sample quality'}</dd>
       <dt>Reason</dt><dd>{p.reason}</dd>
       <dt>Receive timestamp (Server)</dt><dd>{item?.sample?.receiveTimestamp ?? 'Unavailable'}</dd>
@@ -24,6 +26,7 @@ export function RuntimeDetails({ element, resolution, onClose }: { element: Over
       <dt>Last GOOD receive timestamp</dt><dd>{item?.sample?.lastGoodReceiveTimestamp ?? 'Unavailable'}</dd>
       <dt>Age of displayed value</dt><dd>{presentationAge(p.timestamp, now, status.transport)}</dd>
     </dl>
+    <p className="overview-runtime-caveat">Last-good and cached values are historical/latest received, not confirmed LIVE. Browser transport does not change Device quality. No replay-complete or exactly-once guarantee. Age uses the Browser clock and may be limited by clock skew or suspension.</p>
   </Modal>;
   return typeof document === 'undefined' ? content : createPortal(content, document.body);
 }

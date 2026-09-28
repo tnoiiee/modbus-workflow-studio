@@ -151,6 +151,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
           'overview-element',
           `overview-element--${type.toLowerCase()}`,
           `overview-element--${category.toLowerCase()}`,
+          runtimeMonitoring ? 'overview-element--runtime' : '',
           element.locked ? 'is-locked' : '',
           selected && edit ? 'is-selected' : '',
           edit ? 'is-editable' : 'is-readonly',

@@ -1,36 +1,50 @@
-/* Scoped read-only presentation. No Flow geometry, viewport or editor interaction rules. */
-.overview-runtime-status { padding: 10px 14px; border: 1px solid var(--color-border-subtle); border-radius: 8px; background: var(--color-surface-panel); font-size: 13px; color: var(--color-text); }
-.overview-runtime-status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.overview-runtime-status strong { font-size: 11px; letter-spacing: .08em; }
+/* Scoped operator presentation; no Canvas, editor or persisted sizing changes. */
+.overview-runtime-status { padding: 8px 12px; border: 1px solid var(--color-border-subtle); border-radius: 8px; background: var(--color-surface-panel); font-size: 12px; color: var(--color-text); }
+.overview-runtime-status-line { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.overview-runtime-status strong { font-size: 10px; letter-spacing: .08em; color: var(--color-text-muted); }
 .overview-runtime-status p { margin: 6px 0; color: var(--color-text-muted); overflow-wrap: anywhere; }
-.overview-runtime-transport { padding: 3px 9px; border: 1px solid currentColor; border-radius: 20px; }
-.overview-runtime-status details > summary { cursor: pointer; margin-top: 6px; }
+.overview-runtime-transport { font-weight: 600; }
+.overview-runtime-transport::before { content: ''; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: currentColor; }
+.overview-runtime-transport.is-error, .overview-runtime-summary-warning { color: #fbbf24; }
+.overview-runtime-trust { margin-left: auto; font-size: 11px; color: var(--color-text-muted); }
+.overview-runtime-status .overview-runtime-callout { padding: 6px 8px; border-left: 2px solid #fbbf24; color: var(--color-text); }
+.overview-runtime-status details > summary { cursor: pointer; margin-top: 5px; color: var(--color-text-muted); }
 .overview-runtime-status details ul { max-height: 220px; overflow: auto; padding-left: 20px; }
-.overview-runtime-value { position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; min-width: 0; min-height: 0; line-height: 1.2; overflow: hidden; border-left: 3px solid var(--runtime-color, #94a3b8); padding-left: 5px; box-sizing: border-box; }
-.overview-runtime-value > span { flex-shrink: 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.overview-runtime-caption { font-size: .75em; opacity: .85; padding-right: 20px; }
-.overview-runtime-reading { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; font-weight: 600; order: -1; padding-right: 20px; }
-.overview-runtime-inline-state { flex: 0 1 auto; max-width: 65%; font-size: 10px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--runtime-color, #cbd5e1); }
-.overview-runtime-number { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.overview-runtime-unit { font-size: .8em; overflow: hidden; text-overflow: ellipsis; }
-.overview-runtime-quality { font-size: 11px; font-weight: 600; color: var(--runtime-color, #cbd5e1); }
-.overview-runtime-age, .overview-runtime-reason { font-size: 11px; }
+.overview-element--runtime .overview-element__body { padding: 0; display: block; }
+.overview-runtime-value { position: relative; display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 100%; height: 100%; min-width: 0; min-height: 0; padding: 8px 30px 8px 10px; box-sizing: border-box; line-height: 1.15; overflow: hidden; }
+.overview-runtime-caption { flex: 0 1 auto; min-height: 0; font-size: clamp(11px, .65em, 15px); font-weight: 400; opacity: .8; }
+.overview-runtime-caption, .overview-runtime-number, .overview-runtime-unit, .overview-runtime-status-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.overview-runtime-reading { display: flex; align-items: baseline; justify-content: inherit; gap: 5px; min-width: 0; flex: 0 0 auto; font-size: clamp(16px, 1.15em, 40px); font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.overview-runtime-unit { flex: 0 1 auto; font-size: .6em; font-weight: 400; letter-spacing: 0; opacity: .8; }
+.overview-runtime-number { min-width: 1ch; }
+.overview-runtime-abnormal { display: flex; align-items: center; gap: 4px; min-width: 0; flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--runtime-color, #cbd5e1); }
+.overview-runtime-attention { flex: 0 0 auto; font-size: 10px; width: 12px; text-align: center; border: 1px solid currentColor; border-radius: 3px; }
+.overview-runtime-value.has-abnormal { border-left: 2px solid var(--runtime-color, #94a3b8); }
 .overview-runtime-value.is-good { --runtime-color: #6ee7b7; }
-.overview-runtime-value.is-stale { --runtime-color: #fbbf24; border-left-style: dashed; }
+.overview-runtime-value.is-stale { --runtime-color: #fbbf24; }
 .overview-runtime-value.is-uncertain, .overview-runtime-value.is-cached { --runtime-color: #c4b5fd; }
 .overview-runtime-value.is-bad { --runtime-color: #fda4af; }
 .overview-runtime-value.is-disconnected, .overview-runtime-value.is-unavailable { --runtime-color: #cbd5e1; }
-.overview-runtime-lamp { flex: 0 0 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; }
+.overview-runtime-lamp { align-self: center; flex: 0 0 12px; height: 12px; border-radius: 50%; border: 2px solid currentColor; box-sizing: border-box; }
 .overview-runtime-lamp.lamp-true { background: #6ee7b7; }
 .overview-runtime-lamp.lamp-false { background: transparent; }
 .overview-runtime-lamp.lamp-unavailable { border-style: dashed; background: transparent; }
-.overview-runtime-detail-button { position: absolute; top: 0; right: 0; min-width: 20px; height: 20px; padding: 0; border: 0; background: var(--color-surface-panel); color: var(--color-text); cursor: pointer; }
+.overview-runtime-detail-button { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; padding: 0; border: 1px solid var(--color-border-subtle); border-radius: 5px; background: var(--color-surface-panel); color: var(--color-text-muted); cursor: pointer; font: 14px/1 var(--font-sans); }
+.overview-runtime-detail-button:hover, .overview-runtime-detail-button:focus-visible { color: var(--color-text); border-color: var(--color-accent); }
+.overview-runtime-value.is-compact { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-content: center; align-items: baseline; gap: 3px 8px; padding-top: 5px; padding-bottom: 5px; }
+.overview-runtime-value.is-compact .overview-runtime-reading { font-size: clamp(14px, 1em, 28px); }
+.overview-runtime-value.is-compact:not(.has-caption) .overview-runtime-reading, .overview-runtime-value.is-compact .overview-runtime-abnormal { grid-column: 1 / -1; }
+.overview-runtime-value.is-micro { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 4px; padding: 3px 27px 3px 4px; }
+.overview-runtime-value.is-micro .overview-runtime-caption { display: none; }
+.overview-runtime-value.is-micro .overview-runtime-reading { flex: 1 1 auto; font-size: 14px; }
+.overview-runtime-value.is-micro .overview-runtime-abnormal { flex: 0 1 50%; }
 .overview-runtime-details { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 2fr); gap: 10px; }
-.overview-runtime-details dt { color: var(--color-text-muted); }
-.overview-runtime-details dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.overview-runtime-details dt, .overview-runtime-caveat { color: var(--color-text-muted); }
+.overview-runtime-details dd { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; font-variant-numeric: tabular-nums; }
+.overview-runtime-caveat { font-size: 12px; line-height: 1.5; }
 .overview-runtime-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.overview-runtime-status :is(button,summary):focus-visible, .overview-runtime-detail-button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-/* These warnings are content, not the legacy badges hidden in View Mode. */
+.overview-runtime-status :is(button,summary):focus-visible, .overview-runtime-detail-button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+/* Control warnings are never hidden by Monitoring-only rules. */
 .overview-control-runtime-warning { display: block; font-size: 10px; font-weight: 600; color: #fbbf24; line-height: 1.2; overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .overview-runtime-value, .overview-runtime-value * { animation: none; transition: none; } }
-@media (max-width: 600px) { .overview-runtime-details { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .overview-runtime-details { grid-template-columns: 1fr; } .overview-runtime-trust { margin-left: 0; } }

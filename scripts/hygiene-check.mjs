@@ -520,10 +520,17 @@ function scanPath(relativePath, severityOverride) {
  * Provider keys, JWTs, credentialed URLs, etc. still scan the entire original line.
  * A typed initializer is re-examined at its '=' rather than hidden by its type.
  */
+// A bounded numeric counter grammar, not a general non-literal exemption.
+// Only a complete dotted reference with ++, or reference +/- an integer, qualifies.
+// Operators followed by strings/calls/indexers/other expression tails stay conservative.
+const COUNTER_REFERENCE = String.raw`[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*`;
+const COUNTER_EXPRESSION = new RegExp(String.raw`^(?:\+\+\s*${COUNTER_REFERENCE}|${COUNTER_REFERENCE}\s*\+\+|${COUNTER_REFERENCE}\s*[+-]\s*\d+)(?=\s*(?:[;,)}\]]|$))`);
+
 function sourceAssignmentMatch(match, line, relativePath) {
   if (!/\.(?:[cm]?[jt]s|[jt]sx)$/i.test(relativePath) || match[3]) return match;
   const valueStart = match.index + match[0].length - match[4].length;
   const tail = line.slice(valueStart);
+  if (COUNTER_EXPRESSION.test(tail)) return null;
   // A reference, qualified reference, or generic type; deliberately no string literals.
   const reference = /^[A-Za-z_$][\w$]*(?:\??\.[A-Za-z_$][\w$]*)*(?:<\s*[A-Za-z_$][\w$.,<> |\[\]?]*>)?(?:\[\])*/.exec(tail);
   if (!reference) return match;

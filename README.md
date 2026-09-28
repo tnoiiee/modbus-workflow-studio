@@ -1,35 +1,37 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.11
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.12
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.11 — O2-B3 focus / Catalog-refresh lifecycle hotfix**.
-  Approved base `64746ff670abce0539a844afe8f8c254f342b77e` / dev.10 on
-  `arena/01a0d291-modbus-workflow-studio`. Owner Local Manual Review **PENDING**.
-- Initial Catalog load fails closed. Background refresh keeps last confirmed metadata,
-  BOUND resolution and a healthy read-only Runtime session while pending or failed.
-  Failures show a non-blocking, polite text warning; explicit Refresh/focus may retry.
-- Unchanged semantic inputs do not Snapshot/unsubscribe/reconnect. Actual eligible selection,
-  compatibility or relevant Number-unit changes fence and reconcile the session. New object
-  instances, Catalog ordering and unrelated metadata are not lifecycle triggers.
-- Hidden/offline pause and visible/online recovery retain approved B2 behavior. Focus refresh
-  adds no parallel recovery loop. Edit/inactive/Page-navigation/StrictMode fencing remains.
-- Active Overview **View only**, Number/Boolean SHARED_TAG monitoring; String producer unsupported.
-  Binding, transport, availability, sample quality and historical last-good remain separate.
-  **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**; Switch/Push remain Preview-only.
-- No Runtime mutation of Page/Draft/UndoRedo/revision/geometry/savedViewport, no Device connect,
-  acquisition ownership, Modbus write or Workflow command. Server behavior and B2 protocol unchanged.
-- Existing limits: 200 eligible Elements / 200 identities, 512 KiB cache, 5 Hz publication,
-  1 Hz age, five automatic recoveries / rolling 60s and rate-limited manual Retry.
-- [dev.11 acceptance / validation / manual scenarios](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.11.md).
-  The [dev.10 foundation](docs/SCOPE_O2-B3_v1.4.0-dev.10.md) remains applicable except the
-  Catalog refresh behavior explicitly superseded by this hotfix.
-- Stage 1 **871/56 PASS**; Full Client **809/52**, Server **305/21**, root check, strict
-  hygiene (558 files / 0 errors / 0 warnings), verify:publish and diff check **PASS**.
-  One Stage 1 test-harness correction/retry; Full Gates all passed first attempt.
-- No dependencies upgraded, PR/Tag/Release/ZIP, O2-C or O2-D implementation.
-  Existing advisories: 5 moderate / 1 high / 1 critical, unresolved and unaccepted.
+Owner accepted Stage 1 **981/65**, Full Client **872/55**, Full Server **305/21** and
+root check. The narrowly authorized hygiene correction distinguishes JS/TS generation-counter
+expressions without changing Catalog/lifecycle or weakening literal/configuration detection.
+Focused scanner suite **91 PASS**; strict retry **568/0/0**, complete worktree scan
+**276/0/0**, verify:publish and diff check **PASS**. Accepted application gates were not rerun.
+Owner Local Manual Review remains PENDING.
+
+- **v1.4.0-dev.12 — O2-B3 HMI Presentation Polish**. Approved base
+  `2e90a03c75259f7e0e3cc0f2afd372ac87c478fd` / dev.11, branch
+  `arena/01a0d291-modbus-workflow-studio`.
+- Owner **APPROVED dev.11 Runtime functionality and lifecycle**: focus refresh does not
+  restart delivery; Edit/inactive cleanup and clean View re-entry passed Owner review.
+- View Monitoring emphasizes configured caption (only when non-empty), process value and
+  unit. Clean GOOD state; concise UNCERTAIN/STALE/BAD/Device-disconnected/last-good/cached
+  indications. Boolean TRUE/FALSE stay distinct from missing data; String remains unsupported.
+- Full diagnostics and precision remain in keyboard-accessible Runtime Details. Compact
+  Page status retains failures/limits/disabled state, Tag health counts and trust limitation.
+  Small Elements also have a Page-level Details list; truncated content retains accessible text.
+- Presentation only: B1/B2, dev.11 Catalog/lifecycle, Binding, persistence, geometry and
+  quality/availability semantics are unchanged. Server changes are version literals only.
+- **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**. Switch/Push remain Preview-only;
+  navigation remains navigation-only. No writes, commands or Device lifecycle ownership.
+- [dev.12 scope](docs/SCOPE_O2-B3_v1.4.0-dev.12.md) ·
+  [dev.12 acceptance and manual review](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.12.md).
+- **Owner Local Manual Review for dev.12 PENDING**. Automated headless/SSR evidence is
+  not browser, screen-reader, hardware or soak certification. No dependency upgrades,
+  PR/Tag/Release/ZIP or O2-C/O2-D. Existing advisories 5 moderate / 1 high / 1 critical remain
+  unresolved/unaccepted.
 
 ### Operational safety boundary
 
