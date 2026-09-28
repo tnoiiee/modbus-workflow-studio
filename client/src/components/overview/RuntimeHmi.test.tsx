@@ -1,3 +1,4 @@
+import { RuntimeSafetyPanel } from './RuntimeSafetyPanel.js';
 import { describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
@@ -25,7 +26,7 @@ describe('dev.12 HMI component presentation', () => {
   it.each(['', '   '])('empty Text %j does not invent caption from Element/Definition names', caption => {
     const { html, f } = view('NUMERIC_LABEL', caption); const text = visibleText(html);
     expect(html).not.toContain('overview-runtime-caption'); expect(text).not.toContain(f.element.name); expect(text).not.toContain(f.definition.name);
-    expect(text).toBe('20barⓘ');
+    expect(text).toBe('20bar'); expect(html).toContain('<svg'); expect(html).toContain('aria-label="Runtime details:');
   });
   it('no Unit displays only the value, with optional Details action', () => {
     const { f, p } = view(); const html = renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={{ ...p, unit: '' }} age="" />);
@@ -76,12 +77,12 @@ describe('dev.12 HMI component presentation', () => {
     const text = visibleText(renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="" />));
     expect(text.match(/Operator caption/g)).toHaveLength(1); expect(text).toContain('—'); expect(text).toContain('Unsupported producer'); expect(text).not.toContain('MISSING');
   });
-  it('micro Element retains full accessible value/status and keyboard Details button', () => {
+  it('micro Element retains full accessible value/status and points to keyboard Page Details', () => {
     const { f, p } = view('NUMERIC_LABEL', 'Very long configured caption', 1.123456789); f.element.width = 24; f.element.height = 24;
     const open = vi.fn(), stop = vi.fn(), tree = RuntimeMonitoringView({ element: f.element, presentation: p, age: '', onDetails: open });
     const button = (tree.props.children as any[]).find(child => child?.type === 'button');
-    expect(button.props.type).toBe('button'); expect(button.props['aria-label']).toContain('Runtime details:');
-    button.props.onClick({ stopPropagation: stop }); expect(open).toHaveBeenCalledTimes(1); expect(stop).toHaveBeenCalledTimes(1);
+    expect(button).toBeUndefined(); expect(tree.props['aria-label']).toContain('Page Runtime details and safety');
+    expect(open).not.toHaveBeenCalled(); expect(stop).not.toHaveBeenCalled();
     const html = renderToStaticMarkup(tree); expect(html).toContain('is-micro'); expect(html).toContain('1.123456789'); expect(html).not.toContain('tabindex="-1"');
   });
   it('long caption/value are escaped, full text accessible and samples never aria-live', () => {
@@ -101,7 +102,7 @@ describe('dev.12 on-demand diagnostics and Page-level status', () => {
     const f = configuration(), h = harness(), item = sampleItem(1, 1.123456789, quality); item.sample!.lastGoodValue = 0; item.reason = 'INTERNAL_REASON';
     h.store.publish([item], new Set([item.source.sourceId])); h.store.setStatus(transport, transport === 'Error' ? 'Recovery budget exhausted' : 'Latest received only', 'page');
     const before = JSON.stringify([h.store.getItem(item.source.sourceId), f.element]);
-    const html = renderToStaticMarkup(<OverviewRuntimeProvider adapter={h.adapter} enabled={enabled} pageId="page" selection={{ ...f.selection, error }} elements={[f.element]} resolutions={{ [f.element.id]: f.resolution }}><OverviewRuntimeStatus selection={{ ...f.selection, error }} elements={[f.element]} /><RuntimeDetails element={f.element} resolution={f.resolution} onClose={() => {}} /></OverviewRuntimeProvider>);
+    const html = renderToStaticMarkup(<OverviewRuntimeProvider adapter={h.adapter} enabled={enabled} pageId="page" selection={{ ...f.selection, error }} elements={[f.element]} resolutions={{ [f.element.id]: f.resolution }}><OverviewRuntimeStatus selection={{ ...f.selection, error }} elements={[f.element]} /><RuntimeSafetyPanel id="safety" origin={{ current: null }} selection={f.selection} elements={[f.element]} message="Latest received only" onClose={() => {}} onDetails={() => {}} /><RuntimeDetails element={f.element} resolution={f.resolution} onClose={() => {}} /></OverviewRuntimeProvider>);
     expect(JSON.stringify([h.store.getItem(item.source.sourceId), f.element])).toBe(before); expect(h.io.snapshot).not.toHaveBeenCalled(); expect(h.io.socket).not.toHaveBeenCalled(); h.adapter.stop(); return html;
   }
   it('Details retain full precision, identity, Binding, quality, reason and all timestamps plus last-good value', () => {
@@ -109,7 +110,7 @@ describe('dev.12 on-demand diagnostics and Page-level status', () => {
     for (const text of ['Source identity', 'SHARED_TAG', 'BOUND', 'Producer availability', 'Browser transport', '1.123456789', 'Last-good value', '<dd>0</dd>', 'BAD', 'INTERNAL_REASON', time, 'Source timestamp', 'Not supplied by Device', 'Last GOOD receive timestamp', 'Age of displayed value', 'clock skew', 'No replay-complete', 'role="dialog"', 'Close details']) expect(html).toContain(text);
   });
   it('healthy Page header is compact with active Tag count, trust boundary and small-Element access', () => {
-    const html = render(), header = html.slice(0, html.indexOf('<details>'));
+    const html = render(), header = html.slice(0, html.indexOf('<aside'));
     expect(header).toContain('Transport: Connected'); expect(header).toContain('1 Tags'); expect(header).not.toContain('Trusted network only'); expect(html).toContain('Trusted network only'); expect(header).not.toContain('unavailable'); expect(header).not.toContain('Latest received only');
     expect(html).toContain('Runtime details &amp; safety'); expect(html).toContain('— Runtime details'); expect(html).toContain('authenticated reverse proxy');
   });

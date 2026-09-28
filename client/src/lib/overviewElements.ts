@@ -1,3 +1,4 @@
+import { validatePresentationStyle } from './overviewPresentationStyle.js';
 import type { DraftSourceIdentity } from './sourceDefinitions.js';
 import { isStableId } from './sourceDefinitions.js';
 /**
@@ -30,6 +31,11 @@ export interface OverviewElementStyle {
   text: string;
   /** STATUS_LIGHT only. Absent on legacy elements means On; new lights default Off. */
   showText?: boolean;
+  /** Optional presentation overrides; absence preserves dev.13 base-font rendering. */
+  captionFontSize?: number;
+  valueFontSize?: number;
+  backgroundOpacity?: number;
+  showBorder?: boolean;
   fontSize: number;
   textColor: string;
   backgroundColor: string;
@@ -325,7 +331,10 @@ export function createOverviewElement(
     zIndex: options.zIndex ?? 1,
     locked: false,
     visible: true,
-    style: { ...overviewDefaultStyle(category), ...(type === 'STATUS_LIGHT' ? { showText: false } : {}) },
+    style: { ...overviewDefaultStyle(category), backgroundOpacity: 1, showBorder: true,
+      ...(['NUMERIC_LABEL', 'TEXT_LABEL', 'STATUS_LIGHT', 'VALUE_BADGE'].includes(type) ? { captionFontSize: 11 } : {}),
+      ...(['NUMERIC_LABEL', 'VALUE_BADGE'].includes(type) ? { valueFontSize: 16 } : {}),
+      ...(type === 'STATUS_LIGHT' ? { showText: false, valueFontSize: 12 } : {}) },
     binding: type === 'NAVIGATION_LINK' ? { ...overviewDefaultBinding(category), direction: 'NONE' } : overviewDefaultBinding(category),
   };
 }
@@ -591,6 +600,7 @@ export function validateOverviewElements(
     if (!el.style || typeof el.style !== 'object') {
       errors.push(`Element ${el.id}: style is required`);
     } else {
+      for (const error of validatePresentationStyle(el.style)) errors.push(`Element ${el.id}: ${error}`);
       if (!Number.isFinite(el.style.fontSize) || el.style.fontSize < 8 || el.style.fontSize > 96) errors.push(`Element ${el.id}: font size must be 8–96`);
       if (!Number.isFinite(el.style.borderWidth) || el.style.borderWidth < 0 || el.style.borderWidth > 12) errors.push(`Element ${el.id}: border width must be 0–12`);
       if (!Number.isFinite(el.style.borderRadius) || el.style.borderRadius < 0 || el.style.borderRadius > 64) errors.push(`Element ${el.id}: border radius must be 0–64`);

@@ -1,6 +1,53 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.13
+## Current application — v1.4.0-dev.14
+
+Approved base **20ba4edc09592f230d3a9ad3c2c687a1a05746b1 / dev.13**; branch
+`arena/01a0d291-modbus-workflow-studio`. Owner approved dev.13 functionality and HMI parity.
+Dev.14 scope is HMI authoring/presentation only. **Owner dev.14 local manual review PENDING**.
+
+Only four optional persisted style fields: captionFontSize/valueFontSize (8–96 px),
+backgroundOpacity (finite 0–1 alpha multiplier), showBorder (outer frame only). New defaults
+11px caption, 16px Number/Badge value, 12px Light text, opacity factor 1, border On.
+Legacy absent fields retain dev.13 typography/paint/frame; Base Font Size and whole-element
+Overall Opacity remain independent. No migration/default writes on inspection. Existing
+Server passthrough and strict Binding/Source identity validation unchanged.
+
+Live Edit preview is a rendering overlay; one completed gesture commits via existing history.
+Inspector groups Content/Typography/Appearance/Border/Layout/Binding or Navigation/Preview/
+Actions. Details SVG is centered in a 24px fixed slot where it fits; small Elements use Page
+Details. Safety uses a non-modal fixed portal with internal scroll and no in-flow expansion,
+no-scroll focus return and close-before-Details handoff. UI leaf only; Provider/Canvas unchanged.
+
+Stage 1 **1329 tests / 86 unique files PASS**: presentation 200/12, Runtime/Catalog 179/9,
+editor/protected 383/19, remaining Client 244/22, Server 323/24. Focused first run had two
+legacy Unicode-glyph expectations; one targeted test correction/retry passed 200/12.
+A subsequent bounded-reading CSS review was verified by 45/1 presentation tests (not counted
+again). Client/Server typechecks/builds PASS. Full Client **1006/62**, Full Server **323/24**,
+root `npm run check` PASS first attempt. Strict hygiene **592/0/0**, complete worktree
+**294/0/0**, verify:publish and diff check **PASS**. Final scope **37 files: 26 modified /
+11 new**. Final explicit staging/staged hygiene and Remote verification belong in the handoff.
+
+Recovery verified approved Actual Remote and all **283 preserved files identical** to its
+archive, then CAS update-ref/read-tree without -u preserved all hashes. Missing dependencies
+restored once. Ephemeral external logs are not durable truth; docs/commit/handoff record results.
+
+Protected: B1/B2, Catalog/focus/Runtime lifecycle, Binding/quality/availability, history/revision/
+Save/Cancel/geometry/savedViewport, Device/Manual Disconnect, Controls/Navigation, Workflow/
+Monitor/Traffic/legacy WS/write safety. Server production version-only; scanner/dependencies
+unchanged. No deferred presentation fields, O2-C/O2-D, Picture Box/assets or production commands.
+
+Browser geometry/mounted focus/screen-reader behavior **PENDING Owner review**. Automated
+SSR/CSS/callback/headless evidence is not hardware/performance/soak certification. Known
+66 SSR warnings per full Client execution, chunk warning (1817 modules; JS 762.48 kB / gzip
+220.08 kB; CSS 160.86 kB / gzip 25.00 kB) remain. Advisories 5 moderate / 1 high / 1 critical
+remain unresolved/unaccepted. No PR/tag/release/ZIP; O2-C/O2-D NOT STARTED.
+
+[Scope](SCOPE_O2-B3_v1.4.0-dev.14.md) · [Acceptance](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.14.md).
+Final explicit staging/Remote/clean-tree evidence belongs in the delivery handoff.
+Historical pending states below do not supersede the latest Owner approval.
+
+## Historical dev.13 checkpoint (Owner subsequently approved functionality/Edit-View parity)
 
 Approved base `742543b2c23b783fd085d0e0f917159943ffa6bb` / dev.12, branch
 `arena/01a0d291-modbus-workflow-studio`. Owner manual review approved dev.12 Runtime

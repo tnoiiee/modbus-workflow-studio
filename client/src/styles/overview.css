@@ -1226,3 +1226,15 @@
 @media (prefers-reduced-motion: reduce) {
   .overview--edit .overview__workspace.overview__workspace--motion, .overview-inspector-slot { transition: none; }
 }
+
+/* Optional background alpha affects this paint layer only, never Element content or borders. */
+.overview-element { isolation: isolate; }
+.overview-element__background { position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; }
+.element-inspector__number-gesture, .element-inspector__font-override { display: grid; gap: 6px; min-width: 0; margin-block: 8px; }
+.element-inspector__number-gesture input[type='range'] { width: 100%; accent-color: var(--color-accent); }
+.element-inspector__font-override > button { justify-self: start; font-size: 11px; white-space: normal; }
+.element-inspector__font-override output, .element-inspector__inheritance, .element-inspector__unit { color: var(--color-text-muted); font-size: 11px; }
+.element-inspector details > summary { cursor: pointer; padding-block: 8px; font-size: 12px; font-weight: 600; }
+.element-inspector__preview-info { padding: 10px; font-size: 12px; background: var(--color-surface-1); border-radius: 6px; }
+.element-inspector__preview-info h4 { font-size: 12px; }
+.element-inspector__preview-info p { margin-bottom: 0; }

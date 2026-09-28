@@ -1,44 +1,49 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.13
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.14
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-**v1.4.0-dev.13 — O2-B3 Editor Parity and HMI Information Polish**. Approved base
-`742543b2c23b783fd085d0e0f917159943ffa6bb` / dev.12, branch
-`arena/01a0d291-modbus-workflow-studio`. Owner manual review **APPROVED dev.12 Runtime
-functionality, lifecycle and simplified View HMI**. Dev.13 local manual review is PENDING.
+**v1.4.0-dev.14 — O2-B3 HMI Authoring UX and Presentation Schema**. Approved base
+`20ba4edc09592f230d3a9ad3c2c687a1a05746b1` / dev.13, branch
+`arena/01a0d291-modbus-workflow-studio`. Owner **APPROVED dev.13 functionality and
+Edit/View HMI parity**. Dev.14 Owner local manual review remains PENDING.
 
-- Edit and View share the Monitoring renderer, typography, alignment, padding, caption,
-  unit placement, lamp size and Badge proportions. Edit uses `8888.88` or `FALSE` only,
-  with separate **EDITOR PREVIEW / Binding** chrome; no Snapshot/socket/subscription.
-- Configured Text is the caption in both modes. Empty Text has no invented caption or
-  Definition/Source/Element-name fallback. String Runtime remains unsupported.
-- Status Light Inspector **Show Text: Off / On** controls visible TRUE/FALSE only.
-  New lights default Off; existing lights without `style.showText` retain On without
-  migration. Filled/dot, hollow/minus and dashed/question indicators distinguish TRUE,
-  FALSE and unavailable without color alone. Accessible state remains available. No commands.
-- Details groups summary, identity/Binding, quality/timestamps, historical Last-good and
-  Browser transport/safety. GOOD current value is primary; historical duplicates are in a
-  keyboard-operable disclosure. Full precision and diagnostic failure values remain available.
-- Page status has a compact transport/Tag-count row, relevant health counts and on-demand
-  safety/Element Details. Failures, recovery, limits and disabled Runtime remain visible.
-- **Signed/decimal contract:** UInt16 bit pattern `0xB1E0` is **45536**, while Int16 is
-  **-20000**. Float32/Float64 support decimals through existing codecs. The Client never
-  reinterprets unsigned values. Byte/word order and scale/offset remain Acquisition Mapping concerns.
-- Only new persisted field: optional Status Light `style.showText`. Existing Server metadata
-  passthrough already preserves it. Production Server changes are version literals only.
-  Catalog/focus/Runtime lifecycle, B1/B2, Binding, quality/availability, Draft/history/revision,
-  geometry, savedViewport, Device/Manual Disconnect, Controls and navigation are unchanged.
-- [dev.13 scope](docs/SCOPE_O2-B3_v1.4.0-dev.13.md) ·
-  [dev.13 acceptance and manual review](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.13.md).
-- Stage 1: **1233 tests / 81 files PASS** (Client 915/58; Server 318/23).
-  Full Client **915/58**, Server **318/23**, `npm run check` (typechecks/tests/builds),
-  scanner **91 tests**, strict hygiene **578/0/0**, worktree **283/0/0**, `verify:publish`
-  and diff check **PASS**. Final staged/Remote evidence belongs in the delivery handoff.
-- SSR/CSS/callback/headless tests are not browser layout, screen-reader, hardware or soak
-  certification. No dependency changes, PR/Tag/Release/ZIP or O2-C/O2-D. Advisories
+- Only four new optional style fields: `captionFontSize`, `valueFontSize`,
+  `backgroundOpacity`, `showBorder`. No bulk migration; opening a Page/Inspector does not
+  write resolved defaults or mark it dirty. Server passthrough is unchanged.
+- Independent Caption/Value sizes, 8–96 px, live Edit-only preview, Inherited/Custom indication
+  and explicit reset. Existing `fontSize` remains Legacy/Base; absent overrides keep dev.13
+  formulas. New Monitoring captions default 11 px, Number/Badge values 16 px, Light text 12 px.
+  Empty captions remain absent; custom value size does not scale the Unit or Light.
+- Background Opacity is 0–100% of the existing background color alpha, stored as 0–1;
+  absent fallback 1. It affects the outer background paint layer only, not text/icon/border/
+  focus/warnings/intrinsic controls. **Overall Opacity — legacy** remains independent and
+  still affects the complete Element; existing values are not converted or reset.
+- Show Border controls only the outer frame (default On), preserving border width/space.
+  Light, Control, Navigation, placeholder and Divider representations, focus/selection and
+  PREVIEW / CONTROL RUNTIME NOT ENABLED remain intact. No Picture Box/asset implementation.
+- Details uses a centered decorative SVG in a 24×24 px target and fixed action gutter when
+  dimensions permit. Tiny Elements use the keyboard-accessible Page safety/Element Details path;
+  stored geometry is never enlarged. Details eligibility is unchanged.
+- Inspector groups Content, Typography, Appearance, Border, Layout, Binding/Navigation,
+  Preview information and Actions; existing fields remain available in contextual/Advanced groups.
+- Runtime details & safety opens a bounded, internally scrolling **non-modal portal panel**.
+  No in-flow expansion or Canvas height animation. Escape/Close, no Tab trap, no-scroll focus
+  return; Element Details handoff closes the panel before opening the existing dialog.
+  Only this UI leaf is keyed by Page, never Runtime provider or Canvas. Operational callouts remain.
+- Stage 1 **1329 tests / 86 unique files PASS**, both typechecks/builds PASS. Full Client
+  **1006/62**, Full Server **323/24**, `npm run check` PASS. Strict hygiene **592/0/0**,
+  complete worktree **294/0/0**, `verify:publish` and diff check PASS. Final staged/Remote
+  evidence belongs in the delivery handoff; [acceptance](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.14.md).
+- [dev.14 scope](docs/SCOPE_O2-B3_v1.4.0-dev.14.md). Browser geometry, mounted keyboard behavior
+  and screen-reader review remain **PENDING**. SSR/CSS/callback/headless evidence is not those
+  certifications, hardware or soak proof. Existing 66 SSR warnings, chunk warning and advisories
   **5 moderate / 1 high / 1 critical** remain unresolved/unaccepted.
+- Catalog/focus/lifecycle, B1/B2, Binding/quality/availability, persistence transactions,
+  geometry/viewport, Device/Manual Disconnect, Controls/Navigation and write safety unchanged.
+  Server production version-only; dependencies/scanner unchanged. No PR/tag/release/ZIP.
+  **O2-C/O2-D NOT STARTED.**
 
 ### Operational safety boundary
 

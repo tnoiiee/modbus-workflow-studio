@@ -80,7 +80,7 @@ describe('dev.13 shared Edit/View HMI surface (SSR/CSS contracts, not browser la
 describe('dev.13 Status Light presentation-only schema', () => {
   it('new default is Off; absent legacy setting retains visible text without migration', () => {
     const f = configuration(1, 'STATUS_LIGHT'); expect(f.element.style.showText).toBe(false);
-    delete f.element.style.showText; const before = JSON.stringify(f.element);
+    delete f.element.style.showText; delete f.element.style.valueFontSize; delete f.element.style.captionFontSize; const before = JSON.stringify(f.element);
     const html = render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element, f.resolution, sampleItem(1, false), 'Connected')} age="" />);
     expect(html).toContain('overview-runtime-number">FALSE'); expect(JSON.stringify(f.element)).toBe(before);
   });
@@ -90,7 +90,7 @@ describe('dev.13 Status Light presentation-only schema', () => {
     expect(validateOverviewElements({ id: 'page', layerOrder: [copy.id] }, [copy])).toEqual([]);
     expect(copy).toEqual(f.element); expect([copy.width, copy.height]).toEqual([48, 48]);
     const edit = render(<EditorMonitoring element={copy} resolution={f.resolution} />);
-    expect(edit).toContain(showText ? 'overview-runtime-number">FALSE' : 'overview-runtime-sr">FALSE');
+    expect(edit).toMatch(new RegExp(`${showText ? 'overview-runtime-number' : 'overview-runtime-sr'}"[^>]*>FALSE`));
   });
   it.each([true, false])('TRUE/FALSE remain distinct with Show Text %s and accessible status', showText => {
     const f = configuration(1, 'STATUS_LIGHT'); f.element.style.text = ''; f.element.style.showText = showText;
@@ -98,7 +98,7 @@ describe('dev.13 Status Light presentation-only schema', () => {
       const html = render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element, f.resolution, sampleItem(1, value), 'Connected')} age="" />);
       expect(html).toContain(`lamp-${value}`); expect(html).toContain(value ? '●' : '−');
       expect(html).toContain(`aria-label="${value ? 'TRUE' : 'FALSE'}`);
-      expect(html).toContain(`${showText ? 'overview-runtime-number' : 'overview-runtime-sr'}">${value ? 'TRUE' : 'FALSE'}`);
+      expect(html).toMatch(new RegExp(`${showText ? 'overview-runtime-number' : 'overview-runtime-sr'}"[^>]*>${value ? 'TRUE' : 'FALSE'}`));
       expect(html).not.toMatch(/role="switch"|aria-pressed|<button|onClick|overview-runtime-caption/);
     }
   });

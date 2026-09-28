@@ -1,3 +1,4 @@
+import { previewOverviewPresentation, type PresentationPreview, type PresentationPreviewProperty } from '../../lib/overviewPresentationStyle.js';
 import { OverviewRuntimeProvider } from './OverviewRuntimeProvider.js';
 import { OverviewRuntimeStatus } from './OverviewRuntimeStatus.js';
 import { OverviewTagClientAdapter } from '../../lib/overviewTagClientAdapter.js';
@@ -169,6 +170,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   const [inspectorCollapsed, setInspectorCollapsed] = useState(() => getSessionPanelCollapsed('inspector'));
 
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [presentationPreview, setPresentationPreview] = useState<PresentationPreview | null>(null);
   const [fontSizePreview, setFontSizePreview] = useState<FontSizePreview | null>(null);
   const [history, setHistory] = useState<OverviewDraftHistory>(() => emptyOverviewHistory());
 
@@ -200,9 +202,15 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
     setFontSizePreview(fontSize !== null && selectedElementId && mode === 'EDIT'
       ? { elementId: selectedElementId, fontSize } : null);
   }, [selectedElementId, mode]);
-  const canvasElements = useMemo(() => previewOverviewFontSize(draftElements,
+  const previewPresentation = useCallback((property: PresentationPreviewProperty, value: number | null) => {
+    setPresentationPreview(current => value === null
+      ? current?.property === property ? null : current
+      : selectedElementId && mode === 'EDIT' ? { elementId: selectedElementId, property, value } : null);
+  }, [selectedElementId, mode]);
+  const canvasElements = useMemo(() => previewOverviewPresentation(previewOverviewFontSize(draftElements,
     active && fontSizePreview?.elementId === selectedElementId ? fontSizePreview : null, mode),
-  [draft?.elements, fontSizePreview, selectedElementId, mode, active]);
+    active && presentationPreview?.elementId === selectedElementId ? presentationPreview : null, mode),
+  [draft?.elements, fontSizePreview, presentationPreview, selectedElementId, mode, active]);
 
   const previousPresentation = useRef<BindingPresentation>();
   const bindingResolutions = useMemo(() => {
@@ -1093,7 +1101,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
           <span>{mode === 'EDIT' ? 'EDITOR PREVIEW · Configuration only' : 'Read-only Monitoring · latest received'} · CONTROL RUNTIME NOT ENABLED</span>
           <span role="status" aria-live="polite" aria-atomic="true">{catalogNotice}</span>
         </div>
-        {mode === 'VIEW' && active && <OverviewRuntimeStatus selection={runtimeSelection} elements={asElements(activePage)} />}
+        {mode === 'VIEW' && active && <OverviewRuntimeStatus pageId={activePageId} selection={runtimeSelection} elements={asElements(activePage)} />}
         <OverviewCommandBar
           pages={pages}
           activePageId={activePageId}
@@ -1243,7 +1251,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
               ) : null}
             </div>
             {mode === 'EDIT' ? (
-              <ElementInspector key={selectedElement?.id ?? 'empty'} onPreviewFontSize={previewFontSize} definitions={definitions} workflows={definitionWorkflows} resolution={selectedElement ? bindingResolutions[selectedElement.id] : undefined} element={selectedElement} {...inspectorHandlers} />
+              <ElementInspector key={selectedElement?.id ?? 'empty'} onPreviewFontSize={previewFontSize} onPreviewPresentation={previewPresentation} definitions={definitions} workflows={definitionWorkflows} resolution={selectedElement ? bindingResolutions[selectedElement.id] : undefined} element={selectedElement} {...inspectorHandlers} />
             ) : (
               <p className="empty">Element Inspector is available in Edit Mode</p>
             )}

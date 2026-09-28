@@ -1,3 +1,4 @@
+import { RuntimeSafetyPanel } from './RuntimeSafetyPanel.js';
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RuntimeDetails } from './RuntimeDetails.js';
@@ -16,7 +17,8 @@ function render(item: ClientTagItem | undefined = sampleItem(1, 123.456789123), 
   const page = wrap(<OverviewRuntimeStatus selection={selection} elements={[f.element]} />);
   expect(JSON.stringify([f.element, h.store.getItem(f.definition.sourceId)])).toBe(before);
   expect(h.io.snapshot).not.toHaveBeenCalled(); expect(h.io.socket).not.toHaveBeenCalled(); h.adapter.stop();
-  return { details, page, normal: page.split('<details>')[0] };
+  const safety = renderToStaticMarkup(<RuntimeSafetyPanel id="safety" origin={{ current: null }} selection={selection} elements={[f.element]} message="Read-only" onClose={() => {}} onDetails={() => {}} />);
+  return { details, page, safety, normal: page };
 }
 describe('dev.13 Runtime Details hierarchy', () => {
   it('GOOD value is primary once, with historical duplicate demoted inside a native disclosure', () => {
@@ -47,12 +49,12 @@ describe('dev.13 Runtime Details hierarchy', () => {
 });
 describe('dev.13 compact Page Runtime status', () => {
   it('normal summary keeps transport/count; safety accessible without dominating Canvas height', () => {
-    const { normal, page } = render();
+    const { normal, page, safety } = render();
     expect(normal).toContain('Transport: Connected'); expect(normal).toContain('1 Tags');
     expect(normal).not.toMatch(/unavailable|stale|bad|Trusted network|catch-up/);
-    expect(page).toContain('<summary>Runtime details &amp; safety</summary>');
-    expect(page).toContain('Trusted network only'); expect(page).toContain('Origin policy is not authentication');
-    expect(page).toContain('— Runtime details</button>');
+    expect(page).toContain('aria-haspopup="dialog"'); expect(page).toContain('Runtime details &amp; safety</button>'); expect(page).not.toContain('<aside');
+    expect(safety).toContain('Trusted network only'); expect(safety).toContain('Origin policy is not authentication');
+    expect(safety).toContain('— Runtime details</button>');
   });
   it.each(['STALE', 'BAD', 'DISCONNECTED', 'UNCERTAIN'] as const)('nonzero %s health remains outside disclosure', quality => {
     const { normal } = render(sampleItem(1, 1, quality));

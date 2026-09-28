@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.4.0-dev.14] - O2-B3 HMI Authoring UX and Presentation Schema (2026-09-29)
+
+- Add only optional captionFontSize/valueFontSize/backgroundOpacity/showBorder presentation
+  fields. New-element defaults only, no bulk migration; legacy Base Font Size and Overall
+  Opacity preserve their meaning. Existing Server passthrough/Binding validation unchanged.
+- Independent live-preview typography with Inherited/Custom/reset and one-gesture commit;
+  alpha-only background paint layer, outer-frame visibility retaining width/geometry.
+  Preserve Unit/Light scale, intrinsic representations, focus/selection and Control warnings.
+- Replace Unicode Details glyph with centered Lucide SVG; stable 24px action slot when it fits,
+  otherwise existing Page-level keyboard Details access. No automatic geometry changes.
+- Group Inspector properties contextually; retain existing controls and defer extra schema.
+- Replace in-flow safety expansion with UI-only non-modal portal; internal scrolling,
+  no-scroll focus return, Escape/Close, reduced motion and unmount-before-Details handoff.
+- Add focused schema/gesture/paint/frame/action/overlay and unchanged-Server persistence tests.
+  Stage 1 1329/86 unique PASS; Full Client 1006/62, Server 323/24; root check PASS.
+  One focused retry corrected legacy Unicode-glyph test expectations only, not product code.
+- Owner approved dev.13 functionality/parity. Dev.14 Browser geometry/screen-reader/manual
+  review PENDING. No Runtime/Catalog/focus/B1/B2/Binding/Device/Control/Navigation changes.
+  Server version-only; dependencies unchanged. No O2-C/O2-D, PR/tag/release/ZIP.
+
 ## [1.4.0-dev.13] - O2-B3 Editor Parity and HMI Information Polish (2026-09-28)
 
 - Share the Monitoring HMI renderer and style rules between configuration preview and View;

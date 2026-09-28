@@ -12,7 +12,7 @@ function fixture(type: 'STATUS_LIGHT' | 'NUMERIC_LABEL' = 'STATUS_LIGHT', legacy
   if (legacy) delete element.style.showText; element.locked = locked;
   const patch = vi.fn(), other = vi.fn();
   const tree = ElementInspector({ element, onPatchStyle: patch, onPatch: other, onPatchBinding: other, onToggleLock: other, onToggleVisible: other, onDuplicate: other, onDelete: other, onBringForward: other, onBringToFront: other, onSendBackward: other, onSendToBack: other });
-  const field = nodes(tree).find(n => n.type === 'select' && ['off', 'on'].includes(n.props.value));
+  const field = nodes(tree).find(n => n.type === 'select' && n.props['aria-label'] === 'Show Text');
   return { element, patch, other, tree, field };
 }
 describe('dev.13 Show Text Inspector uses the existing draft style path', () => {

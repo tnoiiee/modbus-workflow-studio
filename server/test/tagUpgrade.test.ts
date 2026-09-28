@@ -8,7 +8,7 @@ import { tagOriginPolicy, DeliveryRate } from '../src/tagDeliveryAdmission.js';
 const cleanup: Array<() => void | Promise<void>>=[]; afterEach(async()=>{for(const fn of cleanup.splice(0).reverse())await fn();});
 async function setup() {
  const f=deliveryFixture(),server=http.createServer(),legacy=new WebSocketServer({noServer:true});
- legacy.on('connection',ws=>ws.send(JSON.stringify({type:'hello',data:{version:'1.4.0-dev.13'},revision:0})));
+ legacy.on('connection',ws=>ws.send(JSON.stringify({type:'hello',data:{version:'1.4.0-dev.14'},revision:0})));
  const transport=installTagUpgrade(server,legacy,f.broker,tagOriginPolicy({TAG_ALLOWED_ORIGINS:'https://trusted.invalid'}));
  server.listen(0,'127.0.0.1');await once(server,'listening');
  cleanup.push(()=>new Promise<void>(resolve=>{transport.dispose();for(const c of legacy.clients)c.terminate();legacy.close();f.cleanup();server.close(()=>resolve());}));
@@ -17,7 +17,7 @@ async function setup() {
 describe('single upgrade dispatcher and admission',()=>{
  it('routes legacy unchanged, Tag separately, rejects unknown paths and enforces Origin',async()=>{
   const f=await setup(); expect(f.server.listenerCount('upgrade')).toBe(1);
-  const old=new WebSocket(f.base+'/ws/live');const [hello]=await once(old,'message');expect(JSON.parse(String(hello))).toEqual({type:'hello',data:{version:'1.4.0-dev.13'},revision:0});old.close();
+  const old=new WebSocket(f.base+'/ws/live');const [hello]=await once(old,'message');expect(JSON.parse(String(hello))).toEqual({type:'hello',data:{version:'1.4.0-dev.14'},revision:0});old.close();
   const tag=new WebSocket(f.base+'/ws/tag-runtime',{origin:'https://trusted.invalid'});await once(tag,'open');const snap=f.broker.snapshot([f.source]);
   tag.send(JSON.stringify({protocolVersion:1,requestId:'s',type:'subscribe',generation:1,sources:[f.source],selectionKey:snap.selectionKey,cursor:snap.cursor}));const [data]=await once(tag,'message');expect(JSON.parse(String(data)).type).toBe('subscribed');tag.close();
   for(const [route,origin,status] of [['/unknown',undefined,404],['/ws/tag-runtime','https://evil.invalid',403]] as const){

@@ -126,8 +126,8 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
     color: style.textColor,
     fontSize: style.fontSize,
     textAlign: style.alignment,
-    background: style.backgroundColor,
-    border: `${style.borderWidth}px solid ${style.borderColor}`,
+    background: style.backgroundOpacity === undefined || style.backgroundOpacity === 1 ? style.backgroundColor : 'transparent',
+    border: `${style.borderWidth}px solid ${style.showBorder === false ? 'transparent' : style.borderColor}`,
     borderRadius: style.borderRadius,
   };
 
@@ -170,6 +170,9 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
         style={boxStyle}
         title={element.locked ? `${element.name} (locked)` : element.name}
       >
+        {style.backgroundOpacity !== undefined && style.backgroundOpacity !== 1 && <span
+          className="overview-element__background" aria-hidden="true"
+          style={{ background: style.backgroundColor, opacity: style.backgroundOpacity }} />}
         {element.locked ? (
           <span className="overview-element__lock" aria-hidden="true">
             <Lock size={11} />
