@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.4.0-dev.9] - O2-B2 Tag Runtime Delivery Foundation (2026-09-28)
+
+- Approved base `86b342b2eec5377773be45d3744d29509c2a64ce`; O2-B1 Owner ACCEPTED / Manual PASS.
+- Strict no-store read-only snapshot, separate bounded Tag WebSocket, single upgrade dispatcher;
+  legacy live/Traffic handlers and reliability limits preserved.
+- One Store observer; ordered count/byte/age-bounded journal; atomic snapshot/cursor boundary,
+  authenticated opaque epoch/selection cursors, watch-coverage fences, replay/live checkpoints,
+  pending-progress ACK deadline, explicit resync and resource cleanup.
+- Read-only Definition/mapping/Device availability invalidation. Producer/config/persistence semantics
+  untouched; no acquisition from browsers, auto-connect, normal App/Overview subscription or writes.
+- Opt-in bounded headless client, request/generation/socket fences, atomic apply/ACK, reconnect/resume
+  and resnapshot on discontinuity. Configurable Origin policy; no authentication is implied.
+- Metadata/UI/health/hello/banner/version tests synchronized. Dependency graph unchanged.
+- Owner ACCEPTED Stage 1 (880 selected tests / 56 files) and authorized Full Gates / one development
+  checkpoint. Full Client 640/42, Full Server 305/21 and root check PASS; strict publication gates
+  remain mandatory before commit/push. Owner Local Manual Review PENDING. No O2-B3/C/D.
+
+
 ## [1.4.0-dev.8] - Acquisition editor UX and persistence-boundary closure (2026-09-28)
 
 - Approved base `3e3c4e54d782515c7de1802956197fb2d138e321`; Owner dev.7 approved with punchlist.

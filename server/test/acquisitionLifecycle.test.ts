@@ -29,8 +29,14 @@ it('real server startup / WS reconnect never connects Device; acquisition outliv
   try {
     await started();
     const base = `http://127.0.0.1:${port}`;
-    expect((await (await fetch(`${base}/api/health`)).json()).version).toBe('1.4.0-dev.8');
-    const browser = async () => { const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/live`); clients.push(ws); ws.on('message', raw => { const message = JSON.parse(String(raw)); liveTypes.push(message.type); if (message.type === 'hello') expect(message.data.version).toBe('1.4.0-dev.8'); }); await once(ws, 'open'); ws.send(JSON.stringify({ type: 'resync' })); return ws; };
+    expect((await (await fetch(`${base}/api/health`)).json()).version).toBe('1.4.0-dev.9');
+    const browser = async () => { const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/live`); clients.push(ws); ws.on('message', raw => { const message = JSON.parse(String(raw)); liveTypes.push(message.type); if (message.type === 'hello') expect(message.data.version).toBe('1.4.0-dev.9'); }); await once(ws, 'open'); ws.send(JSON.stringify({ type: 'resync' })); return ws; };
+    const source = { sourceType: 'SHARED_TAG', sourceId: mapping.sourceId };
+    const snapshot = async () => { const response = await fetch(`${base}/api/tag-runtime/snapshot`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ protocolVersion: 1, sources: [source] }) }); expect(response.status).toBe(200); return response.json(); };
+    const initialSnapshot = await snapshot();
+    const tag = new WebSocket(`ws://127.0.0.1:${port}/ws/tag-runtime`); clients.push(tag); await once(tag, 'open');
+    tag.send(JSON.stringify({ protocolVersion: 1, type: 'subscribe', requestId: '1', generation: 1, sources: [source], selectionKey: initialSnapshot.selectionKey, cursor: initialSnapshot.cursor }));
+    const [accepted] = await once(tag, 'message'); expect(JSON.parse(String(accepted)).type).toBe('subscribed'); tag.close();
     const a = await browser(); a.close(); const b = await browser();
     expect((await (await fetch(`${base}/api/devices`)).json())[0].runtime.actualState).toBe('disconnected'); expect(reads).toBe(0);
     const waitRead = async () => {
@@ -39,16 +45,18 @@ it('real server startup / WS reconnect never connects Device; acquisition outliv
     };
     expect((await fetch(`${base}/api/devices/plc/connect`, { method: 'POST' })).status).toBe(200); await waitRead(); b.close(); await waitRead();
     const workflows = await (await fetch(`${base}/api/workflows`)).json(); expect(workflows.every((w: { running: boolean }) => !w.running)).toBe(true);
-    expect((await fetch(`${base}/api/tag-runtime/snapshot`, { method: 'POST' })).status).toBe(404);
+    expect((await fetch(`${base}/api/tag-runtime/snapshot`, { method: 'POST' })).status).toBe(400);
     await fetch(`${base}/api/devices/plc/disconnect`, { method: 'POST' }); const stoppedAt = reads; await browser();
     await new Promise(r => setTimeout(r, 250)); expect(reads).toBe(stoppedAt); expect(liveTypes.some(type => type.startsWith('tag'))).toBe(false); expect(liveTypes).toContain('hello'); expect((await (await fetch(`${base}/api/devices`)).json())[0].runtime.actualState).toBe('disconnected');
-    // Restart the actual application on the SAME DATA_DIR, without any runtime observer endpoint.
+    // Restart on the SAME DATA_DIR; the approved read-only snapshot must not restore samples or connect a Device.
     for (const ws of clients) ws.terminate();
     child.kill('SIGTERM'); if (child.exitCode === null) await once(child, 'exit');
     child = launch(); child.stderr.on('data', chunk => { logs += chunk; }); await started();
     expect(fs.readFileSync(path.join(f.dir, 'shared-tag-acquisition.json'))).toEqual(mappingBytes);
     const loaded = await (await fetch(`${base}/api/shared-tag-acquisition/${mapping.sourceId}`)).json();
     expect(loaded.mapping).toEqual(mapping);
+    const restartedSnapshot = await snapshot(); expect(restartedSnapshot.serverEpoch).not.toBe(initialSnapshot.serverEpoch);
+    expect(restartedSnapshot.items[0].sample).toMatchObject({ hasValue: false, lastGoodValue: null });
     expect((await (await fetch(`${base}/api/devices`)).json())[0].runtime.actualState).toBe('disconnected');
     const restartReads = reads; await browser(); await new Promise(r => setTimeout(r, 250));
     expect(reads).toBe(restartReads); expect(liveTypes.some(type => type.startsWith('tag'))).toBe(false);

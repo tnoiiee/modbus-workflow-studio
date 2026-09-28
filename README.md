@@ -1,32 +1,36 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.8
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.9
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.8 — O2-B1 Acquisition editor UX and persistence-boundary closure**.
-- Base `3e3c4e54d782515c7de1802956197fb2d138e321` / dev.7, Owner APPROVED WITH PUNCHLIST.
-  Validation, supported selects, Traffic normalization, Disconnect/queue/poller shutdown and
-  existing Workflow/Monitor behavior PASS. New Owner Local Manual Review **PENDING**.
-- Responsive grouped Acquisition editor, readable token typography, coherent Enabled setting,
-  derived read-only Width from Wire data type. Successful Save closes and updates the related
-  row without resetting filters; failed Save preserves edits. No separate Codec selector.
-- [dev.8 scope](docs/SCOPE_O2-B1_v1.4.0-dev.8.md) ·
-  [acceptance](docs/ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.8.md) ·
-  [read-only PowerShell hash/revision procedure](docs/ACCEPTANCE_TESTS/O2-B1-RUNTIME-BOUNDARY-v1.4.0-dev.8.md).
-- Runtime Store remains memory-only and invisible to Browser/Overview. **EDITOR PREVIEW /
-  CONTROL RUNTIME NOT ENABLED**. No diagnostics, Tag delivery, auto-connect or production writes.
-- Traffic FUNCTIONAL PASS, unchanged; density/scroll/responsive polish deferred to O2-D.
-- Full Client **616/41**, Full Server **250/17**, check/typechecks/builds PASS. Boundary documentation
-  tests **4/4**; strict hygiene, verify:publish and diff check PASS. Actual PowerShell/browser review
-  remains Owner-local; no hardware/soak PASS claimed.
-- No production Server behavior or dependency graph changes. No PR/Tag/Release/ZIP or later phase.
+- **v1.4.0-dev.9 — O2-B2 Tag Runtime Delivery Foundation** (Stage 1 Owner ACCEPTED; Owner Local Manual Review PENDING).
+- Approved base `86b342b2eec5377773be45d3744d29509c2a64ce` / dev.8. O2-B1 **Owner ACCEPTED / Manual PASS**.
+- Strict read-only `POST /api/tag-runtime/snapshot` and separate `/ws/tag-runtime`; atomic snapshot/cursor,
+  bounded replay/ACK/backpressure, explicit resync and opt-in headless reconnect/resume client.
+- One Store observer, independent deliverySequence, opaque epoch/selection-bound cursors. No acquisition
+  producer, Device connection policy, persistence, Workflow/Monitor, Traffic or normal App startup change.
+- **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**. No Overview values/subscriptions, no O2-B3/C/D.
+- [dev.9 scope/protocol/security/resource bounds](docs/SCOPE_O2-B2_v1.4.0-dev.9.md) ·
+  [Stage 1 acceptance/results](docs/ACCEPTANCE_TESTS/O2-B2-v1.4.0-dev.9.md).
+- Historical [dev.8 scope](docs/SCOPE_O2-B1_v1.4.0-dev.8.md) and
+  [read-only persistence procedure](docs/ACCEPTANCE_TESTS/O2-B1-RUNTIME-BOUNDARY-v1.4.0-dev.8.md) retained.
+- Stage 1 **PASS**: selected tests **880/56**, both typechecks/builds PASS; see results above.
+- Full Client **640/42**, Full Server **305/21**, `npm run check` **PASS**. Owner authorized
+  Full Gates and one normal-push development checkpoint; publication requires strict hygiene,
+  verify:publish and final diff verification. See the delivery handoff for the Remote SHA.
+- Owner Local Manual Review **PENDING**. No PR/Tag/Release/ZIP.
+- Dependency advisories remain **5 moderate / 1 high / 1 critical**: unresolved, unaccepted, outside scope.
 
 ### Operational safety boundary
 
 Intended for a trusted local or industrial LAN. Authentication is not included; do not expose
 this application directly to the public Internet. Use an authenticated reverse proxy and
-appropriate network controls. Modbus writes remain disabled by default; addresses are zero-based.
+appropriate network controls. Tag Origin/CORS is not authentication. Configure exact comma-separated
+`TAG_ALLOWED_ORIGINS` for trusted cross-origin clients; `TAG_ALLOW_MISSING_ORIGIN=false` disables
+non-browser missing-Origin access (default allowed). Same request Host is permitted; a trusted proxy
+must preserve it or configure the public Origin. No Preview URL hardcoding. See the dev.9 protocol
+for limits and failure semantics. Modbus writes remain disabled by default; addresses are zero-based.
 Existing write-safety guards and relative Workflow/Monitor priority are preserved. Shared Tag
 acquisition has its own bounded, lower-priority read class; manual disconnect remains authoritative.
 

@@ -2,6 +2,43 @@
 
 ## Current application
 
+**v1.4.0-dev.9 — O2-B2 Tag Runtime Delivery Foundation**.
+Approved base `86b342b2eec5377773be45d3744d29509c2a64ce` / dev.8.
+Branch `arena/01a0d291-modbus-workflow-studio`.
+O2-B1 dev.8 **Owner ACCEPTED / Manual PASS**. Owner has now **ACCEPTED O2-B2 Stage 1** and
+authorized Full Gates, exactly one commit and a normal push to this development branch.
+Owner Local Manual Review for dev.9 remains **PENDING**; this is not production certification.
+
+Read-only REST snapshot + dedicated Tag WS, canonical selections, atomic cursor boundary,
+epoch/selection/coverage-bound replay, bounded ACK/backpressure and explicit resync. One Store
+observer and read-only metadata invalidations. Headless client is opt-in, with bounded cache/apply,
+reconnect/resume, request/socket/generation fences and complete disposal. No App/Overview activation.
+
+**EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**. O2-B3/C/D NOT STARTED. Store/acquisition/Device
+policy, writes/guards, queues/framing, Definitions/Binding, Page/Draft/UndoRedo, Acquisition UX and
+Traffic remain protected. Traffic FUNCTIONAL PASS; polish stays O2-D. Existing duplicate reads
+across Workflow/Monitor/Shared Tags remain disclosed. No new producer or persistence contract.
+
+[Scope / protocol / bounds / deployment](SCOPE_O2-B2_v1.4.0-dev.9.md) ·
+[Stage 1 results / exact changes / limitations](ACCEPTANCE_TESTS/O2-B2-v1.4.0-dev.9.md).
+Stage 1 **PASS**: REST 19/1, broker 14/1, Tag WS 18/1, dispatcher/legacy 9/3, headless 26/2;
+protected Server 245/15, Client 545/32, boundary docs 4/1. Both typechecks and server→client builds
+PASS. Final selected total **880 tests / 56 files**, now **Owner ACCEPTED**.
+Full Client **640/42**, Full Server **305/21**, `npm run check` **PASS** in the checkpoint environment.
+Strict hygiene, verify:publish, final diff and actual Remote verification are required before declaring
+the checkpoint ready; final execution status and SHA are recorded in the delivery handoff.
+Existing warnings: 66 SSR useLayoutEffect; JS 659.90 kB / gzip 193.10 kB. No suppressions.
+
+Validation is automated harness/HTTP/WS/SSR evidence, not new Owner browser, hardware or soak certification.
+Advisories **5 moderate / 1 high / 1 critical** remain unresolved, unaccepted and outside scope.
+No dependency upgrades or functionality added during Full-Gate delivery. No PR, Tag, Release or ZIP.
+Owner Local Manual Review **PENDING**; the complete checklist is in the dev.9 acceptance report.
+
+The dev.8 status below is retained as history; its pending Owner review is now superseded by
+Owner acceptance above. Its “O2-B2 NOT STARTED” statements describe that historical checkpoint only.
+
+## Historical dev.8 checkpoint (superseded status)
+
 **v1.4.0-dev.8 — Acquisition editor UX and persistence-boundary closure**.
 Base `3e3c4e54d782515c7de1802956197fb2d138e321` / dev.7.
 Branch `arena/01a0d291-modbus-workflow-studio`.
