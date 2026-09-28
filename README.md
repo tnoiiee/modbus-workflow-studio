@@ -1,30 +1,26 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.7
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.8
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.7 — O2-B1 validation and Traffic presentation punchlist**.
-- Approved base: `55335b00ff7cf20c3fee14a09ebd46e52fb476d1`, dev.6.
-  O2-B1 **APPROVED WITH PUNCHLIST**; Owner Manual Disconnect **PASS**.
-  New Owner Local Manual Review **PENDING**, including runtime persistence boundaries.
-- Acquisition configuration: accessible inline validation, preserved partial numeric edits,
-  explicit stale enum values and compatible choices; guarded Save, Server final authority.
-- Dedicated Traffic presentation: stable columns for all origins, bounded safe previews/details,
-  50 rows per page, view-local arrival keys; no transaction grouping or deduplication.
-- Production Server behavior unchanged. No producer/REST/WS/retention/queue changes.
-  Shared Tag/Workflow/Monitor reads can still duplicate physical reads across owners.
-- No runtime diagnostics endpoint/console observer, Tag WS, Browser Tag values or auto-connect.
-  Overview remains **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**.
-- [dev.7 scope](docs/SCOPE_O2-B1_v1.4.0-dev.7.md) ·
-  [dev.7 gates and Owner-local acceptance](docs/ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.7.md).
-  Historical [dev.6 foundation](docs/SCOPE_O2-B1_v1.4.0-dev.6.md) remains unchanged.
-- Hygiene fixture correction completed: focused suite **56/56 PASS**, strict hygiene retry
-  **PASS (445 files, 0 errors/warnings)**, verify:publish and diff check PASS.
-  Previously completed Full Client **605/41**, Full Server **250/17**, `npm run check` PASS;
-  these accepted application gates were not rerun for the fixture-only correction.
-- Dependency versions/resolution/integrity unchanged; advisories remain out of scope.
-  Development checkpoint only: no PR, Tag, Release or ZIP.
+- **v1.4.0-dev.8 — O2-B1 Acquisition editor UX and persistence-boundary closure**.
+- Base `3e3c4e54d782515c7de1802956197fb2d138e321` / dev.7, Owner APPROVED WITH PUNCHLIST.
+  Validation, supported selects, Traffic normalization, Disconnect/queue/poller shutdown and
+  existing Workflow/Monitor behavior PASS. New Owner Local Manual Review **PENDING**.
+- Responsive grouped Acquisition editor, readable token typography, coherent Enabled setting,
+  derived read-only Width from Wire data type. Successful Save closes and updates the related
+  row without resetting filters; failed Save preserves edits. No separate Codec selector.
+- [dev.8 scope](docs/SCOPE_O2-B1_v1.4.0-dev.8.md) ·
+  [acceptance](docs/ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.8.md) ·
+  [read-only PowerShell hash/revision procedure](docs/ACCEPTANCE_TESTS/O2-B1-RUNTIME-BOUNDARY-v1.4.0-dev.8.md).
+- Runtime Store remains memory-only and invisible to Browser/Overview. **EDITOR PREVIEW /
+  CONTROL RUNTIME NOT ENABLED**. No diagnostics, Tag delivery, auto-connect or production writes.
+- Traffic FUNCTIONAL PASS, unchanged; density/scroll/responsive polish deferred to O2-D.
+- Full Client **616/41**, Full Server **250/17**, check/typechecks/builds PASS. Boundary documentation
+  tests **4/4**; strict hygiene, verify:publish and diff check PASS. Actual PowerShell/browser review
+  remains Owner-local; no hardware/soak PASS claimed.
+- No production Server behavior or dependency graph changes. No PR/Tag/Release/ZIP or later phase.
 
 ### Operational safety boundary
 

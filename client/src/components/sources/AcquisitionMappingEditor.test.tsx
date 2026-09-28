@@ -23,6 +23,10 @@ describe('O2-B1 configuration UI boundary (not browser interaction validation)',
     const html = renderToStaticMarkup(<AcquisitionMappingEditor definition={{ ...definition, dataType: 'String' }} onClose={() => {}} />);
     expect(html).toContain('String decoding'); expect(html).toContain('Definition remains valid'); expect(html).not.toContain('MISSING');
   });
+  it('explains COMMAND_ONLY producer limitation independently of Definition validity', () => {
+    const html = renderToStaticMarkup(<AcquisitionMappingEditor definition={{ ...definition, capability: 'COMMAND_ONLY' }} onClose={() => {}} />);
+    expect(html).toContain('COMMAND_ONLY mappings cannot produce read-only acquisition samples'); expect(html).toContain('Definition remains valid'); expect(html).not.toContain('MISSING');
+  });
   it('defaults to disabled and explicit Boolean/numeric codecs', () => {
     expect(defaultAcquisition(id, true)).toMatchObject({ sourceId: id, enabled: false, dataType: 'Boolean', functionCode: 1, address: 0 });
     expect(defaultAcquisition(id, false)).toMatchObject({ enabled: false, dataType: 'UInt16', functionCode: 3 });

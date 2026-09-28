@@ -29,8 +29,8 @@ it('real server startup / WS reconnect never connects Device; acquisition outliv
   try {
     await started();
     const base = `http://127.0.0.1:${port}`;
-    expect((await (await fetch(`${base}/api/health`)).json()).version).toBe('1.4.0-dev.7');
-    const browser = async () => { const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/live`); clients.push(ws); ws.on('message', raw => { const message = JSON.parse(String(raw)); liveTypes.push(message.type); if (message.type === 'hello') expect(message.data.version).toBe('1.4.0-dev.7'); }); await once(ws, 'open'); ws.send(JSON.stringify({ type: 'resync' })); return ws; };
+    expect((await (await fetch(`${base}/api/health`)).json()).version).toBe('1.4.0-dev.8');
+    const browser = async () => { const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/live`); clients.push(ws); ws.on('message', raw => { const message = JSON.parse(String(raw)); liveTypes.push(message.type); if (message.type === 'hello') expect(message.data.version).toBe('1.4.0-dev.8'); }); await once(ws, 'open'); ws.send(JSON.stringify({ type: 'resync' })); return ws; };
     const a = await browser(); a.close(); const b = await browser();
     expect((await (await fetch(`${base}/api/devices`)).json())[0].runtime.actualState).toBe('disconnected'); expect(reads).toBe(0);
     const waitRead = async () => {

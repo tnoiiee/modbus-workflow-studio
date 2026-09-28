@@ -1,3 +1,4 @@
+import type { MappingResult } from '../../lib/acquisitionApi.js';
 import { AcquisitionMappingEditor } from './AcquisitionMappingEditor.js';
 import { bindingCountLabel, loadReferenceCounts, type ReferenceCountState } from '../../lib/definitionReferences.js';
 import { ReferenceDetails, type ReferenceDetailsState } from './ReferenceDetails.js';
@@ -11,8 +12,9 @@ import { definitionId, definitionIdentity, type DefinitionWorkflow, type SourceD
 import { definitionKey, filterDefinitions, type SourceTypeFilter, type DefinitionStatusFilter } from '../../lib/definitionList.js';
 
 type ReferenceState = ReferenceCountState;
-export function DefinitionTable({ definitions, workflows, busy, references, onEdit, onToggle, onDelete, onReferences, onRetryReferences, openReferenceKey, onAcquisition }: {
-  onAcquisition?: (definition: Extract<SourceDefinition, { sourceType: 'SHARED_TAG' }>) => void;
+export function DefinitionTable({ definitions, workflows, busy, references, onEdit, onToggle, onDelete, onReferences, onRetryReferences, openReferenceKey, onAcquisition, acquisitionStates }: {
+  onAcquisition?: (definition: Extract<SourceDefinition, { sourceType: 'SHARED_TAG' }>, invoker?: HTMLButtonElement) => void;
+  acquisitionStates?: Readonly<Record<string, MappingResult>>;
   definitions: readonly SourceDefinition[]; workflows: readonly DefinitionWorkflow[]; busy: boolean;
   references: Readonly<Record<string, ReferenceState>>;
   onEdit: (definition: SourceDefinition) => void; onToggle: (definition: SourceDefinition) => void;
@@ -43,9 +45,9 @@ export function DefinitionTable({ definitions, workflows, busy, references, onEd
         <td role="cell" data-label="Actions" className="definition-actions-cell"><div className="definition-row-actions">
           <button type="button" disabled={busy} onClick={() => onEdit(definition)} aria-label={`Edit ${definition.name}`}>Edit</button>
           <button type="button" disabled={busy} onClick={() => onToggle(definition)} aria-label={`${definition.enabled ? 'Disable' : 'Enable'} ${definition.name}`}>{definition.enabled ? 'Disable' : 'Enable'}</button>
-          {definition.sourceType === 'SHARED_TAG' && onAcquisition && <button type="button" disabled={busy} onClick={() => onAcquisition(definition)} aria-label={`Configure acquisition for ${definition.name}`}>Acquisition</button>}
+          {definition.sourceType === 'SHARED_TAG' && onAcquisition && <button type="button" disabled={busy} onClick={event => onAcquisition(definition, event.currentTarget)} aria-label={`Configure acquisition for ${definition.name}`}>Acquisition</button>}
           <button type="button" className="definition-delete" disabled={busy} onClick={() => onDelete(definition)} aria-label={`Delete ${definition.name}`}>Delete</button>
-        </div></td>
+        </div>{definition.sourceType === 'SHARED_TAG' && acquisitionStates?.[definition.sourceId] && <small className="acquisition-row-state" role="status">{acquisitionStates[definition.sourceId].mapping ? `Mapping saved · ${acquisitionStates[definition.sourceId].mapping!.enabled ? 'Enabled' : 'Disabled'} (configuration)` : 'Mapping removed'}</small>}</td>
       </tr>;
     })}</tbody>
   </table></div>;
@@ -63,6 +65,16 @@ export function DataSourcesPage() {
   const [status, setStatus] = useState<DefinitionStatusFilter>('ALL');
   const [editor, setEditor] = useState<{ definition?: SourceDefinition }>();
   const [acquisition, setAcquisition] = useState<Extract<SourceDefinition, { sourceType: 'SHARED_TAG' }>>();
+  const [acquisitionStates, setAcquisitionStates] = useState<Record<string, MappingResult>>({});
+  const acquisitionInvoker = useRef<HTMLButtonElement | null>(null);
+  const closeAcquisition = () => {
+    setAcquisition(undefined);
+    globalThis.requestAnimationFrame?.(() => {
+      const invoker = acquisitionInvoker.current;
+      if (invoker?.isConnected && !invoker.disabled) invoker.focus({ preventScroll: true });
+      else toolbarRef.current?.focus({ preventScroll: true });
+    });
+  };
   const [deleting, setDeleting] = useState<SourceDefinition>();
   const [pending, setPending] = useState(false);
   const [references, setReferences] = useState<Record<string, ReferenceState>>({});
@@ -166,13 +178,13 @@ export function DataSourcesPage() {
     <aside className="data-sources-info" aria-label="Configuration only"><strong>Configuration only</strong><span>Definitions are configuration metadata. No runtime values or commands are enabled.</span></aside>
     {error && <div className="data-sources-feedback" role="alert"><strong>Could not complete the request</strong><p>{error}</p><button type="button" disabled={pending} onClick={() => void refresh()}>Retry loading definitions</button></div>}
     <p className="data-sources-summary" role="status" aria-live="polite">{!available && !error ? 'Loading definitions…' : pending ? 'Updating definition…' : notice || `${filtered.length} of ${definitions.length} definitions`}</p>
-    {filtered.length > 0 && <DefinitionTable onAcquisition={setAcquisition} definitions={filtered} workflows={workflows} busy={!available || pending} references={references} onEdit={definition => setEditor({ definition })} onToggle={definition => void toggle(definition)} onDelete={setDeleting} onReferences={(definition, invoker) => void inspectReferences(definition, invoker)} onRetryReferences={() => void refresh()} openReferenceKey={referenceSource ? definitionKey(referenceSource) : undefined} />}
+    {filtered.length > 0 && <DefinitionTable acquisitionStates={acquisitionStates} onAcquisition={(definition, invoker) => { acquisitionInvoker.current = invoker ?? null; setAcquisition(definition); }} definitions={filtered} workflows={workflows} busy={!available || pending} references={references} onEdit={definition => setEditor({ definition })} onToggle={definition => void toggle(definition)} onDelete={setDeleting} onReferences={(definition, invoker) => void inspectReferences(definition, invoker)} onRetryReferences={() => void refresh()} openReferenceKey={referenceSource ? definitionKey(referenceSource) : undefined} />}
     {available && filtered.length === 0 && <div className="data-sources-empty"><h3>{definitions.length ? 'No matching definitions' : 'No Source definitions yet'}</h3>
       <p>{definitions.length ? 'Try a different search or clear the filters.' : 'Create a shared tag or workflow variable to configure stable Overview bindings.'}</p>
       {definitions.length ? <button type="button" onClick={resetFilters}>Clear filters</button> : <button type="button" className="btn btn--primary" onClick={() => setEditor({})}>Create your first definition</button>}</div>}
     <p className="data-sources-footnote">Reference counts cover saved Overview Pages only; unsaved browser Drafts are excluded. Counts load automatically and refresh with the catalog; they are not live Runtime values. Delete always requires confirmation.</p>
     {referenceSource && <ReferenceDetails definition={referenceSource} state={referenceDetails[definitionKey(referenceSource)]} onClose={closeReferences} onRetry={() => void inspectReferences(referenceSource, undefined, true)} />}
-    {acquisition && <AcquisitionMappingEditor key={acquisition.sourceId} definition={acquisition} onClose={() => { setAcquisition(undefined); restoreDialogFocus(); }} />}
+    {acquisition && <AcquisitionMappingEditor key={acquisition.sourceId} definition={acquisition} onClose={closeAcquisition} onSaved={result => { setAcquisitionStates(previous => ({ ...previous, [acquisition.sourceId]: result })); setNotice(result.mapping ? `Acquisition mapping saved for ${acquisition.name}. No Device was connected.` : `Acquisition mapping removed for ${acquisition.name}.`); }} />}
     {editor && <DefinitionCatalogEditor initialDefinition={editor.definition} initialSourceType={sourceType === 'ALL' ? 'SHARED_TAG' : sourceType} definitions={definitions} workflows={workflows} available={available} onClose={closeEditor} onChanged={async () => { await refresh(); setNotice('Definition saved. Overview Draft and Page revision are unchanged.'); }} />}
     {deleting && <DeleteDefinitionDialog definition={deleting} onClose={closeDelete} onDeleted={() => {
       setDeleting(undefined); setNotice('Definition deleted. Stored bindings are unchanged and resolve as MISSING after refresh.');

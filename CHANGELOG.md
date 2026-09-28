@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.4.0-dev.8] - Acquisition editor UX and persistence-boundary closure (2026-09-28)
+
+- Approved base `3e3c4e54d782515c7de1802956197fb2d138e321`; Owner dev.7 approved with punchlist.
+- Scoped token-based editor redesign: grouped responsive fields, readable helper/error hierarchy,
+  coherent labeled Enabled setting, secondary technical disclosure and stable footer actions.
+- Successful Save closes/unmounts, acknowledges saved mapping in the related Data Sources row and
+  restores invoking focus without clearing filters. Failed Save retains edits and focuses errors.
+- Wire data type visibly determines read-only Width; legacy correction explicit, no Codec selector.
+  String/COMMAND_ONLY producer limits remain separate from Catalog Definition validity.
+- Read-only Owner PowerShell before/after hashes include optional files, nested Pages and separate
+  revisions, with readable Unchanged output and an adapter for already-captured before records.
+- Traffic FUNCTIONAL PASS unchanged; UX polish deferred to O2-D. No Server behavior/API/runtime,
+  dependencies or later phases changed. Version surfaces synchronized; new manual review PENDING.
+
+
 ## [1.4.0-dev.7] - O2-B1 validation and Traffic UX punchlist (2026-09-26)
 
 - Approved base `55335b00ff7cf20c3fee14a09ebd46e52fb476d1`, O2-B1 approved with punchlist.

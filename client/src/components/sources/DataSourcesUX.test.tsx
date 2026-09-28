@@ -1,3 +1,5 @@
+import { AcquisitionMappingEditor } from './AcquisitionMappingEditor.js';
+import { defaultAcquisition } from '../../lib/acquisitionApi.js';
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -244,5 +246,33 @@ describe('dev.5 automatic summary and on-demand reading pane', () => {
     const pane = tree.find(node => node.props.role === 'dialog')!; expect(pane.props['aria-modal']).toBe('false');
     const preventDefault = vi.fn(), stopPropagation = vi.fn(); pane.props.onKeyDown({ key: 'Tab', preventDefault, stopPropagation }); expect(preventDefault).not.toHaveBeenCalled();
     pane.props.onKeyDown({ key: 'Escape', preventDefault, stopPropagation }); expect(close).toHaveBeenCalledTimes(1); expect(preventDefault).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('dev.8 acquisition return path', () => {
+  it('Save updates the related row, unmounts the editor, restores invoking focus and preserves filters/search', async () => {
+    const frames: Array<() => void> = []; vi.stubGlobal('requestAnimationFrame', (fn: () => void) => { frames.push(fn); });
+    let tree = await loadedPage(); button(tree, 'Shared Tags').props.onClick(); tree = draw(DataSourcesPage);
+    tree.find(n => n.props.type === 'search')!.props.onChange({ target: { value: 'Pressure' } }); tree = draw(DataSourcesPage);
+    const focus = vi.fn(), invoker = { isConnected: true, disabled: false, focus };
+    byType(tree, DefinitionTable).props.onAcquisition(shared, invoker); tree = draw(DataSourcesPage);
+    const editor = byType(tree, AcquisitionMappingEditor); expect(editor.props.definition).toBe(shared);
+    const mapping = { ...defaultAcquisition('s1', false), deviceId: 'plc', enabled: true };
+    editor.props.onSaved({ mapping, availability: 'READY' }); editor.props.onClose(); tree = draw(DataSourcesPage); frames.forEach(fn => fn());
+    expect(tree.some(n => n.type === AcquisitionMappingEditor)).toBe(false); expect(focus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(tree.find(n => n.props.type === 'search')!.props.value).toBe('Pressure'); expect(button(tree, 'Shared Tags').props['aria-pressed']).toBe(true);
+    const table = byType(tree, DefinitionTable); expect(table.props.acquisitionStates.s1.mapping).toEqual(mapping); expect(table.props.definitions).toEqual([shared]);
+    const rendered = nodes(DefinitionTable(table.props)); expect(rendered.some(n => n.props.children === 'Mapping saved · Enabled (configuration)')).toBe(true);
+    expect(api.fetchSourceDefinitions).toHaveBeenCalledTimes(1);
+  });
+  it('Cancel returns to Data Sources without changing row state or saving Definitions', async () => {
+    let tree = await loadedPage(); byType(tree, DefinitionTable).props.onAcquisition(shared); tree = draw(DataSourcesPage);
+    byType(tree, AcquisitionMappingEditor).props.onClose(); tree = draw(DataSourcesPage);
+    expect(tree.some(n => n.type === AcquisitionMappingEditor)).toBe(false); expect(byType(tree, DefinitionTable).props.acquisitionStates).toEqual({}); expect(api.updateSourceDefinition).not.toHaveBeenCalled();
+  });
+  it('row Acquisition action passes the real invoking button for focus restoration', () => {
+    const onAcquisition = vi.fn(), invoker = {};
+    const tree = nodes(DefinitionTable({ definitions: [shared], workflows: [], busy: false, references: {}, onEdit: vi.fn(), onToggle: vi.fn(), onDelete: vi.fn(), onReferences: vi.fn(), onAcquisition }));
+    button(tree, 'Acquisition').props.onClick({ currentTarget: invoker }); expect(onAcquisition).toHaveBeenCalledWith(shared, invoker);
   });
 });

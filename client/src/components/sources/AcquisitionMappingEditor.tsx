@@ -6,7 +6,7 @@ import { acquisitionDraft, validateAcquisition, changeAcquisitionField, codecWid
 import '../../styles/acquisition.css';
 type SharedDefinition = Extract<SourceDefinition, { sourceType: 'SHARED_TAG' }>;
 /** Configuration form only. Local edit strings never enter the persisted contract until valid. */
-export function AcquisitionMappingEditor({ definition, onClose }: { definition: SharedDefinition; onClose: () => void }) {
+export function AcquisitionMappingEditor({ definition, onClose, onSaved }: { definition: SharedDefinition; onClose: () => void; onSaved?: (result: MappingResult) => void }) {
   const defaults = () => acquisitionDraft(defaultAcquisition(definition.sourceId, definition.dataType === 'Boolean'));
   const [draft, setMappingDraft] = useState(defaults);
   const [devices, setDevices] = useState<AcquisitionDevice[]>([]);
@@ -17,6 +17,7 @@ export function AcquisitionMappingEditor({ definition, onClose }: { definition: 
   const input = useRef<HTMLSelectElement | null>(null), alive = useRef(true), inFlight = useRef(false);
   const fields = useRef<Partial<Record<AcquisitionField, HTMLElement | null>>>({});
   const summary = useRef<HTMLParagraphElement>(null);
+  const serverError = useRef<HTMLParagraphElement>(null);
   const formId = useId();
   const path = acquisitionPath(definition.sourceId);
   const supported = definition.dataType !== 'String' && definition.capability !== 'COMMAND_ONLY';
@@ -34,6 +35,11 @@ export function AcquisitionMappingEditor({ definition, onClose }: { definition: 
     return () => { alive.current = false; controller.abort(); };
   }, [path, retry]);
   useEffect(() => { if (loaded) input.current?.focus(); }, [loaded]);
+  useEffect(() => {
+    if (error && loaded && !pending) {
+      if (!focusAcquisitionError(validation.errors, fields.current)) serverError.current?.focus();
+    }
+  }, [error, loaded, pending]);
   const change = (field: AcquisitionField, value: string | boolean) => {
     const next = changeAcquisitionField(draft, field, value);
     setMappingDraft(next.draft); setImpact(next.impact); setNotice('');
@@ -52,8 +58,8 @@ export function AcquisitionMappingEditor({ definition, onClose }: { definition: 
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(validation.mapping),
       });
       if (!alive.current) return;
-      if (remove) { setMappingDraft(defaults()); setSaved(false); setAvailability('UNCONFIGURED'); setConfirmRemove(false); }
-      else { setMappingDraft(acquisitionDraft(result.mapping!)); setSaved(true); setAvailability(result.availability); }
+      if (remove) { setMappingDraft(defaults()); setSaved(false); setAvailability('UNCONFIGURED'); setConfirmRemove(false); onSaved?.({ mapping: null, availability: 'UNCONFIGURED' }); }
+      else { onSaved?.(result); onClose(); return; }
       setImpact(''); setNotice(remove ? 'Mapping removed. Definition and bindings are unchanged.' : 'Acquisition configuration saved. No Device was connected by this action.');
     } catch (cause) { if (alive.current) setError((cause as Error).message); }
     finally { inFlight.current = false; if (alive.current) setPending(false); }
@@ -66,7 +72,7 @@ export function AcquisitionMappingEditor({ definition, onClose }: { definition: 
   const field = (key: AcquisitionField, label: string, help: string, control: ReactNode) => <div className="acquisition-field" key={key}>
     <label htmlFor={fieldId(key)}>{label}</label>{control}
     <small id={`${fieldId(key)}-help`}>{help}</small>
-    <small id={`${fieldId(key)}-error`} className="source-catalog-error" aria-live="polite">{errors[key] ? `Error: ${errors[key]}` : ''}</small>
+    <small id={`${fieldId(key)}-error`} className="acquisition-error" aria-live="polite">{errors[key] ? `Error: ${errors[key]}` : ''}</small>
   </div>;
   const numeric = (key: Exclude<AcquisitionField, 'enabled'>, label: string, help: string, integer = false) => field(key, label, help,
     <input {...attributes(key)} type="text" inputMode={integer ? 'numeric' : 'decimal'} required autoComplete="off" spellCheck={false} value={draft[key]} onChange={e => change(key, e.target.value)} />);
@@ -75,51 +81,71 @@ export function AcquisitionMappingEditor({ definition, onClose }: { definition: 
       {!options.includes(draft[key]) && <option value={draft[key]} disabled>Unavailable value: {draft[key] || '(empty)'}</option>}
       {options.map(option => <option key={option} value={option} disabled={incompatible(option)}>{key === 'functionCode' ? `FC0${option}` : option}{incompatible(option) ? ' — incompatible with Definition' : ''}</option>)}
     </select>);
-  return <Modal open title={`Shared Tag acquisition · ${definition.name}`} size="md" initialFocusRef={input}
+  const disabled = loading || !loaded || pending || !supported;
+  return <div className="acquisition-dialog"><Modal open title={`Acquisition · ${definition.name}`} size="md" initialFocusRef={input}
     onClose={() => { if (!inFlight.current) onClose(); }}
-    description="Configuration only. Enabled mappings acquire on the server only while the existing Device connection is connected. No auto-connect, writes or Overview live values."
-    footer={<><button className="btn" type="button" disabled={pending} onClick={onClose}>Close</button>
-      <button className="btn" type="button" disabled={loading || pending || !saved} onClick={() => setConfirmRemove(true)}>Remove mapping</button>
-      <button className="btn btn--primary" type="submit" form={formId} disabled={loading || !loaded || pending || !supported}
-        aria-disabled={!validation.mapping} aria-describedby={`${formId}-validation`}>{pending ? 'Saving…' : 'Save mapping'}</button></>}>
-    <form id={formId} noValidate className="source-catalog source-catalog--focused acquisition-form" onSubmit={event => { event.preventDefault(); if (supported) void persist(); }}>
-      <p>Stable sourceId: <code>{definition.sourceId}</code></p>
-      <p role="status">Configuration availability: {availability}. This is not Definition resolution or live quality.</p>
-      <p id={`${formId}-validation`} ref={summary} tabIndex={-1} role="status">{loaded && validation.firstInvalid
-        ? `${Object.keys(validation.errors).length} field(s) need attention. Save is blocked; activating Save focuses the first invalid field. ${errors.sourceId ?? ''}`
-        : 'Server validation remains authoritative on Save.'}</p>
+    description="Read-only Shared Tag mapping. No auto-connect, writes or Overview live values."
+    footer={<div className="acquisition-actions">
+      <button className="btn acquisition-remove" type="button" disabled={loading || pending || !saved} onClick={() => setConfirmRemove(true)}>Remove mapping</button>
+      <div><button className="btn" type="button" disabled={pending} onClick={() => { if (!inFlight.current) onClose(); }}>Cancel</button>
+      <button className="btn btn--primary" type="submit" form={formId} disabled={disabled}
+        aria-disabled={!validation.mapping} aria-describedby={`${formId}-validation`}>{pending ? 'Saving…' : 'Save mapping'}</button></div>
+    </div>}>
+    <form id={formId} noValidate className="acquisition-form" onSubmit={event => { event.preventDefault(); if (supported) void persist(); }}>
+      <div className="acquisition-source"><span><strong>{definition.dataType}</strong> · {definition.capability === 'COMMAND_ONLY' ? 'Command-only Definition' : 'Shared Tag Definition'}</span><span>Configuration: {availability}</span></div>
       {loading && <p role="status">Loading configuration…</p>}
-      {!supported && <p role="alert">This Definition cannot acquire: String decoding and COMMAND_ONLY mappings are not supported. The Definition remains valid.</p>}
-      {error && <p className="source-catalog-error" role="alert">Server/load error (last response): {error}</p>}
-      <p className="acquisition-impact" role="status" aria-live="polite">{impact || notice}</p>
+      {!supported && <aside className="acquisition-callout" role="note"><strong>Read-only producer unavailable</strong><p>{definition.dataType === 'String' ? 'General String decoding is not supported.' : 'COMMAND_ONLY mappings cannot produce read-only acquisition samples.'} The Definition remains valid in the Catalog; bindings are unchanged.</p></aside>}
+      {!definition.enabled && <p className="acquisition-callout">This Definition is disabled. Its mapping can be saved, but acquisition cannot operate.</p>}
+      {error && <p ref={serverError} tabIndex={-1} className="acquisition-error" role="alert">Server/load error (last response): {error}</p>}
       {error && !loaded && <button type="button" disabled={loading} onClick={() => setRetry(n => n + 1)}>Retry configuration</button>}
-      {confirmRemove && <div role="alert"><p>Remove only this acquisition mapping? Definition and saved bindings remain unchanged.</p>
+      {confirmRemove && <div className="acquisition-callout" role="alert"><p>Remove only this acquisition mapping? Definition and saved bindings remain unchanged.</p>
         <button type="button" disabled={pending} onClick={() => setConfirmRemove(false)}>Keep mapping</button>
         <button type="button" disabled={pending} onClick={() => void persist(true)}>Confirm remove mapping</button></div>}
-      <fieldset disabled={loading || !loaded || pending || !supported}>
-        <legend>Read-only Modbus mapping</legend>
-        {field('deviceId', 'Device', devices.find(d => d.id === draft.deviceId)?.enabled === false ? 'Device is disabled; configuration can be saved but acquisition stays disabled.' : 'An existing Device is required. Saving never connects it.',
+      <fieldset disabled={disabled} className="acquisition-section">
+        <legend>Connection &amp; addressing</legend><div className="acquisition-grid">
+        {field('deviceId', 'Device', devices.find(d => d.id === draft.deviceId)?.enabled === false ? 'Disabled Device: acquisition cannot operate.' : 'Use an existing Device. Saving never connects it.',
           <select {...attributes('deviceId')} required value={draft.deviceId} onChange={e => change('deviceId', e.target.value)}><option value="">Select Device</option>
             {draft.deviceId && !devices.some(d => d.id === draft.deviceId) && <option value={draft.deviceId} disabled>Missing Device · {draft.deviceId}</option>}
             {devices.map(d => <option key={d.id} value={d.id}>{d.name}{d.enabled ? '' : ' (disabled)'}</option>)}</select>)}
         {numeric('unitId', 'Unit ID', 'Whole number, 0–255.', true)}
-        {select('functionCode', 'Function code', FUNCTION_CODES, 'FC01/02 read Boolean; FC03/04 read numbers. Selecting FC does not reset other fields.', option => definition.dataType === 'Boolean' ? Number(option) > 2 : Number(option) <= 2)}
-        {numeric('address', 'Zero-based address', 'Zero is valid. Address + Width must be at most 65536.', true)}
-        {select('dataType', 'Wire data type', WIRE_TYPES, 'Changing codec updates only derived Width, with an impact notice. Scale/Offset are retained.', option => (option === 'Boolean') !== (definition.dataType === 'Boolean'))}
-        {field('width', 'Width (bits for FC01/02; registers for FC03/04)', 'Derived from the selected wire codec; invalid saved widths are never silently replaced.', <>
-          <input {...attributes('width')} readOnly value={draft.width} />
-          {errors.width && codecWidth(draft.dataType) !== undefined && <button type="button" onClick={() => { change('width', String(codecWidth(draft.dataType))); setImpact(`Width explicitly corrected to ${codecWidth(draft.dataType)} for ${draft.dataType}.`); }}>Use required codec width ({codecWidth(draft.dataType)})</button>}
-        </>)}
-        {select('byteOrder', 'Byte order', BYTE_ORDERS, 'Byte ordering for numeric register codecs; no effect on a single Boolean bit.')}
-        {select('wordOrder', 'Word order', WORD_ORDERS, 'Word ordering for multi-register codecs; no effect on one register or bit.')}
-        {numeric('scale', 'Scale', draft.dataType === 'Boolean' ? 'Boolean requires exactly 1; no automatic reset.' : 'Finite decimal or exponent notation.')}
-        {numeric('offset', 'Offset', draft.dataType === 'Boolean' ? 'Boolean requires exactly 0; no automatic reset.' : 'Finite decimal or exponent notation.')}
-        {numeric('pollIntervalMs', 'Poll interval (ms)', 'Whole number, 100–3,600,000.', true)}
-        {numeric('staleAfterMs', 'Stale threshold (ms)', 'Whole number, 100–86,400,000 and at least the Poll interval.', true)}
-        {field('enabled', 'Enable server acquisition', 'Does not connect Device. Disabled Definition/Device prevents acquisition.',
-          <input {...attributes('enabled')} type="checkbox" checked={draft.enabled === true} onChange={e => change('enabled', e.target.checked)} />)}
+        {select('functionCode', 'Function code', FUNCTION_CODES, 'FC01/02: Boolean. FC03/04: Number. Other fields are retained.', option => definition.dataType === 'Boolean' ? Number(option) > 2 : Number(option) <= 2)}
+        {numeric('address', 'Zero-based address', '0–65535. Address + Width ≤ 65536.', true)}
+        </div>
       </fieldset>
-      <p>Number codecs and FC01/02 Boolean only. Shared Tags deduplicate identical compatible ranges only; Workflow and Monitor reads remain independent.</p>
+      <fieldset disabled={disabled} className="acquisition-section">
+        <legend>Data decoding</legend><div className="acquisition-grid">
+        {select('dataType', 'Wire data type', WIRE_TYPES, 'Updates derived Width only. Scale and Offset stay unchanged.', option => (option === 'Boolean') !== (definition.dataType === 'Boolean'))}
+        {field('width', 'Width · derived', Number(draft.functionCode) <= 2 ? 'Bits, derived from Wire data type.' : 'Registers, derived from Wire data type.', <>
+          <input {...attributes('width')} readOnly value={draft.width} />
+          {errors.width && codecWidth(draft.dataType) !== undefined && <button type="button" onClick={() => { change('width', String(codecWidth(draft.dataType))); setImpact(`Width explicitly corrected to ${codecWidth(draft.dataType)} for ${draft.dataType}.`); }}>Use required width ({codecWidth(draft.dataType)})</button>}
+        </>)}
+        {select('byteOrder', 'Byte order', BYTE_ORDERS, 'Numeric register byte order. No effect on a Boolean bit.')}
+        {select('wordOrder', 'Word order', WORD_ORDERS, 'Multi-register word order. No effect on one register or bit.')}
+        </div>
+        <p className="acquisition-impact" role="status" aria-live="polite">{impact}</p>
+      </fieldset>
+      <fieldset disabled={disabled} className="acquisition-section">
+        <legend>Value &amp; timing</legend><div className="acquisition-grid">
+        {numeric('scale', 'Scale', draft.dataType === 'Boolean' ? 'Boolean requires 1. No automatic reset.' : 'Finite multiplier applied to the decoded value.')}
+        {numeric('offset', 'Offset', draft.dataType === 'Boolean' ? 'Boolean requires 0. No automatic reset.' : 'Finite adjustment added after Scale.')}
+        {numeric('pollIntervalMs', 'Poll interval (ms)', '100–3,600,000. Whole milliseconds.', true)}
+        {numeric('staleAfterMs', 'Stale threshold (ms)', '100–86,400,000; at least Poll interval.', true)}
+        </div>
+      </fieldset>
+      <fieldset disabled={disabled} className="acquisition-enabled">
+        <legend className="sr-only">Acquisition state</legend>
+        <div className="acquisition-setting">
+          <input {...attributes('enabled')} type="checkbox" checked={draft.enabled === true} onChange={e => change('enabled', e.target.checked)} />
+          <div><label htmlFor={fieldId('enabled')}>Enable server acquisition <span>{draft.enabled === true ? 'On' : 'Off'}</span></label>
+            <p id={`${fieldId('enabled')}-help`}>Operates only when the Device is already connected. Never auto-connects. A disabled Definition or a disabled or disconnected Device prevents acquisition.</p>
+            <p id={`${fieldId('enabled')}-error`} className="acquisition-error" aria-live="polite">{errors.enabled ? `Error: ${errors.enabled}` : ''}</p>
+          </div>
+        </div>
+      </fieldset>
+      <p id={`${formId}-validation`} ref={summary} tabIndex={-1} className="acquisition-feedback" role="status">{loaded && validation.firstInvalid
+        ? `${Object.keys(validation.errors).length} field(s) need attention. Save focuses the first invalid field. ${errors.sourceId ?? ''}`
+        : notice || 'Configuration only. Server validation remains authoritative on Save.'}</p>
+      <details className="acquisition-notes"><summary>Mapping identity &amp; limits</summary><p>Stable sourceId: <code>{definition.sourceId}</code></p><p>Number and Boolean only. Shared Tags deduplicate identical compatible ranges; Workflow and Monitor reads remain independent. Configuration availability is not Definition resolution or live quality.</p></details>
     </form>
-  </Modal>;
+  </Modal></div>;
 }

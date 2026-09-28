@@ -2,6 +2,35 @@
 
 ## Current application
 
+**v1.4.0-dev.8 — Acquisition editor UX and persistence-boundary closure**.
+Base `3e3c4e54d782515c7de1802956197fb2d138e321` / dev.7.
+Branch `arena/01a0d291-modbus-workflow-studio`.
+Owner dev.7 **APPROVED WITH PUNCHLIST**. Confirmed PASS: Acquisition validation/options,
+Traffic normalization, Disconnect/queue/poller shutdown, no Shared Tag writes, existing Workflow/
+Monitor, Overview runtime invisibility and disabled Control Runtime.
+
+Frontend-only Acquisition layout/save-return/Enabled/readability/derived Width refinement.
+DataSourcesPage changes only mapping-save row acknowledgment and focus restoration; filters retained.
+No production Server changes except existing version values. No API/persistence/lifecycle changes.
+Traffic FUNCTIONAL PASS, untouched; header/timestamp/payload/error/scroll polish deferred to O2-D.
+Runtime persistence procedure now covers actual nested files/revisions, optional files and readable
+After/Unchanged output. Owner before hashes confirmed; after comparison remains PENDING.
+Canonical Browser Tag value/Quality/Sequence/last-good: NOT DIRECTLY OBSERVABLE BY DESIGN IN O2-B1.
+File hashes do not directly prove Browser Draft/UndoRedo. No diagnostics or delivery added.
+
+[Scope](SCOPE_O2-B1_v1.4.0-dev.8.md) · [acceptance/results](ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.8.md) ·
+[Owner-local persistence procedure](ACCEPTANCE_TESTS/O2-B1-RUNTIME-BOUNDARY-v1.4.0-dev.8.md).
+Stage 1 PASS: UX 96/4 (one test-only ref correction/retry), boundary docs 4/1, protected Client
+520/37; both typechecks/builds PASS. Full Client **616/41**, Server **250/17**, check PASS.
+Strict hygiene and verify:publish PASS (478 files, 0 errors/warnings); diff check PASS.
+22 changed files. Existing warnings: 66 SSR useLayoutEffect; JS 659.90 kB / gzip 193.10 kB.
+No PowerShell/browser/hardware execution claimed; Owner after hashes and UI review remain pending.
+New Owner Local Manual Review **PENDING**. O2-B2/B3/C/D **NOT STARTED**.
+Advisories 5 moderate / 1 high / 1 critical: not resolved, not accepted, outside punchlist.
+No dependency changes, PR, Tag, Release or ZIP.
+
+## Historical dev.7 checkpoint
+
 **v1.4.0-dev.7 — O2-B1 validation and Traffic UX punchlist**.
 Approved base: `55335b00ff7cf20c3fee14a09ebd46e52fb476d1` / dev.6.
 Branch: `arena/01a0d291-modbus-workflow-studio`.
