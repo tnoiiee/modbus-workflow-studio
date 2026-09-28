@@ -3,6 +3,7 @@ import type { OverviewElement } from '../../lib/overviewElements.js';
 import type { BindingResolution } from '../../lib/overviewBinding.js';
 import type { RuntimeSelection } from '../../lib/overviewRuntimeSelection.js';
 import { OverviewTagClientAdapter } from '../../lib/overviewTagClientAdapter.js';
+import { overviewRuntimeSessionKey, startOverviewRuntimeSession } from '../../lib/overviewRuntimeSession.js';
 import { RuntimeDetails } from './RuntimeDetails.js';
 import '../../styles/overview-runtime.css';
 const Context = createContext<{ adapter: OverviewTagClientAdapter; enabled: boolean; error: string; openDetails: (id: string) => void } | null>(null);
@@ -15,15 +16,11 @@ export function OverviewRuntimeProvider({ adapter, enabled, pageId, selection, e
 }) {
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const openDetails = useCallback((id: string) => setDetailsId(id), []);
-  useLifecycleEffect(() => {
-    if (!enabled) { adapter.stop(); if (selection.error) adapter.store.setStatus('Error', selection.error, pageId); return; }
-    adapter.activate(pageId, selection);
-    const environment = () => { if (!navigator.onLine || document.hidden) adapter.pause(!navigator.onLine); else adapter.resume(); };
-    environment(); window.addEventListener('online', environment); window.addEventListener('offline', environment); document.addEventListener('visibilitychange', environment);
-    return () => { adapter.stop(); window.removeEventListener('online', environment); window.removeEventListener('offline', environment); document.removeEventListener('visibilitychange', environment); };
-    // Canonical key, not object/geometry identity, owns the subscription lifetime.
-  }, [adapter, enabled, pageId, selection.key, selection.error]);
-  useEffect(() => { setDetailsId(null); }, [pageId, enabled, selection.key]);
+  const sessionKey = overviewRuntimeSessionKey(selection, resolutions);
+  useLifecycleEffect(() => startOverviewRuntimeSession(adapter, enabled, pageId, selection),
+    // Semantic confirmed metadata + canonical selection, never refresh/object identity.
+    [adapter, enabled, pageId, selection.key, selection.error, sessionKey]);
+  useEffect(() => { setDetailsId(null); }, [pageId, enabled, selection.key, sessionKey]);
   const context = useMemo(() => ({ adapter, enabled, error: selection.error, openDetails }), [adapter, enabled, selection.error, openDetails]);
   const detail = enabled && detailsId && selection.elementIds.includes(detailsId) ? elements.find(e => e.id === detailsId) : undefined;
   return <Context.Provider value={context}>{children}{detail && <RuntimeDetails element={detail} resolution={resolutions[detail.id]} onClose={() => setDetailsId(null)} />}</Context.Provider>;

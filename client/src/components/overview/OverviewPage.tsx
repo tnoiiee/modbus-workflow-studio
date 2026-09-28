@@ -7,8 +7,8 @@ import { overviewInspectorPresentation } from '../../lib/overviewWorkspace.js';
 import { previewOverviewFontSize, type FontSizePreview } from '../../lib/overviewFontDraft.js';
 import { bindingPresentation, type BindingPresentation } from '../../lib/overviewBinding.js';
 import { fetchSourceDefinitions, fetchDefinitionWorkflows } from '../../lib/overviewApi.js';
-import type { SourceDefinition, DefinitionWorkflow } from '../../lib/sourceDefinitions.js';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { OverviewCatalog, observeOverviewCatalog, overviewCatalogNotice } from '../../lib/overviewCatalog.js';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactFlowInstance } from '@xyflow/react';
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
@@ -124,30 +124,16 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   const runtimePageRequest = useRef(0);
   const [pageLoading, setPageLoading] = useState(true);
   useEffect(() => () => { ++runtimePageRequest.current; runtimeAdapter.stop(); }, [runtimeAdapter]);
-  // Catalog refresh is presentation state only: never patch Page/Draft/history.
-  const [definitions, setDefinitions] = useState<SourceDefinition[]>([]);
-  const [definitionWorkflows, setDefinitionWorkflows] = useState<DefinitionWorkflow[]>([]);
-  const [catalogAvailable, setCatalogAvailable] = useState(false);
-  const [catalogError, setCatalogError] = useState('');
-  const catalogRequest = useRef(0);
-  const refreshCatalog = useCallback(async () => {
-    const request = ++catalogRequest.current;
-    setCatalogAvailable(false); setCatalogError('');
-    try {
-      const [sources, workflows] = await Promise.all([fetchSourceDefinitions(), fetchDefinitionWorkflows()]);
-      if (request !== catalogRequest.current) return;
-      setDefinitions(sources); setDefinitionWorkflows(workflows); setCatalogAvailable(true);
-    } catch (cause) {
-      if (request === catalogRequest.current) setCatalogError(cause instanceof Error ? cause.message : 'Catalog unavailable');
-    }
-  }, []);
+  // Confirmed metadata survives pending/failed refreshes; never patch Page/Draft/history.
+  const [catalog] = useState(() => new OverviewCatalog(() => Promise.all([fetchSourceDefinitions(), fetchDefinitionWorkflows()])));
+  const catalogState = useSyncExternalStore(catalog.subscribe, catalog.getSnapshot, catalog.getSnapshot);
+  const { definitions, workflows: definitionWorkflows, available: catalogAvailable } = catalogState;
+  const catalogNotice = overviewCatalogNotice(catalogState);
+  const refreshCatalog = catalog.refresh;
   useEffect(() => {
     if (!active) return;
-    void refreshCatalog();
-    const refresh = () => { void refreshCatalog(); };
-    window.addEventListener('focus', refresh);
-    return () => { ++catalogRequest.current; window.removeEventListener('focus', refresh); };
-  }, [active, refreshCatalog]);
+    return observeOverviewCatalog(catalog, window);
+  }, [active, catalog]);
   const [pages, setPages] = useState<OverviewPageSummary[]>([]);
   const [activePageId, setActivePageId] = useState('');
   const [activePage, setActivePage] = useState<OverviewPageRecord | null>(null);
@@ -1105,7 +1091,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
           <button type="button" onClick={() => void refreshCatalog()}>Refresh Source definitions</button>
           {onOpenDataSources && <button type="button" onClick={onOpenDataSources}>Data Sources</button>}
           <span>{mode === 'EDIT' ? 'EDITOR PREVIEW · Configuration only' : 'Read-only Monitoring · latest received'} · CONTROL RUNTIME NOT ENABLED</span>
-          {catalogError && <span role="alert">{catalogError}</span>}
+          <span role="status" aria-live="polite" aria-atomic="true">{catalogNotice}</span>
         </div>
         {mode === 'VIEW' && active && <OverviewRuntimeStatus selection={runtimeSelection} elements={asElements(activePage)} />}
         <OverviewCommandBar

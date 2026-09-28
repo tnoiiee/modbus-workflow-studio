@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0-dev.11] - O2-B3 focus / Catalog-refresh lifecycle hotfix (2026-09-28)
+
+- Preserve last confirmed Catalog and healthy Runtime during background refresh and failure.
+  Initial load remains fail-closed. Non-blocking accessible warning clears after success.
+- Coalesce pending focus refreshes and fence obsolete metadata replies on active-page cleanup.
+- Reconcile semantic eligible identities/compatibility/Number units, not object allocation or
+  refresh status. No extra Snapshot/socket/unsubscribe for unchanged metadata.
+- Preserve B2 recovery, visibility/offline behavior, Edit/inactive/navigation disposal and
+  Preview-only controls. No production Server behavior change beyond version synchronization.
+- Add deterministic Catalog-to-Provider-effect-to-real-adapter/B2 lifecycle tests. Browser,
+  hardware and soak validation are not implied; Owner local manual review remains pending.
+
 ## [1.4.0-dev.10] - O2-B3 Overview Read-only Live Rendering (2026-09-28)
 
 - Owner-approved base `9d73d96ee910ac3ad1ad2a83a5572dbe77c1b309`; B2 transport foundation accepted.

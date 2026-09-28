@@ -1,29 +1,35 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.10
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.11
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.10 — O2-B3 Overview Read-only Live Rendering**. Owner ACCEPTED Stage 1;
-  Full Gates and one normal-push development checkpoint are authorized. Owner Local Manual Review PENDING.
-- Approved base `9d73d96ee910ac3ad1ad2a83a5572dbe77c1b309` / dev.9; O2-B2 APPROVED AS TRANSPORT FOUNDATION.
-- Active Overview **View Mode only**: Numeric Label (Number), Status Light (Boolean), Value Badge
-  (Number/Boolean) receive read-only SHARED_TAG presentation via the unchanged B2 headless client.
-  TEXT_LABEL / String-bound Badge explicitly show unsupported String producer, never fabricated text.
-- Edit Mode does not subscribe: **EDITOR PREVIEW**. Inactive Overview/changed Page/hidden tab/disposal
-  fence and clean up delivery. Runtime does not mutate Page/Draft/history/geometry/viewport/control state.
-- **CONTROL RUNTIME NOT ENABLED**. Switch/Push remain Preview-only; navigation remains navigation-only.
-- Separate Binding, availability, sample quality and browser transport. **Transport connected / latest
-  received**, not confirmed replay caught-up, freshness synchronization or exactly-once.
-- Limits: 200 eligible Elements / 200 identities, 512 KiB presentation cache, 5 Hz publication, 1 Hz age;
-  five automatic recovery attempts per rolling 60s, manually rate-limited Retry. No second transport.
-- [dev.10 scope](docs/SCOPE_O2-B3_v1.4.0-dev.10.md) ·
-  [Stage 1 evidence / exact files](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.10.md).
-- Stage 1 **PASS: 997 tests / 63 files**, both typechecks, Client then Server build PASS.
-- Full Client **760/50 PASS**, Full Server **305/21 PASS**, root `npm run check` **PASS**.
-  Strict hygiene / verify:publish / diff verification must pass before the single approved commit/push.
-- No O2-C/O2-D, dependency upgrades, PR/Tag/Release/ZIP.
-  **Owner Local Manual Review PENDING (not yet performed)**. Advisories 5 moderate / 1 high / 1 critical remain unresolved/unaccepted.
+- **v1.4.0-dev.11 — O2-B3 focus / Catalog-refresh lifecycle hotfix**.
+  Approved base `64746ff670abce0539a844afe8f8c254f342b77e` / dev.10 on
+  `arena/01a0d291-modbus-workflow-studio`. Owner Local Manual Review **PENDING**.
+- Initial Catalog load fails closed. Background refresh keeps last confirmed metadata,
+  BOUND resolution and a healthy read-only Runtime session while pending or failed.
+  Failures show a non-blocking, polite text warning; explicit Refresh/focus may retry.
+- Unchanged semantic inputs do not Snapshot/unsubscribe/reconnect. Actual eligible selection,
+  compatibility or relevant Number-unit changes fence and reconcile the session. New object
+  instances, Catalog ordering and unrelated metadata are not lifecycle triggers.
+- Hidden/offline pause and visible/online recovery retain approved B2 behavior. Focus refresh
+  adds no parallel recovery loop. Edit/inactive/Page-navigation/StrictMode fencing remains.
+- Active Overview **View only**, Number/Boolean SHARED_TAG monitoring; String producer unsupported.
+  Binding, transport, availability, sample quality and historical last-good remain separate.
+  **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**; Switch/Push remain Preview-only.
+- No Runtime mutation of Page/Draft/UndoRedo/revision/geometry/savedViewport, no Device connect,
+  acquisition ownership, Modbus write or Workflow command. Server behavior and B2 protocol unchanged.
+- Existing limits: 200 eligible Elements / 200 identities, 512 KiB cache, 5 Hz publication,
+  1 Hz age, five automatic recoveries / rolling 60s and rate-limited manual Retry.
+- [dev.11 acceptance / validation / manual scenarios](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.11.md).
+  The [dev.10 foundation](docs/SCOPE_O2-B3_v1.4.0-dev.10.md) remains applicable except the
+  Catalog refresh behavior explicitly superseded by this hotfix.
+- Stage 1 **871/56 PASS**; Full Client **809/52**, Server **305/21**, root check, strict
+  hygiene (558 files / 0 errors / 0 warnings), verify:publish and diff check **PASS**.
+  One Stage 1 test-harness correction/retry; Full Gates all passed first attempt.
+- No dependencies upgraded, PR/Tag/Release/ZIP, O2-C or O2-D implementation.
+  Existing advisories: 5 moderate / 1 high / 1 critical, unresolved and unaccepted.
 
 ### Operational safety boundary
 

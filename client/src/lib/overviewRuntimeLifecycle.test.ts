@@ -16,6 +16,6 @@ describe('B3 active View / Page session lifecycle',()=>{
  it('approved App remains opt-in via active prop, Provider guards ready/View, navigation fences before await',()=>{
   const page=readFileSync(new URL('../components/overview/OverviewPage.tsx',import.meta.url),'utf8');expect(page).toContain('runtimeViewAllowed(active, mode, runtimeReady, runtimeSelection)');expect(page).toContain('if (request !== runtimePageRequest.current) return');expect(page.indexOf('runtimeAdapter.stop();\n    const session = beginOverviewEdit')).toBeGreaterThan(0);
   const app=readFileSync(new URL('../App.tsx',import.meta.url),'utf8');expect(app).not.toMatch(/TagRuntimeClient|OverviewTagClientAdapter|ws\/tag-runtime/);expect(app).toContain("active={page==='Overview'}");
-  const provider=readFileSync(new URL('../components/overview/OverviewRuntimeProvider.tsx',import.meta.url),'utf8');expect(provider).toContain('if (!enabled)');expect(provider).toContain('visibilitychange');expect(provider).not.toContain('key={pageId}');
+  const provider=readFileSync(new URL('../components/overview/OverviewRuntimeProvider.tsx',import.meta.url),'utf8');const session=readFileSync(new URL('./overviewRuntimeSession.ts',import.meta.url),'utf8');expect(session).toContain('if (!enabled)');expect(session).toContain('visibilitychange');expect(provider).toContain('startOverviewRuntimeSession(adapter, enabled, pageId, selection)');expect(provider).toContain('selection.error, sessionKey]');expect(provider).not.toContain('key={pageId}');
  });
 });

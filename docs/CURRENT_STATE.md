@@ -1,6 +1,36 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.10
+## Current application — v1.4.0-dev.11
+
+Approved O2-B3 Client focus/Catalog-refresh hotfix, base
+`64746ff670abce0539a844afe8f8c254f342b77e` / dev.10; branch
+`arena/01a0d291-modbus-workflow-studio`. Owner authorized Stage 1, Full Gates,
+one commit and normal push. [Current acceptance](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.11.md).
+
+Initial metadata readiness is separate from last confirmed Catalog, background pending and
+background failure. Pending/failed refresh keeps BOUND/selection and the healthy Runtime;
+accessible warning is non-blocking. Semantic selection/compatibility/Number-unit changes
+fence and reconcile; reference-only changes do not restart. No extra reconnect loop.
+Edit/inactive/navigation/visibility/offline/StrictMode fences and Preview-only controls remain.
+No B2 protocol or Server behavior changes except version literals. Dependencies unchanged.
+
+Owner confirmed dev.10 Origin configuration-only resolution and read-only presentation;
+Origin validator/proxy/Client bypass changes are not authorized. O2-D backlog only:
+Origin setup guidance, environment-loading path/restart, template guidance and regression
+coverage. None of that follow-up is implemented here. O2-C/O2-D NOT STARTED.
+
+Stage 1 **871/56 PASS** (one targeted workspace test-harness correction/retry).
+Full Client **809/52**, Server **305/21**, root check, strict hygiene **558/0/0**,
+verify:publish and diff check **PASS**, Full Gates all first attempt. Exact commands/groups
+and evidence limits are in current acceptance. Final Remote verification is reported in
+the delivery handoff; no PR/Tag/Release/ZIP. Existing SSR warnings 66; chunk-size warning remains.
+**Owner Local Manual Review PENDING.** Automated headless/SSR tests are not browser,
+hardware or soak certification. Advisories 5 moderate / 1 high / 1 critical remain
+unresolved/unaccepted; trusted network or authenticated proxy only. No PR/Tag/Release/ZIP.
+
+The following entries are historical, not the authority for dev.11.
+
+## Historical dev.10 application
 
 **O2-B3 Overview Read-only Live Rendering — Owner ACCEPTED Stage 1 / development checkpoint delivery.**
 Base `9d73d96ee910ac3ad1ad2a83a5572dbe77c1b309` / dev.9, branch

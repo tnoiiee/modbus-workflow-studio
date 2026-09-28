@@ -16,6 +16,8 @@ vi.mock('react', async importOriginal => {
   return { ...actual,
     useState: (initial: any) => { const index = hooks.index++; if (!(index in hooks.slots)) hooks.slots[index] = typeof initial === 'function' ? initial() : initial;
       return [hooks.slots[index], (next: any) => { hooks.slots[index] = typeof next === 'function' ? next(hooks.slots[index]) : next; }]; },
+    // This manual-redraw hook harness reads the real Catalog snapshot on each draw.
+    useSyncExternalStore: (_subscribe: unknown, getSnapshot: () => unknown) => getSnapshot(),
     useRef: (initial: any) => { const index = hooks.index++; return hooks.slots[index] ?? (hooks.slots[index] = { current: initial }); },
     useEffect: (effect: () => any) => { hooks.effects.push(effect); }, useCallback: (fn: any) => fn, useMemo: (fn: () => any) => fn(),
   };
