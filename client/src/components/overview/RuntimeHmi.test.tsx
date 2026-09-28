@@ -42,8 +42,8 @@ describe('dev.12 HMI component presentation', () => {
     for (const quality of ['STALE', 'DISCONNECTED'] as const) {
       const p = runtimePresentation(f.element, f.resolution, sampleItem(1, 20, quality), 'Connected');
       const text = visibleText(renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="12s since receive" />));
-      if (quality === 'STALE') { expect(text.match(/STALE/g)).toHaveLength(1); expect(text).toContain('12s since receive'); }
-      else { expect(text.match(/Device disconnected/g)).toHaveLength(1); expect(text).toContain('Last good'); expect(text).not.toContain('DISCONNECTED'); }
+      if (quality === 'STALE') { expect(text.match(/Stale/g)).toHaveLength(1); expect(text).not.toContain('12s since receive'); }
+      else { expect(text.match(/Disconnected/g)).toHaveLength(1); expect(text).toContain('Historical'); expect(text).not.toContain('DISCONNECTED'); }
       expect(text).not.toContain('READ_OK');
     }
   });
@@ -60,7 +60,7 @@ describe('dev.12 HMI component presentation', () => {
     for (const quality of ['BAD', 'DISCONNECTED'] as const) {
       const p = runtimePresentation(f.element, f.resolution, sampleItem(1, false, quality), 'Connected');
       const html = renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="" />);
-      expect(html).toContain('Last good'); expect(html).toContain('lamp-unavailable'); expect(html).not.toContain('lamp-false');
+      expect(html).toContain('Historical'); expect(html).toContain('lamp-unavailable'); expect(html).not.toContain('lamp-false');
     }
   });
   it.each([4.25, false, true])('Value Badge %s is compact without conversion', value => {
@@ -75,7 +75,7 @@ describe('dev.12 HMI component presentation', () => {
     const f = configuration(1, 'TEXT_LABEL'); f.element.style.text = 'Operator caption';
     const p = runtimePresentation(f.element, f.resolution, undefined, 'Connected');
     const text = visibleText(renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="" />));
-    expect(text.match(/Operator caption/g)).toHaveLength(1); expect(text).toContain('—'); expect(text).toContain('Unsupported producer'); expect(text).not.toContain('MISSING');
+    expect(text.match(/Operator caption/g)).toHaveLength(1); expect(text).toContain('—'); expect(text).toContain('Unsupported'); expect(text).not.toContain('MISSING');
   });
   it('micro Element retains full accessible value/status and points to keyboard Page Details', () => {
     const { f, p } = view('NUMERIC_LABEL', 'Very long configured caption', 1.123456789); f.element.width = 24; f.element.height = 24;

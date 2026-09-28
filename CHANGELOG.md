@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.4.0-dev.15] - O2-B3 React Flow Canvas HMI Visual Refinement (2026-09-29)
+
+- Owner selected A+B: industrial reading hierarchy plus compact, low-noise composition.
+  Canvas/Elements only; Page background, application shell and Page Runtime status unchanged.
+- Remove quality rail paint in View/Edit while retaining abnormal 2px allocation, selection,
+  resize handles and Binding/EDITOR PREVIEW chrome. No geometry or viewport mutation.
+- Pure Canvas wording helper shortens operator states; No data/Uncertain/Stale/BAD/Disconnected/
+  Unsupported, explicit Historical/Cached, no raw reason codes or GOOD badge. Canonical projection,
+  formatting/precision, Details diagnostics and Runtime lifecycle are unchanged.
+- Geometry-only stable status row or critical-marker slot; optional Caption/Unit/Light words and
+  inline Details yield to primary reading/critical state when space is insufficient. Full accessible
+  information and existing Page-level fallback remain; no eligibility/schema changes.
+- One visible PREVIEW ONLY per Switch/Push Button, full accessible no-command description,
+  unchanged Preview callbacks. Navigation gains directional glyph/link-like appearance, unchanged
+  navigation behavior. Empty Text has no generic fallback; Image/Picture remain placeholders.
+- Owner colors/alpha/frame/legacy opacity preserved; no automatic contrast correction or migration.
+  Add 99 tests across 3 suites; Stage 1 1428/89 unique, Full Client 1105/65, Server 323/24,
+  standalone typechecks/builds and root check PASS first attempts. No failed gates/retries.
+- Browser geometry/contrast/screen-reader/manual review PENDING. Server version-only; dependencies
+  unchanged. No Production Control, assets, O2-C/O2-D, PR/tag/release/ZIP.
+
 ## [1.4.0-dev.14] - O2-B3 HMI Authoring UX and Presentation Schema (2026-09-29)
 
 - Add only optional captionFontSize/valueFontSize/backgroundOpacity/showBorder presentation

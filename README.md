@@ -1,49 +1,52 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.14
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.15
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-**v1.4.0-dev.14 — O2-B3 HMI Authoring UX and Presentation Schema**. Approved base
-`20ba4edc09592f230d3a9ad3c2c687a1a05746b1` / dev.13, branch
-`arena/01a0d291-modbus-workflow-studio`. Owner **APPROVED dev.13 functionality and
-Edit/View HMI parity**. Dev.14 Owner local manual review remains PENDING.
+**v1.4.0-dev.15 — O2-B3 Canvas HMI Visual Refinement (A+B)**. Approved base
+`0d4147d61fe89b875caa425b148ae94c636036c5` / dev.14, branch
+`arena/01a0d291-modbus-workflow-studio`. Owner local manual review **PASS for dev.14**;
+**dev.15 Owner local manual review PENDING**.
 
-- Only four new optional style fields: `captionFontSize`, `valueFontSize`,
-  `backgroundOpacity`, `showBorder`. No bulk migration; opening a Page/Inspector does not
-  write resolved defaults or mark it dirty. Server passthrough is unchanged.
-- Independent Caption/Value sizes, 8–96 px, live Edit-only preview, Inherited/Custom indication
-  and explicit reset. Existing `fontSize` remains Legacy/Base; absent overrides keep dev.13
-  formulas. New Monitoring captions default 11 px, Number/Badge values 16 px, Light text 12 px.
-  Empty captions remain absent; custom value size does not scale the Unit or Light.
-- Background Opacity is 0–100% of the existing background color alpha, stored as 0–1;
-  absent fallback 1. It affects the outer background paint layer only, not text/icon/border/
-  focus/warnings/intrinsic controls. **Overall Opacity — legacy** remains independent and
-  still affects the complete Element; existing values are not converted or reset.
-- Show Border controls only the outer frame (default On), preserving border width/space.
-  Light, Control, Navigation, placeholder and Divider representations, focus/selection and
-  PREVIEW / CONTROL RUNTIME NOT ENABLED remain intact. No Picture Box/asset implementation.
-- Details uses a centered decorative SVG in a 24×24 px target and fixed action gutter when
-  dimensions permit. Tiny Elements use the keyboard-accessible Page safety/Element Details path;
-  stored geometry is never enlarged. Details eligibility is unchanged.
-- Inspector groups Content, Typography, Appearance, Border, Layout, Binding/Navigation,
-  Preview information and Actions; existing fields remain available in contextual/Advanced groups.
-- Runtime details & safety opens a bounded, internally scrolling **non-modal portal panel**.
-  No in-flow expansion or Canvas height animation. Escape/Close, no Tab trap, no-scroll focus
-  return; Element Details handoff closes the panel before opening the existing dialog.
-  Only this UI leaf is keyed by Page, never Runtime provider or Canvas. Operational callouts remain.
-- Stage 1 **1329 tests / 86 unique files PASS**, both typechecks/builds PASS. Full Client
-  **1006/62**, Full Server **323/24**, `npm run check` PASS. Strict hygiene **592/0/0**,
-  complete worktree **294/0/0**, `verify:publish` and diff check PASS. Final staged/Remote
-  evidence belongs in the delivery handoff; [acceptance](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.14.md).
-- [dev.14 scope](docs/SCOPE_O2-B3_v1.4.0-dev.14.md). Browser geometry, mounted keyboard behavior
-  and screen-reader review remain **PENDING**. SSR/CSS/callback/headless evidence is not those
-  certifications, hardware or soak proof. Existing 66 SSR warnings, chunk warning and advisories
-  **5 moderate / 1 high / 1 critical** remain unresolved/unaccepted.
-- Catalog/focus/lifecycle, B1/B2, Binding/quality/availability, persistence transactions,
-  geometry/viewport, Device/Manual Disconnect, Controls/Navigation and write safety unchanged.
-  Server production version-only; dependencies/scanner unchanged. No PR/tag/release/ZIP.
-  **O2-C/O2-D NOT STARTED.**
+- Canvas/Element presentation only. High-performance industrial HMI with compact, low-noise
+  composition. No mandatory equipment-card style: Owner Background/Border remain authoritative.
+  The Page background is intentionally configurable, not a defect; no shell/header/status-bar redesign.
+- Remove Runtime rail paint in both modes, preserving the existing abnormal 2px border allocation.
+  Normal inset, outer dimensions and stored geometry are unchanged by rail removal. Edit selection,
+  resize handles and external EDITOR PREVIEW / Binding chrome remain.
+- Monitoring has primary Value/Light, concise abnormal status, secondary Caption/Unit and Details.
+  GOOD has no badge; No data/Uncertain/Stale/BAD/Disconnected/Unsupported are concise. Historical
+  and Cached qualifiers remain explicit; canonical values, quality and availability are unchanged.
+  Large layouts use a stable status row; tight layouts use a separate critical-marker column with
+  full accessible status. Slot decisions use geometry/configuration, never a live sample.
+- Light retains filled/dot TRUE, hollow/minus FALSE and dashed/question unavailable. Show Text
+  controls optional visible words; tight layouts prioritize the lamp and abnormal marker.
+  Background Opacity and Show Border do not hide intrinsic indicators. No command behavior.
+- Switch/Push Button have one visible **PREVIEW ONLY** marker and a full accessible description:
+  Control Runtime is not enabled; UI preview only, no Device or Workflow command. Existing Preview
+  handlers/state path are unchanged. Navigation uses a directional glyph/link-like treatment,
+  not a Preview or process-command appearance. Its navigation handler is unchanged.
+- Empty Text does not invent generic Element-type labels. Image/Picture remain glyph/dashed
+  placeholders only, with accessible descriptions; no assets/O2-C. Details is 24px where it fits,
+  otherwise the dev.14 Page-level fallback remains. Eligibility, Details and safety overlay unchanged.
+- No persisted fields added; dev.14 fields/defaults/fallbacks and Inspector behavior unchanged.
+  No migration, automatic color correction, opaque fill injection or autosize. Owner colors,
+  RGBA alpha multiplier and legacy Overall Opacity remain independent and preserved.
+- Stage 1 **1428 tests / 89 unique files PASS**, both standalone typechecks/builds PASS.
+  Full Client **1105/65**, Server **323/24**, `npm run check` PASS. Strict hygiene **614/0/0**,
+  complete worktree **300/0/0**, verify:publish and diff checks PASS. Final staged/Remote evidence
+  belongs in the delivery handoff; [acceptance](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.15.md).
+- [Scope](docs/SCOPE_O2-B3_v1.4.0-dev.15.md). Browser bounding-box/contrast measurements and
+  screen-reader observations remain **PENDING**. SSR/CSS/deterministic callback tests are not
+  Browser or hardware/soak certification. Very small geometry and extreme fonts/opacity cannot
+  guarantee readable text; full accessible information remains, with eligible Monitoring fallback.
+  Future contrast/minimum-usable-size guidance is documentation only, not an implemented feature.
+- Catalog/focus/lifecycle, B1/B2, Binding/quality/availability, Page transactions/geometry/viewport,
+  Device/Manual Disconnect, Control/Navigation behavior, Workflow/Monitor/Traffic/write safety locked.
+  Production Server version-only; dependencies/scanner unchanged. Existing 66 SSR warnings,
+  chunk warning and advisories **5 moderate / 1 high / 1 critical** remain unresolved/unaccepted.
+  No PR/tag/release/ZIP. **O2-C/O2-D NOT STARTED.**
 
 ### Operational safety boundary
 

@@ -1,6 +1,56 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.14
+## Current application — v1.4.0-dev.15
+
+Approved base **0d4147d61fe89b875caa425b148ae94c636036c5 / dev.14**, branch
+`arena/01a0d291-modbus-workflow-studio`. Owner dev.14 local manual review **PASS**.
+Selected direction **A+B**: industrial HMI with compact low-noise Canvas Element composition.
+**Dev.15 Owner Local Manual Review PENDING.** No application-shell or Page-background redesign.
+
+Runtime rail paint removed in both modes; existing abnormal 2px allocation preserved, no new
+normal inset. Selection/resize/Binding chrome remain. Monitoring displays projected values and
+one concise operator status, explicit Historical/Cached; stable status row or separate marker
+slot determined only by geometry/configuration. Light remains passive and symbol-distinct.
+Switch/Push Button show PREVIEW ONLY once plus full accessible no-command description; original
+handlers/state path unchanged. Navigation glyph/link-like appearance, original handler unchanged.
+Empty Text has no generic visible fallback. Image/Picture remain placeholders; no assets/O2-C.
+
+No persisted field added. dev.14 style model/defaults/validation/Inspector/base-font fallback,
+background alpha and legacy whole-element opacity preserved. No migration or read-time writes.
+No automatic color correction, opaque fill injection, autosize or new small-mode property.
+Details eligibility/overlay, Page fallback, Page status and all protected Runtime functions unchanged.
+
+Recovery verified Actual Remote, compared and preserved **294 files byte-identical** to approved
+archive, then CAS update-ref/read-tree without -u changed only metadata. Dependencies restored
+once. External backups/logs are ephemeral; docs/commit/final handoff are durable evidence.
+
+Stage 1 **1428 tests / 89 unique files PASS**: Canvas/HMI 304/16; Runtime/Catalog 179/9;
+protected editor 378/18; remaining Client 244/22; Server 323/24. A final paint/Preview review
+recheck passed 54/2 (not counted again). Both standalone typechecks/builds PASS. Full Client
+**1105/65**, Full Server **323/24**, root check PASS. No failed command or correction/retry.
+Strict hygiene **614/0/0**, complete worktree **300/0/0**, verify:publish/diff checks **PASS**.
+Final scope **29 files: 23 modified / 6 new**. Final staged scan/Remote/clean-tree evidence
+belongs in the delivery handoff.
+
+Protected: Page background/shell/header/command bar/status, dev.14 schema/Inspector, Canvas
+engine/geometry/savedViewport, Page revision/Draft/history/Save/Cancel, B1/B2/B3, Focus/Catalog,
+Binding/quality/availability, Device/Manual Disconnect, Controls/Navigation, Workflow/Monitor/
+Traffic/legacy WS/write safety. Server production version-only; scanner/dependencies unchanged.
+
+Browser bounding-box/contrast measurements, mounted keyboard and screen-reader observations
+remain **PENDING**. SSR/CSS/callback evidence is not Browser, hardware, performance or soak proof.
+Arbitrarily small geometry and extreme fonts/colors/legacy opacity cannot guarantee readable
+text. Accessible descriptions/eligible Page fallback retained; future contrast/minimum-size
+advice only, no enforcement or automatic correction. Existing 66 SSR warnings per full Client
+run and Vite chunk warning remain. Build: 1818 modules, JS 765.47 kB / gzip 220.96 kB, CSS
+164.12 kB / gzip 25.39 kB. Advisories 5 moderate / 1 high / 1 critical unresolved/unaccepted.
+No PR/tag/release/ZIP; O2-C/O2-D NOT STARTED.
+
+[Scope](SCOPE_O2-B3_v1.4.0-dev.15.md) · [Acceptance](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.15.md).
+Final staged/Remote/clean-tree verification belongs in the delivery handoff. Historical pending
+states below do not override the latest Owner review.
+
+## Historical dev.14 checkpoint (Owner local manual review subsequently PASS)
 
 Approved base **20ba4edc09592f230d3a9ad3c2c687a1a05746b1 / dev.13**; branch
 `arena/01a0d291-modbus-workflow-studio`. Owner approved dev.13 functionality and HMI parity.

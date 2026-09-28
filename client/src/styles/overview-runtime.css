@@ -15,9 +15,9 @@
 .overview-runtime-reading { display: flex; align-items: baseline; justify-content: var(--reading-align, flex-start); overflow: hidden; gap: 5px; min-width: 0; flex: 0 0 auto; font-size: inherit; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .overview-runtime-unit { flex: 0 1 auto; font-size: .6em; font-weight: 400; letter-spacing: 0; opacity: .8; }
 .overview-runtime-number { min-width: 1ch; }
-.overview-runtime-abnormal { display: flex; align-items: center; gap: 4px; min-width: 0; flex: 0 0 auto; font-size: 11px; font-weight: 600; color: var(--runtime-color, #cbd5e1); }
+.overview-runtime-abnormal { display: flex; align-items: center; gap: 4px; min-width: 0; flex: 0 0 auto; font-size: 11px; font-weight: 600; color: inherit; }
 .overview-runtime-attention { flex: 0 0 auto; font-size: 10px; width: 12px; text-align: center; border: 1px solid currentColor; border-radius: 3px; }
-.overview-runtime-value.has-abnormal { border-left: 2px solid var(--runtime-color, #94a3b8); }
+.overview-runtime-value.has-abnormal { border-left: 2px solid transparent; }
 .overview-runtime-value.is-good { --runtime-color: #6ee7b7; }
 .overview-runtime-value.is-stale { --runtime-color: #fbbf24; }
 .overview-runtime-value.is-uncertain, .overview-runtime-value.is-cached { --runtime-color: #c4b5fd; }
@@ -43,7 +43,7 @@
 .overview-runtime-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .overview-runtime-status :is(button,summary):focus-visible, .overview-runtime-detail-button:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -2px; }
 /* Control warnings are never hidden by Monitoring-only rules. */
-.overview-control-runtime-warning { display: block; font-size: 10px; font-weight: 600; color: #fbbf24; line-height: 1.2; overflow: hidden; }
+.overview-control-runtime-warning { display: block; flex: 0 0 auto; padding: 0 2px; text-align: center; font-size: 9px; font-weight: 650; color: inherit; line-height: 1.4; letter-spacing: .02em; white-space: nowrap; overflow: hidden; }
 @media (prefers-reduced-motion: reduce) { .overview-runtime-value, .overview-runtime-value * { animation: none; transition: none; } }
 @media (max-width: 600px) { .overview-runtime-details { grid-template-columns: 1fr; } .overview-runtime-trust { margin-left: 0; } }
 
@@ -87,3 +87,26 @@
 @keyframes runtime-safety-enter { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .overview-runtime-safety-panel { animation: none; } }
 @media (max-width: 600px) { .overview-runtime-status > .overview-runtime-safety-trigger { grid-column: 1; grid-row: auto; } .overview-runtime-safety-panel { top: 16px; max-height: calc(100dvh - 32px); } }
+
+/* A+B Canvas-only composition. Abnormal rail paint is transparent; its original
+   2px allocation is retained. Normal inset is unchanged. Slots use configuration only. */
+.overview-runtime-value.has-status-row .overview-runtime-abnormal { min-height: 13px; line-height: 13px; }
+.overview-runtime-abnormal[data-empty] { visibility: hidden; }
+.overview-runtime-value.has-status-marker { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 12px); grid-template-rows: auto minmax(0, 1fr); align-content: center; align-items: center; column-gap: 4px; }
+.overview-runtime-value.has-status-marker > .overview-runtime-caption:not(.overview-runtime-sr) { grid-column: 1 / -1; grid-row: 1; }
+.overview-runtime-value.has-status-marker > .overview-runtime-reading { grid-column: 1; grid-row: 2; min-height: 0; }
+.overview-runtime-value.has-status-marker > .overview-runtime-abnormal { grid-column: 2; grid-row: 2; min-width: 0; min-height: 0; overflow: hidden; }
+.overview-runtime-value.has-status-marker:not(.has-caption) { grid-template-rows: minmax(0, 1fr); }
+.overview-runtime-value.has-status-marker:not(.has-caption) > :is(.overview-runtime-reading, .overview-runtime-abnormal) { grid-row: 1; }
+.overview-runtime-value.has-status-row .overview-runtime-reading { min-height: 0; flex-shrink: 1; }
+.overview-runtime-value.is-tiny { padding: 0; gap: 0; }
+.overview-runtime-value.is-tiny.has-status-marker { grid-template-columns: minmax(0, 1fr) minmax(0, 35%); }
+.overview-runtime-value.is-tiny .overview-runtime-attention { width: 100%; min-width: 0; flex-shrink: 1; line-height: 1; border-width: 0; }
+.overview-runtime-value.has-status-marker .overview-runtime-attention { color: inherit; }
+.overview-element .overview-runtime-detail-button:focus-visible { outline: 2px solid #fff; outline-offset: -2px; box-shadow: inset 0 0 0 4px #111; }
+/* Compact badges keep Caption beside the reading, never above it in a short box. */
+.overview-runtime-value.has-status-marker.is-compact:not(.is-micro):not(.is-light).has-caption { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 12px; grid-template-rows: minmax(0, 1fr); }
+.overview-runtime-value.has-status-marker.is-compact:not(.is-micro):not(.is-light).has-caption > .overview-runtime-caption:not(.overview-runtime-sr) { grid-column: 1; grid-row: 1; }
+.overview-runtime-value.has-status-marker.is-compact:not(.is-micro):not(.is-light).has-caption > .overview-runtime-reading { grid-column: 2; grid-row: 1; }
+.overview-runtime-value.has-status-marker.is-compact:not(.is-micro):not(.is-light).has-caption > .overview-runtime-abnormal { grid-column: 3; grid-row: 1; }
+.overview-runtime-value.has-status-marker > .overview-runtime-reading { max-height: 100%; }

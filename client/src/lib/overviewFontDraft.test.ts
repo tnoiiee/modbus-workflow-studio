@@ -52,7 +52,7 @@ describe('O2-A punchlist real-time Font Size Draft', () => {
     const preview = page.slice(page.indexOf('const previewFontSize'), page.indexOf('const previousPresentation'));
     expect(preview).not.toMatch(/setDraft|setHistory|updateOverviewPage|setSaveState/);
     const node = readFileSync(new URL('../components/overview/ElementNode.tsx', import.meta.url), 'utf8');
-    expect(node).toContain('Editor Preview'); expect(node).toContain('resolution.status'); expect(node).toContain('CONTROL RUNTIME NOT ENABLED');
+    expect(node).toContain('EDITOR PREVIEW'); expect(node).toContain('resolution?.status'); expect(node).toContain('PREVIEW ONLY'); expect(node).toContain('Control Runtime is not enabled');
     const css = readFileSync(new URL('../styles/overview.css', import.meta.url), 'utf8');
     expect(css).toContain('.overview-element__body .overview-element__value { font-size: inherit; }');
   });

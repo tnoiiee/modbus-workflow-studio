@@ -1,9 +1,9 @@
 import { Info } from 'lucide-react';
-import { hasInlineRuntimeAction } from '../../lib/overviewPresentationStyle.js';
+import { canvasMonitoringLayout, canvasRuntimeStatus } from '../../lib/overviewCanvasPresentation.js';
 import type { CSSProperties } from 'react';
 import type { OverviewElement } from '../../lib/overviewElements.js';
 import type { BindingResolution } from '../../lib/overviewBinding.js';
-import { captionText, presentationAge, runtimePresentation, operatorRuntimeStatus } from '../../lib/overviewRuntimePresentation.js';
+import { captionText, presentationAge, runtimePresentation } from '../../lib/overviewRuntimePresentation.js';
 import { useOverviewRuntime, useRuntimeClock, useRuntimeItem, useRuntimeStatus } from './OverviewRuntimeProvider.js';
 import type { OverviewTagClientAdapter } from '../../lib/overviewTagClientAdapter.js';
 export function RuntimeMonitoring({ element, resolution }: { element: OverviewElement; resolution?: BindingResolution }) {
@@ -25,21 +25,23 @@ export function RuntimeMonitoringView({ element, presentation: p, age, onDetails
   element: OverviewElement; presentation: ReturnType<typeof runtimePresentation>; age: string; onDetails?: () => void; editorPreview?: boolean;
 }) {
   const caption = element.style.text.trim();
-  const status = editorPreview ? (p.text === '—' ? 'Unsupported producer' : '') : operatorRuntimeStatus(p, age);
+  const layout = canvasMonitoringLayout(element);
+  const status = canvasRuntimeStatus(p, age, layout.roomy, editorPreview);
+  const fullStatus = canvasRuntimeStatus(p, age, true, editorPreview);
   const light = element.type === 'STATUS_LIGHT';
-  const hideText = light && element.style.showText === false;
+  const hideText = light && (element.style.showText === false || !layout.lightText);
   const alignment = { left: 'flex-start', center: 'center', right: 'flex-end' }[element.style.alignment];
-  const inlineAction = hasInlineRuntimeAction(element);
-  const compact = element.type === 'VALUE_BADGE' || element.height < 64;
-  const micro = element.width < 112 || element.height < 36;
-  const accessible = [caption, `${p.fullValue}${p.unit ? ` ${p.unit}` : ''}`, status, onDetails && !inlineAction ? 'Runtime details available from Page Runtime details and safety' : '', editorPreview ? 'EDITOR PREVIEW · representative value, not Runtime' : 'Read-only monitoring'].filter(Boolean).join(' · ');
-  return <span className={`overview-runtime-value is-${p.tone}${caption ? ' has-caption' : ''}${compact ? ' is-compact' : ''}${micro ? ' is-micro' : ''}${status ? ' has-abnormal' : ''}${light ? ' is-light' : ''}${inlineAction ? ' has-action-slot' : ' has-page-action'}`} style={{ '--reading-align': alignment } as CSSProperties} data-editor-preview={editorPreview || undefined} role="group" aria-label={accessible} title={accessible} data-runtime-tone={p.tone}>
-    {caption && <span className="overview-runtime-caption" style={element.style.captionFontSize === undefined ? undefined : { fontSize: element.style.captionFontSize }} title={caption}>{captionText(caption)}</span>}
-    <span className="overview-runtime-reading">
+  const { inlineAction, compact, micro } = layout;
+  const accessible = [caption, `${p.fullValue}${p.unit ? ` ${p.unit}` : ''}`, fullStatus, onDetails && !inlineAction ? 'Runtime details available from Page Runtime details and safety' : '', editorPreview ? 'EDITOR PREVIEW · representative value, not Runtime' : 'Read-only monitoring'].filter(Boolean).join(' · ');
+  return <span className={`overview-runtime-value is-${p.tone}${caption && layout.caption ? ' has-caption' : ''}${compact ? ' is-compact' : ''}${micro ? ' is-micro' : ''}${status ? ' has-abnormal' : ''}${light ? ' is-light' : ''}${inlineAction ? ' has-action-slot' : ' has-page-action'}${layout.statusRow ? ' has-status-row' : ' has-status-marker'}${layout.tiny ? ' is-tiny' : ''}`} style={{ '--reading-align': alignment } as CSSProperties} data-editor-preview={editorPreview || undefined} role="group" aria-label={accessible} title={accessible} data-runtime-tone={p.tone}>
+    {caption && <span className={layout.caption ? "overview-runtime-caption" : "overview-runtime-caption overview-runtime-sr"} aria-hidden="true" style={element.style.captionFontSize === undefined ? undefined : { fontSize: element.style.captionFontSize }} title={caption}>{captionText(caption)}</span>}
+    <span className="overview-runtime-reading" aria-hidden="true">
       {light && <i className={`overview-runtime-lamp lamp-${p.lamp}`} aria-hidden="true">{p.lamp === 'true' ? '●' : p.lamp === 'false' ? '−' : '?'}</i>}
-      <span className={hideText ? "overview-runtime-sr" : "overview-runtime-number"} style={element.style.valueFontSize === undefined ? undefined : { fontSize: element.style.valueFontSize }}>{p.text}</span>{p.unit && <span className="overview-runtime-unit" title={p.unit}>{captionText(p.unit, 16)}</span>}
+      <span className={hideText ? "overview-runtime-sr" : "overview-runtime-number"} style={element.style.valueFontSize === undefined ? undefined : { fontSize: element.style.valueFontSize }}>{p.text}</span>{p.unit && <span className={layout.unit ? "overview-runtime-unit" : "overview-runtime-unit overview-runtime-sr"} title={p.unit}>{captionText(p.unit, 16)}</span>}
     </span>
-    {status && <span className="overview-runtime-abnormal" title={status}><span className="overview-runtime-attention" aria-hidden="true">!</span><span className="overview-runtime-status-text">{status}</span></span>}
+    <span className="overview-runtime-abnormal" data-empty={!status || undefined} aria-hidden="true" title={fullStatus || undefined}>
+      {status && <><span className="overview-runtime-attention">!</span><span className={layout.statusRow ? "overview-runtime-status-text" : "overview-runtime-status-text overview-runtime-sr"}>{status}</span></>}
+    </span>
     {onDetails && inlineAction && <button type="button" className="overview-runtime-detail-button nodrag nopan" aria-label={`Runtime details: ${caption || element.name}`} title="Runtime details" onClick={e => { e.stopPropagation(); onDetails(); }}><Info size={16} aria-hidden="true" focusable="false" /></button>}
   </span>;
 }

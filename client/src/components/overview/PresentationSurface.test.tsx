@@ -28,7 +28,7 @@ describe('dev.14 scoped paint layer and complete frame applicability matrix', ()
       if (type==='NAVIGATION_LINK') expect(off).toContain('overview-element__preview--link');
       if (['STATIC_IMAGE','PICTURE_BOX'].includes(type)) expect(off).toContain('overview-element__preview--picture');
       if (type==='DIVIDER') expect(off).toContain('overview-element__preview--divider');
-      if (['SWITCH','PUSH_BUTTON'].includes(type)) expect(off).toContain('CONTROL RUNTIME NOT ENABLED');
+      if (['SWITCH','PUSH_BUTTON'].includes(type)) expect(off).toContain('PREVIEW ONLY');
       e.style.showBorder=true;
     }
   });
@@ -51,11 +51,11 @@ describe('dev.14 scoped paint layer and complete frame applicability matrix', ()
 });
 describe('dev.14 custom font surface and contextual Inspector', () => {
   it.each(['NUMERIC_LABEL','VALUE_BADGE','STATUS_LIGHT','TEXT_LABEL'] as const)('%s custom Caption and Value do not change base/unit/lamp scales or geometry', type => {
-    const f=configuration(1,type); f.element.style.captionFontSize=24; f.element.style.valueFontSize=40; f.element.style.showText=true;
+    const f=configuration(1,type); f.element.style.captionFontSize=24; f.element.style.valueFontSize=40; f.element.style.showText=true; f.element.width=400; f.element.height=160;
     const before=JSON.stringify(f.element);
     const edit=render(<EditorMonitoring element={f.element} resolution={f.resolution}/>);
     const view=render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element,f.resolution,sampleItem(1,type==='STATUS_LIGHT'?false:8888.88),'Connected')} age=""/>);
-    for(const html of [edit,view]) { expect(html).toContain('class="overview-runtime-caption" style="font-size:24px"'); expect(html).toContain('class="overview-runtime-number" style="font-size:40px"'); expect(html).not.toMatch(/overview-runtime-unit" style=|overview-runtime-lamp[^>]+style=/); }
+    for(const html of [edit,view]) { expect(html).toContain('class="overview-runtime-caption" aria-hidden="true" style="font-size:24px"'); expect(html).toContain('class="overview-runtime-number" style="font-size:40px"'); expect(html).not.toMatch(/overview-runtime-unit" style=|overview-runtime-lamp[^>]+style=/); }
     expect(JSON.stringify(f.element)).toBe(before); expect(f.element.style.fontSize).toBe(16);
   });
   it('legacy fallback adds no inline sizes; empty caption creates no node; long value stays accessible', () => {

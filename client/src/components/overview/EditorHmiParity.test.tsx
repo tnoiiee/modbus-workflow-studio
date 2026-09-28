@@ -9,7 +9,7 @@ import { createOverviewElement, validateOverviewElements } from '../../lib/overv
 import * as provider from './OverviewRuntimeProvider.js';
 
 const render = renderToStaticMarkup;
-const reading = (html: string) => html.match(/<span class="overview-runtime-reading">.*?<\/span><\/span>/)?.[0];
+const reading = (html: string) => html.match(/<span class="overview-runtime-reading"[^>]*>.*?<\/span><\/span>/)?.[0];
 const plain = (html: string) => html.replace(/<[^>]*>/g, '');
 const css = readFileSync(new URL('../../styles/overview-runtime.css', import.meta.url), 'utf8');
 describe('dev.13 shared Edit/View HMI surface (SSR/CSS contracts, not browser layout proof)', () => {
@@ -72,7 +72,7 @@ describe('dev.13 shared Edit/View HMI surface (SSR/CSS contracts, not browser la
   it('String preview remains unsupported rather than a fabricated process value', () => {
     const f = configuration(1, 'TEXT_LABEL'); f.element.style.text = 'Configured caption';
     const html = render(<EditorMonitoring element={f.element} resolution={f.resolution} />);
-    expect(plain(html)).toBe('Configured caption—!Unsupported producer');
+    expect(plain(html)).toBe('Configured caption—!Unsupported');
     expect(html).not.toContain('8888.88');
   });
 });
@@ -80,7 +80,7 @@ describe('dev.13 shared Edit/View HMI surface (SSR/CSS contracts, not browser la
 describe('dev.13 Status Light presentation-only schema', () => {
   it('new default is Off; absent legacy setting retains visible text without migration', () => {
     const f = configuration(1, 'STATUS_LIGHT'); expect(f.element.style.showText).toBe(false);
-    delete f.element.style.showText; delete f.element.style.valueFontSize; delete f.element.style.captionFontSize; const before = JSON.stringify(f.element);
+    f.element.width = 160; f.element.height = 96; delete f.element.style.showText; delete f.element.style.valueFontSize; delete f.element.style.captionFontSize; const before = JSON.stringify(f.element);
     const html = render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element, f.resolution, sampleItem(1, false), 'Connected')} age="" />);
     expect(html).toContain('overview-runtime-number">FALSE'); expect(JSON.stringify(f.element)).toBe(before);
   });
@@ -90,10 +90,10 @@ describe('dev.13 Status Light presentation-only schema', () => {
     expect(validateOverviewElements({ id: 'page', layerOrder: [copy.id] }, [copy])).toEqual([]);
     expect(copy).toEqual(f.element); expect([copy.width, copy.height]).toEqual([48, 48]);
     const edit = render(<EditorMonitoring element={copy} resolution={f.resolution} />);
-    expect(edit).toMatch(new RegExp(`${showText ? 'overview-runtime-number' : 'overview-runtime-sr'}"[^>]*>FALSE`));
+    expect(edit).toMatch(/overview-runtime-sr"[^>]*>FALSE/); // Small light reserves indicator/critical marker before optional words.
   });
   it.each([true, false])('TRUE/FALSE remain distinct with Show Text %s and accessible status', showText => {
-    const f = configuration(1, 'STATUS_LIGHT'); f.element.style.text = ''; f.element.style.showText = showText;
+    const f = configuration(1, 'STATUS_LIGHT'); f.element.style.text = ''; f.element.style.showText = showText; f.element.width = 160; f.element.height = 96;
     for (const value of [true, false]) {
       const html = render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element, f.resolution, sampleItem(1, value), 'Connected')} age="" />);
       expect(html).toContain(`lamp-${value}`); expect(html).toContain(value ? '●' : '−');
@@ -106,7 +106,7 @@ describe('dev.13 Status Light presentation-only schema', () => {
     const f = configuration(1, 'STATUS_LIGHT'); const item = state === 'no sample' ? undefined : sampleItem(1, false, state);
     const html = render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element, f.resolution, item, 'Connected')} age="" />);
     expect(html).toContain('lamp-unavailable'); expect(html).toContain('>?</i>'); expect(html).not.toContain('lamp-false');
-    expect(html).toContain(state === 'no sample' ? 'Awaiting data' : state === 'BAD' ? 'BAD sample' : 'Device disconnected');
+    expect(html).toContain(state === 'no sample' ? 'No data' : state === 'BAD' ? 'BAD' : 'Disconnected');
   });
   it('only Status Light accepts a boolean Show Text property; no coercion or new control field', () => {
     for (const [type, value] of [['NUMERIC_LABEL', true], ['STATUS_LIGHT', 'false'], ['STATUS_LIGHT', 0]] as const) {

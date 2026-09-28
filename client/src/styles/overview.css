@@ -1238,3 +1238,12 @@
 .element-inspector__preview-info { padding: 10px; font-size: 12px; background: var(--color-surface-1); border-radius: 6px; }
 .element-inspector__preview-info h4 { font-size: 12px; }
 .element-inspector__preview-info p { margin-bottom: 0; }
+
+/* Canvas-only Control Preview and navigation affordances; handlers/state remain unchanged. */
+.overview-element.is-control-preview > .overview-element__body { padding: 0 4px; }
+.overview-element.is-control-preview :is(.overview-element__preview--switch, .overview-element__preview--button) { max-width: 100%; max-height: 100%; min-width: 0; min-height: 0; padding: 2px 4px; line-height: 1.1; gap: 4px; }
+.overview-element__control-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.overview-element__preview--link { gap: 6px; max-width: 100%; min-width: 0; padding: 2px 4px; border-color: transparent; background: transparent; color: inherit; text-transform: none; letter-spacing: normal; text-decoration: underline; text-underline-offset: 3px; }
+.overview-element__preview--link svg, .overview-element__preview--picture svg { flex: 0 0 auto; }
+.overview-element__preview--picture > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.overview-element .overview-element__preview--interactive:focus-visible { outline: 2px solid #fff; outline-offset: -2px; box-shadow: inset 0 0 0 4px #111; }
