@@ -1,3 +1,5 @@
+import { RuntimeMonitoring } from './RuntimeMonitoring.js';
+import { isRuntimeMonitoring } from '../../lib/overviewRuntimeSelection.js';
 import type { BindingResolution } from '../../lib/overviewBinding.js';
 import { memo, useCallback, useState, type CSSProperties, type ReactNode } from 'react';
 import { NodeResizer, type NodeProps } from '@xyflow/react';
@@ -129,6 +131,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
     borderRadius: style.borderRadius,
   };
 
+  const runtimeMonitoring = !edit && category === 'MONITORING' && isRuntimeMonitoring(type);
   const showResizeHandles = edit && selected && !element.locked;
   // Contract: locked Element → no handles; VIEW Mode → no handles (eight when editable).
 
@@ -171,16 +174,17 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
           </span>
         ) : null}
 
-        <span className="overview-element__body">{renderPreview(element, { switchOn, switchPending, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
+        <span className="overview-element__body">{runtimeMonitoring ? <RuntimeMonitoring element={element} resolution={resolution} /> : renderPreview(element, { switchOn, switchPending, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
 
-        {category === 'MONITORING' ? (
+        {category === 'MONITORING' && !runtimeMonitoring ? (
           <span className="overview-element__badge overview-element__badge--preview" aria-hidden="true">
             Editor Preview
           </span>
         ) : null}
-        {resolution && category !== 'DISPLAY' && type !== 'NAVIGATION_LINK' ? <span className="overview-element__resolution" role="status" title={resolution.reason}>
+        {!runtimeMonitoring && resolution && category !== 'DISPLAY' && type !== 'NAVIGATION_LINK' ? <span className="overview-element__resolution" role="status" title={resolution.reason}>
           {resolution.status}{resolution.controlRuntimeDisabled ? ' · CONTROL RUNTIME NOT ENABLED' : ''}
         </span> : null}
+        {category === 'CONTROL' && type !== 'NAVIGATION_LINK' && <span className="overview-control-runtime-warning">PREVIEW · CONTROL RUNTIME NOT ENABLED</span>}
         {category === 'CONTROL' ? (
           <span className="overview-element__badge overview-element__badge--unbound" aria-hidden="true">
             {type === 'NAVIGATION_LINK' ? 'NAVIGATION ONLY' : resolution?.status ?? (binding.status === 'DRAFT' ? 'DRAFT' : 'NOT BOUND')}

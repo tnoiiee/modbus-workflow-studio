@@ -1,0 +1,19 @@
+import { describe, expect, it } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { readFileSync } from 'node:fs';
+import { RuntimeMonitoringView } from './RuntimeMonitoring.js';
+import { runtimePresentation } from '../../lib/overviewRuntimePresentation.js';
+import { configuration, sampleItem } from '../../lib/overviewRuntimeFixtures.js';
+import { OverviewRuntimeProvider } from './OverviewRuntimeProvider.js';
+import { OverviewTagClientAdapter } from '../../lib/overviewTagClientAdapter.js';
+import { RuntimeDetails } from './RuntimeDetails.js';
+describe('B3 read-only rendering/accessibility',()=>{
+ it.each(['GOOD','UNCERTAIN','STALE','BAD','DISCONNECTED'] as const)('renders readable %s, timestamp and explicit historical labeling',quality=>{const f=configuration(),p=runtimePresentation(f.element,f.resolution,sampleItem(1,0,quality),'Connected');const html=renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="12s since receive" onDetails={()=>{}}/>);expect(html).toContain(quality);expect(html).toContain('12s since receive');expect(html).toContain('Runtime details:');expect(html).not.toContain('aria-live');expect(html).not.toContain('<output');if(['BAD','DISCONNECTED'].includes(quality))expect(html).toContain('Last good');});
+ it('false light has text and no switch/control semantics or click action on lamp',()=>{const f=configuration(1,'STATUS_LIGHT'),p=runtimePresentation(f.element,f.resolution,sampleItem(1,false),'Connected');const html=renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="1s since receive"/>);expect(html).toContain('FALSE');expect(html).toContain('lamp-false');expect(html).not.toMatch(/role="switch"|aria-pressed|<button/);});
+ it('long caption escaped and clipped, full precision and reason accessible in details',()=>{
+  const f=configuration();f.element.style.text='<script>'+ 'long '.repeat(100);const p=runtimePresentation(f.element,f.resolution,sampleItem(1,1.123456789),'Connected');const html=renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="2s since receive"/>);expect(html).not.toContain('<script>');expect(html).toContain('…');expect(html).toContain('1.123457');
+  const adapter=new OverviewTagClientAdapter();adapter.store.publish([sampleItem(1,1.123456789)],new Set(f.selection.sources.map(s=>s.sourceId)));const details=renderToStaticMarkup(<OverviewRuntimeProvider adapter={adapter} enabled pageId="p" selection={f.selection} elements={[f.element]} resolutions={{[f.element.id]:f.resolution}}><RuntimeDetails element={f.element} resolution={f.resolution} onClose={()=>{}}/></OverviewRuntimeProvider>);expect(details).toContain('1.123456789');expect(details).toContain('Source timestamp');expect(details).toContain('Not supplied by Device');expect(details).toContain('role="dialog"');expect(details).toContain('Close details');adapter.stop();
+ });
+ it('details reuse existing focus return/Escape behavior and remain outside Flow transforms',()=>{const details=readFileSync(new URL('./RuntimeDetails.tsx',import.meta.url),'utf8'),modal=readFileSync(new URL('../ui/Modal.tsx',import.meta.url),'utf8');expect(details).toContain('createPortal(content, document.body)');expect(modal).toContain('previouslyFocused?.focus()');expect(modal).toContain("event.key === 'Escape'");expect(modal).toContain("removeEventListener('keydown'");});
+ it('only debounced Page announcements, reduced motion, no geometry override',()=>{const status=readFileSync(new URL('./OverviewRuntimeStatus.tsx',import.meta.url),'utf8'),css=readFileSync(new URL('../../styles/overview-runtime.css',import.meta.url),'utf8');expect(status).toContain('aria-live="polite"');expect(status).toContain('500)');expect(css).toContain('prefers-reduced-motion');expect(css).toContain('tabular-nums');expect(css).not.toMatch(/\.react-flow|savedViewport/);});
+});

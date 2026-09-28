@@ -1,6 +1,38 @@
 # Current Project State
 
-## Current application
+## Current application — v1.4.0-dev.10
+
+**O2-B3 Overview Read-only Live Rendering — Owner ACCEPTED Stage 1 / development checkpoint delivery.**
+Base `9d73d96ee910ac3ad1ad2a83a5572dbe77c1b309` / dev.9, branch
+`arena/01a0d291-modbus-workflow-studio`. O2-B2 APPROVED AS TRANSPORT FOUNDATION.
+
+Read-only Number/Boolean monitoring in active Overview View only; String producer unsupported.
+Edit remains EDITOR PREVIEW and unsubscribed. SWITCH/PUSH_BUTTON remain independent Preview controls;
+CONTROL RUNTIME NOT ENABLED. No commands/writes, WVar producer, persisted Runtime formatting or
+Runtime mutation of Page/Draft/history/geometry/viewport/Definition/Preview Control state.
+
+One stable external store + adapter, unchanged B2 protocol, keyed rendering, bounded publication,
+age and recovery, explicit lifecycle fencing. No global App Tag startup or Canvas semantics change.
+Production Server changes are version literals only. Dependencies unchanged. O2-C/O2-D NOT STARTED.
+
+[Scope and limits](SCOPE_O2-B3_v1.4.0-dev.10.md) ·
+[Stage 1 results and exact changes](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.10.md).
+Stage 1 **PASS: 997 tests / 63 files** (new B3 120/8, protected Client 568/33, protected Server
+305/21, boundary docs 4/1). Both typechecks and Client→Server builds PASS. Corrections/retries and
+evidence limits are documented in acceptance. Existing SSR warnings 66; JS 744.72 kB / gzip 215.21 kB.
+Owner now authorizes Full Gates, exactly one commit and normal push. Fresh Full Client **760/50 PASS**,
+Full Server **305/21 PASS**, root `npm run check` **PASS** (normal typechecks/tests/builds).
+Strict hygiene, verify:publish and final diff verification are required before committing; final
+commit/push/Actual Remote results are recorded in the delivery handoff. No PR/Tag/Release/ZIP.
+**Owner Local Manual Review PENDING (not performed).** Automated harness/SSR evidence is not browser,
+hardware, real-browser performance or soak certification.
+Advisories 5 moderate / 1 high / 1 critical remain unresolved and unaccepted.
+
+The following dev.9/dev.8 entries are historical. Current authority is the Owner's dev.10 approval;
+prior “O2-B3 NOT STARTED” and “no Overview values” statements describe their checkpoints only.
+
+
+## Historical dev.9 transport checkpoint
 
 **v1.4.0-dev.9 — O2-B2 Tag Runtime Delivery Foundation**.
 Approved base `86b342b2eec5377773be45d3744d29509c2a64ce` / dev.8.

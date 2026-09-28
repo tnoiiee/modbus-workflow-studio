@@ -1,3 +1,7 @@
+import { OverviewRuntimeProvider } from './OverviewRuntimeProvider.js';
+import { OverviewRuntimeStatus } from './OverviewRuntimeStatus.js';
+import { OverviewTagClientAdapter } from '../../lib/overviewTagClientAdapter.js';
+import { overviewRuntimeSelection, runtimeViewAllowed } from '../../lib/overviewRuntimeSelection.js';
 import { InspectorTransition } from './InspectorTransition.js';
 import { overviewInspectorPresentation } from '../../lib/overviewWorkspace.js';
 import { previewOverviewFontSize, type FontSizePreview } from '../../lib/overviewFontDraft.js';
@@ -116,6 +120,10 @@ function asElements(page: OverviewPageRecord | null): OverviewElement[] {
  * Persistence goes through `/api/overview-pages` only.
  */
 export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSources }: { active?: boolean; onOpenDataSources?: () => void; onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void> } = {}) {
+  const [runtimeAdapter] = useState(() => new OverviewTagClientAdapter());
+  const runtimePageRequest = useRef(0);
+  const [pageLoading, setPageLoading] = useState(true);
+  useEffect(() => () => { ++runtimePageRequest.current; runtimeAdapter.stop(); }, [runtimeAdapter]);
   // Catalog refresh is presentation state only: never patch Page/Draft/history.
   const [definitions, setDefinitions] = useState<SourceDefinition[]>([]);
   const [definitionWorkflows, setDefinitionWorkflows] = useState<DefinitionWorkflow[]>([]);
@@ -143,6 +151,8 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   const [pages, setPages] = useState<OverviewPageSummary[]>([]);
   const [activePageId, setActivePageId] = useState('');
   const [activePage, setActivePage] = useState<OverviewPageRecord | null>(null);
+  const loadedPageIdRef = useRef('');
+  loadedPageIdRef.current = activePage?.id ?? '';
   const [mode, setMode] = useState<OverviewMode>('VIEW');
   const [saveState, setSaveState] = useState<OverviewSaveState>('SAVED');
   const [baseline, setBaseline] = useState<OverviewPageRecord | null>(null);
@@ -214,6 +224,9 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
     previousPresentation.current = next;
     return next.resolutions;
   }, [workingPage?.elements, definitions, catalogAvailable]);
+  const runtimeSelection = useMemo(() => overviewRuntimeSelection(asElements(activePage), bindingResolutions), [activePage?.elements, bindingResolutions]);
+  const runtimeReady = !pageLoading && !!activePage && activePage.id === activePageId;
+  const runtimeEnabled = runtimeViewAllowed(active, mode, runtimeReady, runtimeSelection);
   const handleNavigateWorkflow = useCallback(async (targetWorkflowId?: string) => {
     if (mode !== 'VIEW') return;
     setControlError(undefined);
@@ -227,8 +240,10 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   /* ---- page list loading ------------------------------------------------ */
 
   const loadPages = useCallback(async (preferId?: string) => {
+    const request = ++runtimePageRequest.current; runtimeAdapter.stop(); setPageLoading(true);
     try {
       const list = await fetchOverviewPages();
+      if (request !== runtimePageRequest.current) return;
       setPages(list);
       setLoadError(undefined);
       const remembered = (() => {
@@ -251,7 +266,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
         setDraft(null);
         return;
       }
-      if (requested !== activePageIdRef.current) {
+      if (requested !== activePageIdRef.current || requested !== loadedPageIdRef.current) {
         setActivePageId(requested);
         try {
           localStorage.setItem('mws.activeOverviewPageId', requested);
@@ -259,6 +274,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
           void 0;
         }
         const record = await fetchOverviewPage(requested);
+        if (request !== runtimePageRequest.current) return;
         setActivePage(record);
         setBaseline(record);
         setDraft(record);
@@ -272,10 +288,10 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
       }
       return list;
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'Unable to load Overview pages');
+      if (request === runtimePageRequest.current) setLoadError(error instanceof Error ? error.message : 'Unable to load Overview pages');
       return undefined;
-    }
-  }, []);
+    } finally { if (request === runtimePageRequest.current) setPageLoading(false); }
+  }, [runtimeAdapter]);
 
   useEffect(() => {
     void loadPages();
@@ -311,7 +327,8 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   /* ---- mode machine ----------------------------------------------------- */
 
   const enterEdit = useCallback(() => {
-    if (!activePage) return;
+    if (!activePage || pageLoading) return;
+    runtimeAdapter.stop();
     const session = beginOverviewEdit(activePage);
     setBaseline(session.baseline);
     setDraft(session.draft);
@@ -321,7 +338,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
     setSaveConfirmPending(false);
     setSelectedElementId(null);
     setHistory(emptyOverviewHistory());
-  }, [activePage]);
+  }, [activePage, pageLoading, runtimeAdapter]);
 
   const openSaveConfirm = useCallback(() => {
     if (mode !== 'EDIT') return;
@@ -616,9 +633,11 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
         setPendingPageId(nextPageId);
         return;
       }
+      const request = ++runtimePageRequest.current; runtimeAdapter.stop(); setPageLoading(true);
       void (async () => {
         try {
         const record = await fetchOverviewPage(nextPageId);
+        if (request !== runtimePageRequest.current) return;
         setActivePageId(nextPageId);
         setActivePage(record);
         setBaseline(record);
@@ -630,11 +649,11 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
         setViewport(normalizeOverviewSavedViewport(record.savedViewport));
         setRestoreViewportEpoch(token => token + 1);
       } catch (error) {
-        setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
-      }
+        if (request === runtimePageRequest.current) setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
+      } finally { if (request === runtimePageRequest.current) setPageLoading(false); }
     })();
   },
-  [activePageId, saveState],
+  [activePageId, saveState, runtimeAdapter],
 );
 
   const confirmPendingPageSwitch = useCallback(() => {
@@ -642,9 +661,11 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
     const nextPageId = pendingPageId;
     setPendingPageId(null);
     setSaveState('SAVED');
+    const request = ++runtimePageRequest.current; runtimeAdapter.stop(); setPageLoading(true);
     void (async () => {
       try {
         const record = await fetchOverviewPage(nextPageId);
+        if (request !== runtimePageRequest.current) return;
         setActivePageId(nextPageId);
         setActivePage(record);
         setBaseline(record);
@@ -652,10 +673,10 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
         setSelectedElementId(null);
         setHistory(emptyOverviewHistory());
       } catch (error) {
-        setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
-      }
+        if (request === runtimePageRequest.current) setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
+      } finally { if (request === runtimePageRequest.current) setPageLoading(false); }
     })();
-  }, [pendingPageId]);
+  }, [pendingPageId, runtimeAdapter]);
 
   /* ---- element draft mutations ------------------------------------------ */
 
@@ -1071,6 +1092,7 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
   );
 
   return (
+    <OverviewRuntimeProvider adapter={runtimeAdapter} enabled={runtimeEnabled} pageId={activePageId} selection={runtimeSelection} elements={asElements(activePage)} resolutions={bindingResolutions}>
     <section
       className={`overview${mode === 'VIEW' ? ' overview--view' : ' overview--edit'}`}
       ref={overviewRootRef}
@@ -1082,9 +1104,10 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
         <div className="overview-catalog-bar">
           <button type="button" onClick={() => void refreshCatalog()}>Refresh Source definitions</button>
           {onOpenDataSources && <button type="button" onClick={onOpenDataSources}>Data Sources</button>}
-          <span>Configuration only · No Monitoring or Control Runtime</span>
+          <span>{mode === 'EDIT' ? 'EDITOR PREVIEW · Configuration only' : 'Read-only Monitoring · latest received'} · CONTROL RUNTIME NOT ENABLED</span>
           {catalogError && <span role="alert">{catalogError}</span>}
         </div>
+        {mode === 'VIEW' && active && <OverviewRuntimeStatus selection={runtimeSelection} elements={asElements(activePage)} />}
         <OverviewCommandBar
           pages={pages}
           activePageId={activePageId}
@@ -1479,5 +1502,6 @@ export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSour
         onClose={cancelDeleteElement}
       />
     </section>
+    </OverviewRuntimeProvider>
   );
 }

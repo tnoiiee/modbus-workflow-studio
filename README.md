@@ -1,26 +1,29 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.9
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.10
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-- **v1.4.0-dev.9 — O2-B2 Tag Runtime Delivery Foundation** (Stage 1 Owner ACCEPTED; Owner Local Manual Review PENDING).
-- Approved base `86b342b2eec5377773be45d3744d29509c2a64ce` / dev.8. O2-B1 **Owner ACCEPTED / Manual PASS**.
-- Strict read-only `POST /api/tag-runtime/snapshot` and separate `/ws/tag-runtime`; atomic snapshot/cursor,
-  bounded replay/ACK/backpressure, explicit resync and opt-in headless reconnect/resume client.
-- One Store observer, independent deliverySequence, opaque epoch/selection-bound cursors. No acquisition
-  producer, Device connection policy, persistence, Workflow/Monitor, Traffic or normal App startup change.
-- **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**. No Overview values/subscriptions, no O2-B3/C/D.
-- [dev.9 scope/protocol/security/resource bounds](docs/SCOPE_O2-B2_v1.4.0-dev.9.md) ·
-  [Stage 1 acceptance/results](docs/ACCEPTANCE_TESTS/O2-B2-v1.4.0-dev.9.md).
-- Historical [dev.8 scope](docs/SCOPE_O2-B1_v1.4.0-dev.8.md) and
-  [read-only persistence procedure](docs/ACCEPTANCE_TESTS/O2-B1-RUNTIME-BOUNDARY-v1.4.0-dev.8.md) retained.
-- Stage 1 **PASS**: selected tests **880/56**, both typechecks/builds PASS; see results above.
-- Full Client **640/42**, Full Server **305/21**, `npm run check` **PASS**. Owner authorized
-  Full Gates and one normal-push development checkpoint; publication requires strict hygiene,
-  verify:publish and final diff verification. See the delivery handoff for the Remote SHA.
-- Owner Local Manual Review **PENDING**. No PR/Tag/Release/ZIP.
-- Dependency advisories remain **5 moderate / 1 high / 1 critical**: unresolved, unaccepted, outside scope.
+- **v1.4.0-dev.10 — O2-B3 Overview Read-only Live Rendering**. Owner ACCEPTED Stage 1;
+  Full Gates and one normal-push development checkpoint are authorized. Owner Local Manual Review PENDING.
+- Approved base `9d73d96ee910ac3ad1ad2a83a5572dbe77c1b309` / dev.9; O2-B2 APPROVED AS TRANSPORT FOUNDATION.
+- Active Overview **View Mode only**: Numeric Label (Number), Status Light (Boolean), Value Badge
+  (Number/Boolean) receive read-only SHARED_TAG presentation via the unchanged B2 headless client.
+  TEXT_LABEL / String-bound Badge explicitly show unsupported String producer, never fabricated text.
+- Edit Mode does not subscribe: **EDITOR PREVIEW**. Inactive Overview/changed Page/hidden tab/disposal
+  fence and clean up delivery. Runtime does not mutate Page/Draft/history/geometry/viewport/control state.
+- **CONTROL RUNTIME NOT ENABLED**. Switch/Push remain Preview-only; navigation remains navigation-only.
+- Separate Binding, availability, sample quality and browser transport. **Transport connected / latest
+  received**, not confirmed replay caught-up, freshness synchronization or exactly-once.
+- Limits: 200 eligible Elements / 200 identities, 512 KiB presentation cache, 5 Hz publication, 1 Hz age;
+  five automatic recovery attempts per rolling 60s, manually rate-limited Retry. No second transport.
+- [dev.10 scope](docs/SCOPE_O2-B3_v1.4.0-dev.10.md) ·
+  [Stage 1 evidence / exact files](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.10.md).
+- Stage 1 **PASS: 997 tests / 63 files**, both typechecks, Client then Server build PASS.
+- Full Client **760/50 PASS**, Full Server **305/21 PASS**, root `npm run check` **PASS**.
+  Strict hygiene / verify:publish / diff verification must pass before the single approved commit/push.
+- No O2-C/O2-D, dependency upgrades, PR/Tag/Release/ZIP.
+  **Owner Local Manual Review PENDING (not yet performed)**. Advisories 5 moderate / 1 high / 1 critical remain unresolved/unaccepted.
 
 ### Operational safety boundary
 
@@ -38,7 +41,7 @@ acquisition has its own bounded, lower-priority read class; manual disconnect re
 
 Includes Overview Page management, Overview Editor, Element Library and Inspector, Draft, Undo/Redo, Save and Cancel, View/Edit boundaries, independent Preview Control state, savedViewport, accessibility/responsive baseline and Draft Tag binding configuration.
 
-Does not include Production Monitoring Runtime, live Modbus values in Overview, Production Control Runtime, Modbus writes from Overview, Tag Runtime delivery to Overview, Variable Blocks integration, MQTT implementation or an MQTT Sparkplug adapter. MQTT Sparkplug B is a future architecture plan only. Existing Workflow/Modbus capabilities below are not Overview runtime capabilities.
+Includes bounded read-only SHARED_TAG monitoring in active Overview View Mode through O2-B2. Does not include Production Control Runtime, Overview writes, WORKFLOW_VARIABLE Runtime, Variable Blocks, String acquisition, MQTT or Sparkplug. Existing Workflow commands are not Overview Runtime commands; MQTT Sparkplug B remains future planning only.
 
 ## Main capabilities
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.4.0-dev.10] - O2-B3 Overview Read-only Live Rendering (2026-09-28)
+
+- Owner-approved base `9d73d96ee910ac3ad1ad2a83a5572dbe77c1b309`; B2 transport foundation accepted.
+- View-only, visible compatible SHARED_TAG monitoring via unchanged B2 Snapshot/WS/headless client.
+  Explicit unsupported String state; controls remain Preview-only with visible disabled-runtime warning.
+- Stable external keyed presentation store, Page/session fencing, Edit/inactive/hidden/offline cleanup,
+  bounded 5 Hz publication/1 Hz age and 512 KiB cache; no Runtime values in Flow/Page/Draft configuration.
+- Quality/availability/Binding/transport separation, zero/false preservation, finite numeric formatting,
+  original last-good/timestamps, accessible details and debounced Page-level announcements.
+- Five automatic retries per rolling 60s, bounded Manual Retry; no new reconnect loop/transport.
+- Client integration only; Server behavior and B2 protocol unchanged. Version metadata synchronized.
+- Owner ACCEPTED Stage 1 (997/63) and authorized Full Gates plus exactly one development commit/normal push.
+- Full Client 760/50, Full Server 305/21 and root check PASS; remaining publication gates are mandatory
+  before commit. Owner Local Manual Review PENDING; no browser/hardware/soak certification. O2-C/O2-D NOT STARTED.
+
+
 ## [1.4.0-dev.9] - O2-B2 Tag Runtime Delivery Foundation (2026-09-28)
 
 - Approved base `86b342b2eec5377773be45d3744d29509c2a64ce`; O2-B1 Owner ACCEPTED / Manual PASS.
