@@ -1,37 +1,44 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.12
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.13
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-Owner accepted Stage 1 **981/65**, Full Client **872/55**, Full Server **305/21** and
-root check. The narrowly authorized hygiene correction distinguishes JS/TS generation-counter
-expressions without changing Catalog/lifecycle or weakening literal/configuration detection.
-Focused scanner suite **91 PASS**; strict retry **568/0/0**, complete worktree scan
-**276/0/0**, verify:publish and diff check **PASS**. Accepted application gates were not rerun.
-Owner Local Manual Review remains PENDING.
+**v1.4.0-dev.13 — O2-B3 Editor Parity and HMI Information Polish**. Approved base
+`742543b2c23b783fd085d0e0f917159943ffa6bb` / dev.12, branch
+`arena/01a0d291-modbus-workflow-studio`. Owner manual review **APPROVED dev.12 Runtime
+functionality, lifecycle and simplified View HMI**. Dev.13 local manual review is PENDING.
 
-- **v1.4.0-dev.12 — O2-B3 HMI Presentation Polish**. Approved base
-  `2e90a03c75259f7e0e3cc0f2afd372ac87c478fd` / dev.11, branch
-  `arena/01a0d291-modbus-workflow-studio`.
-- Owner **APPROVED dev.11 Runtime functionality and lifecycle**: focus refresh does not
-  restart delivery; Edit/inactive cleanup and clean View re-entry passed Owner review.
-- View Monitoring emphasizes configured caption (only when non-empty), process value and
-  unit. Clean GOOD state; concise UNCERTAIN/STALE/BAD/Device-disconnected/last-good/cached
-  indications. Boolean TRUE/FALSE stay distinct from missing data; String remains unsupported.
-- Full diagnostics and precision remain in keyboard-accessible Runtime Details. Compact
-  Page status retains failures/limits/disabled state, Tag health counts and trust limitation.
-  Small Elements also have a Page-level Details list; truncated content retains accessible text.
-- Presentation only: B1/B2, dev.11 Catalog/lifecycle, Binding, persistence, geometry and
-  quality/availability semantics are unchanged. Server changes are version literals only.
-- **EDITOR PREVIEW / CONTROL RUNTIME NOT ENABLED**. Switch/Push remain Preview-only;
-  navigation remains navigation-only. No writes, commands or Device lifecycle ownership.
-- [dev.12 scope](docs/SCOPE_O2-B3_v1.4.0-dev.12.md) ·
-  [dev.12 acceptance and manual review](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.12.md).
-- **Owner Local Manual Review for dev.12 PENDING**. Automated headless/SSR evidence is
-  not browser, screen-reader, hardware or soak certification. No dependency upgrades,
-  PR/Tag/Release/ZIP or O2-C/O2-D. Existing advisories 5 moderate / 1 high / 1 critical remain
-  unresolved/unaccepted.
+- Edit and View share the Monitoring renderer, typography, alignment, padding, caption,
+  unit placement, lamp size and Badge proportions. Edit uses `8888.88` or `FALSE` only,
+  with separate **EDITOR PREVIEW / Binding** chrome; no Snapshot/socket/subscription.
+- Configured Text is the caption in both modes. Empty Text has no invented caption or
+  Definition/Source/Element-name fallback. String Runtime remains unsupported.
+- Status Light Inspector **Show Text: Off / On** controls visible TRUE/FALSE only.
+  New lights default Off; existing lights without `style.showText` retain On without
+  migration. Filled/dot, hollow/minus and dashed/question indicators distinguish TRUE,
+  FALSE and unavailable without color alone. Accessible state remains available. No commands.
+- Details groups summary, identity/Binding, quality/timestamps, historical Last-good and
+  Browser transport/safety. GOOD current value is primary; historical duplicates are in a
+  keyboard-operable disclosure. Full precision and diagnostic failure values remain available.
+- Page status has a compact transport/Tag-count row, relevant health counts and on-demand
+  safety/Element Details. Failures, recovery, limits and disabled Runtime remain visible.
+- **Signed/decimal contract:** UInt16 bit pattern `0xB1E0` is **45536**, while Int16 is
+  **-20000**. Float32/Float64 support decimals through existing codecs. The Client never
+  reinterprets unsigned values. Byte/word order and scale/offset remain Acquisition Mapping concerns.
+- Only new persisted field: optional Status Light `style.showText`. Existing Server metadata
+  passthrough already preserves it. Production Server changes are version literals only.
+  Catalog/focus/Runtime lifecycle, B1/B2, Binding, quality/availability, Draft/history/revision,
+  geometry, savedViewport, Device/Manual Disconnect, Controls and navigation are unchanged.
+- [dev.13 scope](docs/SCOPE_O2-B3_v1.4.0-dev.13.md) ·
+  [dev.13 acceptance and manual review](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.13.md).
+- Stage 1: **1233 tests / 81 files PASS** (Client 915/58; Server 318/23).
+  Full Client **915/58**, Server **318/23**, `npm run check` (typechecks/tests/builds),
+  scanner **91 tests**, strict hygiene **578/0/0**, worktree **283/0/0**, `verify:publish`
+  and diff check **PASS**. Final staged/Remote evidence belongs in the delivery handoff.
+- SSR/CSS/callback/headless tests are not browser layout, screen-reader, hardware or soak
+  certification. No dependency changes, PR/Tag/Release/ZIP or O2-C/O2-D. Advisories
+  **5 moderate / 1 high / 1 critical** remain unresolved/unaccepted.
 
 ### Operational safety boundary
 

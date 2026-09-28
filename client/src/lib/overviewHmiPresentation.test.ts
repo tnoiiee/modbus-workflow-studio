@@ -65,8 +65,8 @@ describe('dev.12 operator projection, not Runtime semantics', () => {
     expect(runtimeDiagnosticValue(1.123456789, 'Number')).toBe('1.123456789'); expect(runtimeDiagnosticValue(-0, 'Number')).toBe('0');
     expect(runtimeDiagnosticValue(false, 'Boolean')).toBe('FALSE'); expect(runtimeDiagnosticValue('text', 'String')).toBe('Unavailable');
   });
-  it('Page counts are derived only, with no double counting or sample mutation', () => {
+  it('Page counts preserve unavailable classification; BAD is an explicit subset, with no mutation', () => {
     const items = [sampleItem(), sampleItem(2, 1, 'STALE'), sampleItem(3, false, 'UNCERTAIN'), sampleItem(4, 1, 'BAD'), sampleItem(5, 1, 'DISCONNECTED'), undefined];
-    const before = JSON.stringify(items); expect(runtimeHealthCounts(items)).toEqual({ stale: 1, uncertain: 1, unavailable: 3 }); expect(JSON.stringify(items)).toBe(before);
+    const before = JSON.stringify(items); expect(runtimeHealthCounts(items)).toEqual({ stale: 1, uncertain: 1, unavailable: 3, bad: 1 }); expect(JSON.stringify(items)).toBe(before);
   });
 });

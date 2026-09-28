@@ -28,6 +28,8 @@ export type OverviewBindingDataType = 'Boolean' | 'Number' | 'String' | 'Unknown
 
 export interface OverviewElementStyle {
   text: string;
+  /** STATUS_LIGHT only. Absent on legacy elements means On; new lights default Off. */
+  showText?: boolean;
   fontSize: number;
   textColor: string;
   backgroundColor: string;
@@ -323,7 +325,7 @@ export function createOverviewElement(
     zIndex: options.zIndex ?? 1,
     locked: false,
     visible: true,
-    style: overviewDefaultStyle(category),
+    style: { ...overviewDefaultStyle(category), ...(type === 'STATUS_LIGHT' ? { showText: false } : {}) },
     binding: type === 'NAVIGATION_LINK' ? { ...overviewDefaultBinding(category), direction: 'NONE' } : overviewDefaultBinding(category),
   };
 }
@@ -593,6 +595,7 @@ export function validateOverviewElements(
       if (!Number.isFinite(el.style.borderWidth) || el.style.borderWidth < 0 || el.style.borderWidth > 12) errors.push(`Element ${el.id}: border width must be 0–12`);
       if (!Number.isFinite(el.style.borderRadius) || el.style.borderRadius < 0 || el.style.borderRadius > 64) errors.push(`Element ${el.id}: border radius must be 0–64`);
       if (!['left', 'center', 'right'].includes(el.style.alignment)) errors.push(`Element ${el.id}: invalid alignment`);
+      if (el.style.showText !== undefined && (el.type !== 'STATUS_LIGHT' || typeof el.style.showText !== 'boolean')) errors.push(`Element ${el.id}: Show Text must be a Status Light boolean`);
       if (typeof el.style.text !== 'string') errors.push(`Element ${el.id}: text must be a string`);
       for (const color of ['textColor', 'backgroundColor', 'borderColor'] as const) {
         if (typeof el.style[color] !== 'string' || !el.style[color].trim()) errors.push(`Element ${el.id}: ${color} must be a non-empty color`);

@@ -293,6 +293,13 @@ export function ElementInspector({
 
       <fieldset className="element-inspector__group" disabled={disabled}>
         <legend>Appearance</legend>
+        {element.type === 'STATUS_LIGHT' && <label className="element-inspector__field">
+          <span>Show Text</span>
+          <select value={style.showText === false ? 'off' : 'on'} onChange={event => onPatchStyle({ showText: event.target.value === 'on' })}>
+            <option value="off">Off</option><option value="on">On</option>
+          </select>
+          <small>Read-only light. Off hides TRUE/FALSE visually, not its accessible status.</small>
+        </label>}
         <div className="element-inspector__grid">
           <label className="element-inspector__field">
             <span>Opacity</span>

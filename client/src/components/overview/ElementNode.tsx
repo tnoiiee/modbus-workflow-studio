@@ -1,4 +1,4 @@
-import { RuntimeMonitoring } from './RuntimeMonitoring.js';
+import { EditorMonitoring, RuntimeMonitoring } from './RuntimeMonitoring.js';
 import { isRuntimeMonitoring } from '../../lib/overviewRuntimeSelection.js';
 import type { BindingResolution } from '../../lib/overviewBinding.js';
 import { memo, useCallback, useState, type CSSProperties, type ReactNode } from 'react';
@@ -131,7 +131,8 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
     borderRadius: style.borderRadius,
   };
 
-  const runtimeMonitoring = !edit && category === 'MONITORING' && isRuntimeMonitoring(type);
+  const monitoringPresentation = category === 'MONITORING' && isRuntimeMonitoring(type);
+  const runtimeMonitoring = !edit && monitoringPresentation;
   const showResizeHandles = edit && selected && !element.locked;
   // Contract: locked Element → no handles; VIEW Mode → no handles (eight when editable).
 
@@ -151,7 +152,7 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
           'overview-element',
           `overview-element--${type.toLowerCase()}`,
           `overview-element--${category.toLowerCase()}`,
-          runtimeMonitoring ? 'overview-element--runtime' : '',
+          monitoringPresentation ? 'overview-element--runtime' : '',
           element.locked ? 'is-locked' : '',
           selected && edit ? 'is-selected' : '',
           edit ? 'is-editable' : 'is-readonly',
@@ -175,14 +176,14 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
           </span>
         ) : null}
 
-        <span className="overview-element__body">{runtimeMonitoring ? <RuntimeMonitoring element={element} resolution={resolution} /> : renderPreview(element, { switchOn, switchPending, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
+        <span className="overview-element__body">{runtimeMonitoring ? <RuntimeMonitoring element={element} resolution={resolution} /> : edit && monitoringPresentation ? <EditorMonitoring element={element} resolution={resolution} /> : renderPreview(element, { switchOn, switchPending, buttonPressed, linkFeedback, edit, onSwitchClick: handleSwitchClick, onButtonDown: handleButtonPointerDown, onButtonUp: handleButtonPointerUp, onLinkClick: handleLinkClick })}</span>
 
-        {category === 'MONITORING' && !runtimeMonitoring ? (
+        {category === 'MONITORING' && !monitoringPresentation ? (
           <span className="overview-element__badge overview-element__badge--preview" aria-hidden="true">
             Editor Preview
           </span>
         ) : null}
-        {!runtimeMonitoring && resolution && category !== 'DISPLAY' && type !== 'NAVIGATION_LINK' ? <span className="overview-element__resolution" role="status" title={resolution.reason}>
+        {!monitoringPresentation && resolution && category !== 'DISPLAY' && type !== 'NAVIGATION_LINK' ? <span className="overview-element__resolution" role="status" title={resolution.reason}>
           {resolution.status}{resolution.controlRuntimeDisabled ? ' · CONTROL RUNTIME NOT ENABLED' : ''}
         </span> : null}
         {category === 'CONTROL' && type !== 'NAVIGATION_LINK' && <span className="overview-control-runtime-warning">PREVIEW · CONTROL RUNTIME NOT ENABLED</span>}
@@ -194,6 +195,9 @@ function ElementNodeComponent({ data, selected }: NodeProps) {
           </span>
         ) : null}
       </div>
+      {edit && monitoringPresentation && <span className="overview-editor-chrome" title={`EDITOR PREVIEW · ${resolution?.status ?? binding.status ?? 'NOT_BOUND'} · ${resolution?.reason ?? 'Configuration only; no Runtime'}`}>
+        EDITOR PREVIEW · {resolution?.status ?? binding.status ?? 'NOT_BOUND'}
+      </span>}
     </>
   );
 }
@@ -215,28 +219,6 @@ function renderPreview(element: OverviewElement, handlers: PreviewHandlers): Rea
   const text = style.text;
 
   switch (type) {
-    case 'NUMERIC_LABEL':
-      return (
-        <span className="overview-element__preview">
-          <small className="overview-element__label">{text || 'Numeric Label'}</small>
-          <b className="overview-element__value">---</b>
-        </span>
-      );
-    case 'TEXT_LABEL':
-      return <span className="overview-element__preview">{text || 'Text Label'}</span>;
-    case 'STATUS_LIGHT':
-      return (
-        <span className="overview-element__preview overview-element__preview--light">
-          <i className="overview-element__lamp" aria-hidden="true" />
-          <span>{text || 'Status'}</span>
-        </span>
-      );
-    case 'VALUE_BADGE':
-      return (
-        <span className="overview-element__preview overview-element__preview--badge">
-          {text || 'VALUE'}
-        </span>
-      );
     case 'PICTURE_BOX':
       return (
         <span className="overview-element__preview overview-element__preview--picture">

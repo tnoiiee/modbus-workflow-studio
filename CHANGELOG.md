@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.4.0-dev.13] - O2-B3 Editor Parity and HMI Information Polish (2026-09-28)
+
+- Share the Monitoring HMI renderer and style rules between configuration preview and View;
+  representative Number/Boolean values, consistent caption/unit/typography/alignment/padding,
+  and external EDITOR PREVIEW / Binding chrome without changing geometry or subscribing.
+- Add optional Status Light `style.showText`: new Off, absent legacy On without migration.
+  Inspector uses the existing draft style/Undo path; light stays read-only with non-color
+  symbols and accessible state when visible text is hidden. Existing Server passthrough suffices.
+- Group Runtime Details; demote historical duplicates behind a native disclosure while keeping
+  current full precision primary and all abnormal quality/raw diagnostic/timestamp information.
+- Compact Page transport/Tag status and safety disclosure. Expose BAD count as a subset of
+  unavailable without reclassifying quality; preserve errors, recovery, limits and disabled state.
+- Test/document existing UInt16/Int16/Float32/Float64 and Mapping byte/word-order contracts;
+  no unsigned-to-signed correction or codec change. Add parity/schema/Inspector/history/
+  Server-persistence regression coverage and synchronize versions.
+- Owner approved dev.12 Runtime/lifecycle/View HMI. No Catalog/focus/session/B2/Binding/
+  Device/control/Workflow/Monitor/Traffic changes. Server version-only; dependencies unchanged.
+  O2-C/O2-D not started. Dev.13 Owner local manual review pending.
+
 ## [1.4.0-dev.12] - O2-B3 HMI Presentation Polish (2026-09-28)
 
 - Operator-first read-only Monitoring: configured caption only, primary value/unit, compact

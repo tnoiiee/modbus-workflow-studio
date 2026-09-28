@@ -82,9 +82,10 @@ export function runtimeDiagnosticValue(value: unknown, dataType: string | undefi
 }
 /** Page summary reads existing cache on the existing age tick, not per-sample observers. */
 export function runtimeHealthCounts(items: readonly (ClientTagItem | undefined)[]) {
-  const counts = { stale: 0, unavailable: 0, uncertain: 0 };
+  const counts = { stale: 0, unavailable: 0, uncertain: 0, bad: 0 };
   for (const item of items) {
     const sample = item?.sample;
+    if (sample?.quality === 'BAD') counts.bad++; // Subset of unavailable; quality is not reclassified.
     if (!item || item.availability !== 'AVAILABLE' || !sample?.hasValue || sample.quality === 'BAD' || sample.quality === 'DISCONNECTED') counts.unavailable++;
     else if (sample.quality === 'STALE') counts.stale++;
     else if (sample.quality === 'UNCERTAIN') counts.uncertain++;

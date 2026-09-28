@@ -15,11 +15,13 @@ export function OverviewRuntimeStatus({ selection, elements }: { selection: Runt
       {!!counts.stale && <span className="overview-runtime-summary-warning">{counts.stale} stale</span>}
       {!!counts.unavailable && <span className="overview-runtime-summary-warning">{counts.unavailable} unavailable</span>}
       {!!counts.uncertain && <span className="overview-runtime-summary-warning">{counts.uncertain} uncertain</span>}
-      <span className="overview-runtime-trust">Trusted network only</span></div>
+      {!!counts.bad && <span className="overview-runtime-summary-warning">{counts.bad} bad</span>}
+    </div>
     {(selection.error || status.transport !== 'Connected' || !context.enabled) && <p className="overview-runtime-callout">{selection.error || (!context.enabled ? `Runtime disabled. ${status.message}` : status.message)}</p>}
     <span className="overview-runtime-sr" aria-live="polite" aria-atomic="true">{announcement}</span>
     {status.transport === 'Error' && <button type="button" onClick={() => context.adapter.retry()}>Retry Runtime</button>}
     <details><summary>Runtime details &amp; safety</summary>
+      <p>Trusted network only. BAD is included in the unavailable count; counts summarize the existing cache.</p>
       <p>{selection.elementIds.length} Elements · {status.message}</p>
       <p>Latest received data only. Transport connected does not mean every Tag is GOOD, fresh, Device-connected or replay caught up. No exactly-once guarantee.</p>
       <p>Trusted network or authenticated reverse proxy only. No integrated authentication/authorization. Origin policy is not authentication. Not public-Internet ready.</p>

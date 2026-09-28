@@ -1,6 +1,45 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.12
+## Current application — v1.4.0-dev.13
+
+Approved base `742543b2c23b783fd085d0e0f917159943ffa6bb` / dev.12, branch
+`arena/01a0d291-modbus-workflow-studio`. Owner manual review approved dev.12 Runtime
+functionality, lifecycle and View HMI simplification; dev.13 manual review remains PENDING.
+
+Approved scope: shared Edit/View Monitoring presentation, Status Light Show Text, Runtime
+Details information hierarchy, compact Page status and version/tests/docs. No O2-C/O2-D.
+Edit uses representative `8888.88`/`FALSE`, never live Runtime; configured caption or none.
+New light Show Text Off; absent legacy field On. Optional boolean `style.showText` is the
+only new persisted property, carried by existing Server passthrough. No Server behavior change.
+Details preserve every diagnostic field; GOOD full precision is primary, historical Last-good
+is disclosed on demand. Page failures/recovery/limits/disabled remain visible; safety accessible.
+
+UInt16 0xB1E0 = 45536; Int16 = -20000. Existing Float32/Float64 codecs support decimals.
+No Client reinterpretation; Mapping controls byte/word order. Codec and acquisition unchanged.
+
+Stage 1 **1233/81 PASS**: HMI 120/8; Runtime/Catalog 179/9; editor 372/19; protected Client
+244/22; Server 318/23. Full Client **915/58**, Server **318/23**, root `npm run check`
+(typechecks/tests/builds) **PASS first attempt**. Scanner **91 PASS**; strict **578/0/0**,
+worktree **283/0/0**, verify:publish and diff check **PASS**. Final scope is **31 paths:
+24 modified / 7 new**. Final explicit staging/staged hygiene and Remote/clean-tree evidence
+belong in the delivery handoff, not inferred from tests.
+Fresh recovery compared all 276 preserved files to approved Remote archive byte-for-byte;
+CAS update-ref and read-tree without -u changed metadata only. Dependencies restored once.
+
+Catalog/focus/runtime lifecycle, B1/B2, Binding/quality/availability, Page/history/revision,
+geometry/viewport, Device/Manual Disconnect, Controls/navigation, Workflow/Monitor/Traffic
+remain locked. Server version-only. Hygiene scanner unchanged from approved dev.12.
+No dependency graph changes or new dependencies. No PR/Tag/Release/ZIP. O2-C/O2-D NOT STARTED.
+Advisories 5 moderate / 1 high / 1 critical remain unresolved/unaccepted. Existing SSR/chunk
+warnings remain (66 SSR warnings; JS 752.84 kB / gzip 217.43 kB; CSS 158.23 kB / gzip
+24.53 kB; 1813 modules). No browser/screen-reader/hardware/soak certification.
+
+[Scope](SCOPE_O2-B3_v1.4.0-dev.13.md) · [Acceptance](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.13.md).
+Final Remote SHA and clean-tree evidence belong in the delivery handoff, not inferred from tests.
+
+The entries below are historical; their pending states do not override the latest Owner review.
+
+## Historical dev.12 checkpoint (Owner subsequently approved Runtime/lifecycle/View HMI)
 
 O2-B3 HMI Presentation Polish, approved base
 `2e90a03c75259f7e0e3cc0f2afd372ac87c478fd` / dev.11, branch

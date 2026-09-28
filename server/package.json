@@ -1,6 +1,6 @@
 {
   "name": "@mws/server",
-  "version": "1.4.0-dev.12",
+  "version": "1.4.0-dev.13",
   "private": true,
   "type": "module",
   "scripts": {

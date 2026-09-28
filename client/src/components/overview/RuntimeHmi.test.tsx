@@ -91,7 +91,7 @@ describe('dev.12 HMI component presentation', () => {
   it('Edit preserves configuration preview/BOUND; View removes Binding diagnostics', () => {
     const { f } = view('NUMERIC_LABEL', 'Boiler'); const make = (mode: string) => renderToStaticMarkup(<ElementNode {...({ data: { element: f.element, mode, bindingResolution: f.resolution }, selected: false } as any)} />);
     const edit = make('EDIT'), runtime = make('VIEW');
-    expect(edit).toContain('Editor Preview'); expect(edit).toContain('BOUND'); expect(edit).not.toContain('overview-runtime-value');
+    expect(edit).toContain('EDITOR PREVIEW'); expect(edit).toContain('BOUND'); expect(edit).toContain('overview-runtime-value'); expect(edit).toContain('EDITOR PREVIEW'); expect(edit).toContain('8888.88');
     expect(runtime).toContain('overview-runtime-value'); expect(runtime).not.toContain('Binding:'); expect(runtime).not.toContain('overview-element__resolution');
   });
 });
@@ -110,7 +110,7 @@ describe('dev.12 on-demand diagnostics and Page-level status', () => {
   });
   it('healthy Page header is compact with active Tag count, trust boundary and small-Element access', () => {
     const html = render(), header = html.slice(0, html.indexOf('<details>'));
-    expect(header).toContain('Transport: Connected'); expect(header).toContain('1 Tags'); expect(header).toContain('Trusted network only'); expect(header).not.toContain('unavailable'); expect(header).not.toContain('Latest received only');
+    expect(header).toContain('Transport: Connected'); expect(header).toContain('1 Tags'); expect(header).not.toContain('Trusted network only'); expect(html).toContain('Trusted network only'); expect(header).not.toContain('unavailable'); expect(header).not.toContain('Latest received only');
     expect(html).toContain('Runtime details &amp; safety'); expect(html).toContain('— Runtime details'); expect(html).toContain('authenticated reverse proxy');
   });
   it('Page exposes nonzero stale/unavailable counts without per-sample announcements', () => {
