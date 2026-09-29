@@ -1,28 +1,34 @@
 # Roadmap
 
-## Current direction — v1.4.0-dev.17 (documentation and PR-readiness checkpoint)
+## Current direction — v1.4.0-dev.18 (Workflow Modbus Write Foundation)
 
-O2-B (read-only Overview Runtime) is **COMPLETE FOR DEVELOPMENT CHECKPOINT** at implementation
-checkpoint `c633a4426b72f805c279eb1e25c7deba74d2071b` / v1.4.0-dev.16 (Owner manual review PASS).
-Hardware certification and 24/7 soak certification remain **PENDING**.
+The [Master Plan](MASTER_PLAN.md) defines the seven Major phases, optional scopes, practical Definition of Done, OT boundary, and current execution priority. The [dev.18 scope gate](SCOPE_GATES/O2-B-WORKFLOW-WRITE-FOUNDATION-v1.4.0-dev.18.md) and [Simulator Manual Review](ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md) govern this checkpoint.
 
-Priority order (each requires its own Owner-approved scope before implementation):
+Implement the Owner-approved guarded Workflow write boundary for controlled Simulator validation.
+The Production Server behavior change is explicit: legacy `POST /api/nodes/:id/write` remains
+only as a compatibility-feedback route and always returns HTTP 410 with code
+`LEGACY_DIRECT_WRITE_DISABLED` and message `Direct node writes are disabled. Modbus writes must use
+the guarded Workflow runtime.` It never looks up/connects a Device, queues, frames, writes,
+retries, mutates runtime/ownership, starts/triggers a Workflow, or discloses sensitive config.
+Existing JSON body-size, Origin and security protections stay in force; middleware may reject
+invalid/oversized input before the route. There is no redirect or replacement public write API.
 
-1. Workflow Shared Signal Foundation
-2. Workflow access to SHARED_TAG
-3. Workflow-scoped Signal and state model
-4. Published Workflow Outputs
-5. Modbus Write Foundation Audit
-6. Controlled Simulator Write validation
-7. **O2-C Picture Box and Assets — DEFERRED, not cancelled.** Scope Gate complete; implementation
-   resumes only after explicit Owner reactivation on the latest approved Base. Record:
-   [O2-C deferred scope](SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md). No version numbers are reserved.
-8. O2-D — integration/accessibility/responsive regression and Final O2 Review (not authorized).
+`WorkflowRuntimeManager` is the only write authority. Writes default disabled (`ALLOW_WRITES=false`)
+and require strict FC/type/address/value validation, running/current runtime generation, LIVE_ARMED,
+output resource ownership, valid enabled connected non-manually-disconnected Device, typed unexpired
+command, queue capacity, and existing write-on-change/interval policy. Device queues are bounded;
+Stop/Delete/manual disconnect fence pending work and stale completions. Optional read-back observes
+only an explicitly associated SHARED_TAG from the existing Server Tag Runtime Store/acquisition.
+No new poller, connection, retry, or browser protocol is created.
 
-Nothing above is implemented by dev.17. The sections below are historical and do not override this
-direction or the latest Owner instruction; where they mention O2-C planning, the deferral above governs.
+Use [the controlled Simulator Manual Review](ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md).
+Overview Controls remain PREVIEW ONLY; Overview and Modbus Monitor are read-only. Production and
+hardware writes are unauthorized; hardware acceptance and 24/7 soak certification remain PENDING
+Owner review. O2-A/O2-B protected functionality remains locked. O2-C stays deferred; no O2-D,
+assets, generic Signal/Variable, Published Output, Overview write, or FC15 scope is authorized.
 
-## Current approved staging — O2-B1 / v1.4.0-dev.6
+
+## Historical approved staging — O2-B1 / v1.4.0-dev.6
 
 O2-A dev.5 is APPROVED / Owner Manual Review PASS. O2-B1 implements acquisition and runtime
 foundation only: TCP framing, Shared Tag mapping, server acquisition, normalized memory store.

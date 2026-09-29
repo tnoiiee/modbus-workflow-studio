@@ -1,16 +1,30 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.17
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.18
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-**v1.4.0-dev.17 — O2-B documentation and PR-readiness checkpoint.** O2-B (read-only Overview
-Runtime) is complete for the Development checkpoint at `c633a4426b72f805c279eb1e25c7deba74d2071b` /
-dev.16 (Owner manual review PASS); Hardware and 24/7 soak certification remain **PENDING**. This
-checkpoint changes documentation and Version literals only. **O2-C Picture Box/Assets is DEFERRED
-(not cancelled)** to prioritize Workflow Shared Signal and safe Modbus Write validation; see
-[the deferred record](docs/SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md) and the
-[PR readiness](docs/ACCEPTANCE_TESTS/O2-B-PR-READINESS-v1.4.0-dev.17.md).
+**v1.4.0-dev.18 — Workflow Modbus Write Foundation for controlled Simulator validation.**
+Production Server behavior changed: legacy `POST /api/nodes/:id/write` is disabled and always
+returns **HTTP 410** with code `LEGACY_DIRECT_WRITE_DISABLED` and message “Direct node writes are
+disabled. Modbus writes must use the guarded Workflow runtime.” It does not inspect the Device or body,
+connect, queue, frame, write, retry, mutate runtime/ownership, or start/trigger a Workflow. Existing
+body-size, Origin, and general security protections remain; malformed/oversized bodies may be
+rejected by middleware before the route. No redirect or replacement public write API exists.
+
+Only `WorkflowRuntimeManager` may authorize Workflow writes. Writes use strict FC05 Boolean,
+FC06 UInt16/Int16, or FC16 UInt32/Int32/Float32/Float64 validation, guarded admission, bounded
+shared Device queues, generation/expiry fencing, cancellation, resource ownership, and explicit
+Audit/Traffic evidence. `ALLOW_WRITES=false` by default. Simulator write testing must use the
+[controlled Manual Review guide](docs/ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md).
+
+Overview controls remain **PREVIEW ONLY** and have no Device/Workflow command path. Overview and
+Modbus Monitor remain read-only. Production/hardware writes are unauthorized; hardware acceptance
+and 24/7 soak certification remain **PENDING** Owner review. The v1.4.0-dev.16 O2-B read-only
+Overview checkpoint is historical context, not a write authorization. O2-C remains deferred.
+
+Project direction and the practical non-certifying roadmap are in the [Master Plan](docs/MASTER_PLAN.md). The dev.18 implementation boundary is recorded in the [scope gate](docs/SCOPE_GATES/O2-B-WORKFLOW-WRITE-FOUNDATION-v1.4.0-dev.18.md).
+
 
 **v1.4.0-dev.16 — O2-B3 Optional Inline Runtime Details Action**. Approved base
 `e3f606765c8d8b83a4c30b0b861e5f90d762050e` / dev.15, branch
@@ -75,8 +89,11 @@ appropriate network controls. Tag Origin/CORS is not authentication. Configure e
 non-browser missing-Origin access (default allowed). Same request Host is permitted; a trusted proxy
 must preserve it or configure the public Origin. No Preview URL hardcoding. See the dev.9 protocol
 for limits and failure semantics. Modbus writes remain disabled by default; addresses are zero-based.
-Existing write-safety guards and relative Workflow/Monitor priority are preserved. Shared Tag
-acquisition has its own bounded, lower-priority read class; manual disconnect remains authoritative.
+Workflow writes are admitted only by WorkflowRuntimeManager; the legacy direct-write compatibility
+route always returns HTTP 410 (`LEGACY_DIRECT_WRITE_DISABLED`) and has no write side effects.
+Overview is PREVIEW ONLY and read-only; Modbus Monitor remains read-only. Shared Tag acquisition
+uses the existing bounded read class; it is not a write authority. Hardware/production writes and
+soak certification remain unauthorized and PENDING Owner review.
 
 ## Overview Designer Foundation
 

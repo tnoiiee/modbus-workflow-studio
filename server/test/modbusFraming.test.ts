@@ -18,7 +18,13 @@ async function connected() {
   const promise = c.connect(), socket = sockets.at(-1)!; socket.emit('connect'); await promise;
   return { c, socket };
 }
-const request = (c: DeviceConnection, patch = {}) => c.request({ unitId: 1, fc: 3, address: 0, quantity: 1, ...patch });
+let writeId = 0;
+const request = (c: DeviceConnection, patch: Record<string, unknown> = {}) => {
+  const commandId = `test-command-${++writeId}`, requestClass = patch.requestClass ?? (patch.priority ? 'write' : 'workflow');
+  return c.request({ unitId: 1, fc: 3, address: 0, quantity: 1, ...patch,
+    ...(requestClass === 'write' ? { requestClass: 'write', workflowId: 'test-workflow', nodeId: `test-node-${writeId}`, commandId,
+      resourceKey: `test-resource-${writeId}`, runtimeGeneration: 1, createdAtMonotonic: performance.now(), expiresAtMonotonic: performance.now() + 60_000, isCurrent: () => true } : {}) } as never);
+};
 const reply = (tx: number, value = 42) => { const b = readResponse(value); b.writeUInt16BE(tx); return b; };
 describe('bounded deterministic TCP framing', () => {
   it.each([1, 2, 3, 4, 5, 6])('buffers fragmented MBAP at byte %i', split => {
@@ -119,7 +125,7 @@ describe('DeviceConnection framing integration and request fences', () => {
     expect(c.runtime.actualState).toBe('connected'); socket.emit('data', reply(c.tx)); await next;
   });
   it.each([5, 6, 16])('keeps FC%i write framing and zero-based addresses', async fc => {
-    const { c, socket } = await connected(); const p = c.request({ unitId: 1, fc, address: 0, values: [7], priority: true });
+    const { c, socket } = await connected(); const p = request(c, { unitId: 1, fc, address: 0, values: [fc === 5 ? 0xff00 : 7], priority: true });
     const sent = socket.sent[0]!; expect(sent.readUInt16BE(8)).toBe(0); expect(sent[7]).toBe(fc);
     const ack = Buffer.from(sent.subarray(0, 12)); ack.writeUInt16BE(6, 4); if (fc === 16) ack.writeUInt16BE(1, 10);
     socket.emit('data', ack); await expect(p).resolves.toEqual(ack);

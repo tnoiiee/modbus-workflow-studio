@@ -4,6 +4,10 @@ import { EventEmitter } from 'node:events';
 import type { DeviceConfig, DeviceRuntime } from './types.js';
 
 export type RequestClass = 'workflow' | 'monitor' | 'write' | 'acquisition';
+export const WORKFLOW_WRITE_QUEUE_LIMIT = 32;
+export const WORKFLOW_WRITE_EXPIRY_MS = 5000;
+
+export interface DeviceRequestPromise extends Promise<Buffer> { readonly admitted: boolean }
 
 export interface Request {
   unitId: number;
@@ -19,6 +23,13 @@ export interface Request {
   monitorGeneration?: number;
   workflowId?: string;
   nodeId?: string;
+  commandId?: string;
+  resourceKey?: string;
+  runtimeGeneration?: number;
+  createdAtMonotonic?: number;
+  expiresAtMonotonic?: number;
+  supersedeQueued?: boolean;
+  isCurrent?: () => boolean;
 }
 
 export class DeviceRequestError extends Error {
@@ -67,6 +78,7 @@ type QueueItem = {
 
 type DeviceConnectionOptions = {
   monitorQueueLimit?: number;
+  nowMonotonic?: () => number;
 };
 
 export class DeviceConnection extends EventEmitter {
@@ -86,11 +98,14 @@ export class DeviceConnection extends EventEmitter {
   private connectReject?: (error: Error) => void;
   manual = false;
   readonly monitorQueueLimit: number;
+  readonly workflowWriteQueueLimit = WORKFLOW_WRITE_QUEUE_LIMIT;
+  private readonly nowMonotonic: () => number;
   runtime: DeviceRuntime;
 
   constructor(public config: DeviceConfig, options: DeviceConnectionOptions = {}) {
     super();
     this.monitorQueueLimit = Math.max(1, Math.trunc(options.monitorQueueLimit ?? 32));
+    this.nowMonotonic = options.nowMonotonic ?? (() => performance.now());
     this.runtime = {
       desiredState: 'disconnected',
       actualState: 'disconnected',
@@ -233,8 +248,24 @@ export class DeviceConnection extends EventEmitter {
     this.updateQueueMetrics();
   }
 
-  request(r: Omit<Request, 'generation'>) {
-    return new Promise<Buffer>((resolve, reject) => {
+  cancelWorkflowWrites(workflowId: string, runtimeGeneration?: number): number {
+    const retained: QueueItem[] = [];
+    let cancelled = 0;
+    for (const item of this.queue) {
+      if (item.r.requestClass === 'write' && item.r.workflowId === workflowId &&
+          (runtimeGeneration === undefined || item.r.runtimeGeneration === runtimeGeneration)) {
+        cancelled += 1;
+        item.bad(new DeviceRequestError('WRITE_CANCELLED', 'Workflow stopped or deleted before Device execution'));
+      } else retained.push(item);
+    }
+    this.queue = retained;
+    this.updateQueueMetrics();
+    return cancelled;
+  }
+
+  request(r: Omit<Request, 'generation'>): DeviceRequestPromise {
+    let admitted = false;
+    const promise = new Promise<Buffer>((resolve, reject) => {
       const requestClass = r.requestClass ?? (r.priority ? 'write' : 'workflow');
       const item: QueueItem = {
         r: { ...r, requestClass, generation: this.generation },
@@ -248,6 +279,30 @@ export class DeviceConnection extends EventEmitter {
         }
         if (this.queue.filter(job => job.r.requestClass === 'acquisition').length >= this.acquisitionQueueLimit) {
           reject(new DeviceRequestError('ACQUISITION_QUEUE_FULL', 'Acquisition queue is full')); return;
+        }
+      }
+      if (requestClass !== 'write' && ![1, 2, 3, 4].includes(r.fc)) {
+        reject(new DeviceRequestError('WRITE_AUTHORITY_REQUIRED', 'Only the guarded Workflow write path may submit Modbus writes')); return;
+      }
+      if (requestClass === 'write') {
+        if (![5, 6, 16].includes(r.fc) || !r.priority || !Array.isArray(r.values) || r.values.length === 0 ||
+            !r.workflowId || !r.nodeId || !r.commandId || !r.resourceKey || !Number.isSafeInteger(r.runtimeGeneration) ||
+            !Number.isFinite(r.createdAtMonotonic) || !Number.isFinite(r.expiresAtMonotonic) || r.expiresAtMonotonic! <= r.createdAtMonotonic! ||
+            typeof r.isCurrent !== 'function') {
+          reject(new DeviceRequestError('WRITE_METADATA_REQUIRED', 'Guarded Workflow write metadata is required')); return;
+        }
+        if (r.supersedeQueued) {
+          const retained: QueueItem[] = [];
+          for (const queued of this.queue) {
+            const sameOwner = queued.r.requestClass === 'write' && queued.r.workflowId === r.workflowId && queued.r.nodeId === r.nodeId;
+            if (sameOwner && queued.r.resourceKey === r.resourceKey && queued.r.supersedeQueued) {
+              queued.bad(new DeviceRequestError('WRITE_SUPERSEDED', 'A newer Workflow command replaced this queued command'));
+            } else retained.push(queued);
+          }
+          this.queue = retained;
+        }
+        if (this.queue.filter(job => job.r.requestClass === 'write').length >= this.workflowWriteQueueLimit) {
+          reject(new DeviceRequestError('WRITE_QUEUE_FULL', 'Workflow write queue is full')); return;
         }
       }
       if (requestClass === 'monitor') {
@@ -287,8 +342,11 @@ export class DeviceConnection extends EventEmitter {
         this.queue.push(item);
       }
       this.updateQueueMetrics();
+      admitted = true;
       void this.pump();
     });
+    Object.defineProperty(promise, 'admitted', { enumerable: false, get: () => admitted });
+    return promise as DeviceRequestPromise;
   }
 
   queueMetrics() {
@@ -324,6 +382,14 @@ export class DeviceConnection extends EventEmitter {
       item.bad(new DeviceRequestError('STALE_REQUEST', 'Device disconnected or stale request'));
       return this.pump();
     }
+    if (item.r.requestClass === 'write' && item.r.expiresAtMonotonic !== undefined && this.nowMonotonic() >= item.r.expiresAtMonotonic) {
+      item.bad(new DeviceRequestError('COMMAND_EXPIRED', 'Workflow command expired before Device execution'));
+      return this.pump();
+    }
+    if (item.r.requestClass === 'write' && item.r.isCurrent && !item.r.isCurrent()) {
+      item.bad(new DeviceRequestError('STALE_COMMAND', 'Workflow command generation is no longer current'));
+      return this.pump();
+    }
 
     this.active = true;
     this.activeRequest = item.r;
@@ -345,6 +411,11 @@ export class DeviceConnection extends EventEmitter {
         deviceId: this.config.id,
         workflowId: item.r.workflowId,
         nodeId: item.r.nodeId,
+        commandId: item.r.commandId,
+        resourceKey: item.r.resourceKey,
+        runtimeGeneration: item.r.runtimeGeneration,
+        connectionGeneration: item.r.generation,
+        expiresAtMonotonic: item.r.expiresAtMonotonic,
         tx,
         fc: item.r.fc,
         address: item.r.address,
@@ -390,6 +461,11 @@ export class DeviceConnection extends EventEmitter {
             if (buffer.length !== 9 + bytes || buffer[8] !== bytes) {
               finish(reject, new DeviceRequestError('INVALID_RESPONSE', 'Read byte count mismatch')); return;
             }
+          } else if ([5, 6, 16].includes(item.r.fc)) {
+            const expectedWord = item.r.fc === 16 ? item.r.values?.length ?? 0 : item.r.values?.[0] ?? 0;
+            if (buffer.length !== 12 || buffer.readUInt16BE(8) !== item.r.address || buffer.readUInt16BE(10) !== expectedWord) {
+              finish(reject, new DeviceRequestError('INVALID_RESPONSE', 'Write echo does not match the admitted request')); return;
+            }
           }
           finish(value => resolve(value as Buffer), buffer);
         };
@@ -411,6 +487,11 @@ export class DeviceConnection extends EventEmitter {
         deviceId: this.config.id,
         workflowId: item.r.workflowId,
         nodeId: item.r.nodeId,
+        commandId: item.r.commandId,
+        resourceKey: item.r.resourceKey,
+        runtimeGeneration: item.r.runtimeGeneration,
+        connectionGeneration: item.r.generation,
+        expiresAtMonotonic: item.r.expiresAtMonotonic,
         tx,
         fc: item.r.fc,
         address: item.r.address,
@@ -428,6 +509,11 @@ export class DeviceConnection extends EventEmitter {
         deviceId: this.config.id,
         workflowId: item.r.workflowId,
         nodeId: item.r.nodeId,
+        commandId: item.r.commandId,
+        resourceKey: item.r.resourceKey,
+        runtimeGeneration: item.r.runtimeGeneration,
+        connectionGeneration: item.r.generation,
+        expiresAtMonotonic: item.r.expiresAtMonotonic,
         tx,
         fc: item.r.fc,
         address: item.r.address,

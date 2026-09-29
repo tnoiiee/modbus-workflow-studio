@@ -21,9 +21,9 @@ const device = (port: number): DeviceConfig => ({
   enabled: true,
 });
 
-const responseFor = (request: Buffer) => Buffer.from([
-  request[0]!, request[1]!, 0, 0, 0, 5, request[6]!, request[7]!, 2, 0, 42,
-]);
+const responseFor = (request: Buffer) => [5, 6].includes(request[7]!)
+  ? Buffer.from(request.subarray(0, 12))
+  : Buffer.from([request[0]!, request[1]!, 0, 0, 0, 5, request[6]!, request[7]!, 2, 0, 42]);
 
 async function listen(server: Server) {
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -80,7 +80,7 @@ describe('device monitor queue', () => {
     const third = connection.request({ unitId: 1, fc: 3, address: 2, quantity: 1, requestClass: 'monitor', monitorListId: 'list-c' });
     const dropped = connection.request({ unitId: 1, fc: 3, address: 3, quantity: 1, requestClass: 'monitor', monitorListId: 'list-d' });
     const workflow = connection.request({ unitId: 1, fc: 3, address: 4, quantity: 1 });
-    const write = connection.request({ unitId: 1, fc: 6, address: 5, values: [7], priority: true });
+    const write = connection.request({ unitId: 1, fc: 6, address: 5, values: [7], priority: true, requestClass: 'write', workflowId: 'test-workflow', nodeId: 'test-output', commandId: 'test-command', resourceKey: 'plc:1:HOLDING:5', runtimeGeneration: 1, createdAtMonotonic: performance.now(), expiresAtMonotonic: performance.now() + 60_000, isCurrent: () => true });
 
     await expect(dropped).rejects.toMatchObject({ code: 'MONITOR_QUEUE_FULL' });
     expect(connection.queue.map(item => item.r.requestClass)).toEqual(['write', 'workflow', 'monitor', 'monitor']);

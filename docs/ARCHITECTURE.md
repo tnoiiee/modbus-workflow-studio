@@ -49,7 +49,13 @@ Persisted `LIVE_ARMED` state is downgraded to `LIVE_LOCKED` at startup. A restar
 
 Each running workflow owns isolated node runtime, engine memory, pollers, timers, Manual Trigger timers, output initialization, and write-on-change state. Workflows share project-level device connections and request queues.
 
-Output safety remains enforced by `ALLOW_WRITES`, connected device state, running workflow state, `LIVE_ARMED`, validation, ownership conflict protection, write policy, and read-back policy.
+## Guarded Workflow write boundary (v1.4.0-dev.18)
+
+`WorkflowRuntimeManager` is the sole write authority: `MODBUS_OUTPUT → WorkflowRuntimeManager → bounded shared Device queue → DeviceConnection → Modbus frame`. Writes default disabled (`ALLOW_WRITES=false`) and require a running/current generation, `LIVE_ARMED`, owned output resource, enabled/connected/non-manually-disconnected Device, strict typed command/configuration validation, unexpired command and bounded queue admission. The supported contract is FC05 Boolean, FC06 UInt16/Int16, and FC16 UInt32/Int32/Float32/Float64; FC15 is excluded. Stop/Delete/revision changes/manual disconnect cancel queued work and fence stale callbacks. Nothing pending is persisted or replayed.
+
+The legacy `POST /api/nodes/:id/write` route is compatibility feedback only: HTTP 410 `LEGACY_DIRECT_WRITE_DISABLED`, with no Device lookup, connect, queue, frame, write, retry, ownership/runtime mutation, Workflow start/trigger, or sensitive config disclosure. Existing body-size, Origin and security middleware remains; no redirect or replacement public write API exists.
+
+Output safety remains enforced by `ALLOW_WRITES`, connected device state, running workflow state, `LIVE_ARMED`, validation, ownership conflict protection, write policy, and optional Server Tag Runtime Store-backed SHARED_TAG observation. Optional read-back creates no poller/connection and cannot authorize or block a write.
 
 ## Device request admission
 

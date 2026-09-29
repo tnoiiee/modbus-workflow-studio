@@ -162,7 +162,7 @@ drag-to-canvas.
   `GET /api/traffic`, `GET/DELETE /api/audit`, `GET /api/validation`
 - Not used by the UI today: `GET/PUT /api/workflow` (legacy active-workflow document, also carries
   `settings`), `GET /api/runtime/nodes/:id`, `GET /api/runtime/summary`,
-  `GET /api/workflows/:id/runtime/nodes/:nodeId`, `POST /api/nodes/:id/write`,
+  `GET /api/workflows/:id/runtime/nodes/:nodeId`, and legacy `POST /api/nodes/:id/write` (now disabled: HTTP 410 `LEGACY_DIRECT_WRITE_DISABLED`; no write side effects).
   `DELETE /api/traffic`, `GET /api/health`, and the `410 Gone` legacy
   `POST /api/workflow/mode|run|stop`
 

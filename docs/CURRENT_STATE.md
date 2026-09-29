@@ -1,20 +1,34 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.17 (documentation and PR-readiness checkpoint)
+## Current application — v1.4.0-dev.18 (Workflow Modbus Write Foundation)
 
-- **O2-B is COMPLETE FOR DEVELOPMENT CHECKPOINT.** Approved O2-B implementation checkpoint:
-  `c633a4426b72f805c279eb1e25c7deba74d2071b` / **v1.4.0-dev.16** (Owner manual review PASS).
-- dev.17 is one documentation, PR-readiness and Version-synchronization Commit on top of it.
-  **Production behavior is unchanged** (Version literals only; O2-B2 protocol, O2-B3 Runtime,
-  persisted schema and dependencies unchanged).
-- **O2-C Scope Gate is COMPLETE; implementation is DEFERRED before implementation** (not cancelled).
-  No O2-C Source, API, storage, schema or dependency change exists. Record:
-  [SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md](SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md).
-- **Immediate priority:** Workflow Shared Signal Foundation and safe Modbus Write validation
-  (see [ROADMAP](ROADMAP.md)); none of it is started or authorized by this checkpoint.
-- **Hardware certification: PENDING. 24/7 soak certification: PENDING.**
-- Integration: Pull Request `arena/01a0eb36-modbus-workflow-studio` → `main`; Owner performs the
-  Manual Merge. [PR readiness](ACCEPTANCE_TESTS/O2-B-PR-READINESS-v1.4.0-dev.17.md).
+- Controlled Simulator-validation foundation only; not production authorization or hardware
+  certification. Owner Simulator Manual Review is PENDING.
+- **Production Server behavior changed.** `POST /api/nodes/:id/write` is retained temporarily
+  for compatibility feedback and always returns HTTP 410 / `LEGACY_DIRECT_WRITE_DISABLED` with
+  `Direct node writes are disabled. Modbus writes must use the guarded Workflow runtime.`
+  It does no Device lookup/connection, queue admission, frame/write/retry, ownership/runtime
+  mutation, Workflow start/trigger, or sensitive-config disclosure. Existing body-size, Origin,
+  and general security protections remain; middleware may reject malformed or oversized bodies
+  before the route. No redirect or replacement public write API exists.
+- `WorkflowRuntimeManager` is the sole authorization authority for Workflow Modbus writes.
+  `ALLOW_WRITES=false` by default; bounded shared Device queue, strict FC05/06/16 contract,
+  command identity/expiry/generation fencing, cancellation, ownership, and lifecycle evidence apply.
+  Optional read-back observes only the existing Server Tag Runtime Store / SHARED_TAG acquisition.
+- Overview Controls remain **PREVIEW ONLY**; Overview and Modbus Monitor remain read-only.
+  Production/hardware writes are unauthorized. Hardware acceptance and 24/7 soak certification
+  are PENDING Owner review.
+- Protected O2-A/O2-B behavior remains locked. O2-C remains deferred; no O2-C/O2-D, assets,
+  generic Signal/Variable, Published Output, Overview write, FC15, dependency upgrade, or
+  certification work is included.
+- [Workflow Write Manual Review](ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md)
+  is the controlled Simulator procedure; the [dev.18 scope gate](SCOPE_GATES/O2-B-WORKFLOW-WRITE-FOUNDATION-v1.4.0-dev.18.md)
+  records its acceptance boundary. Automated Stage 1 and Full Gates passed in the sandbox on 2026-09-29, including the focused Simulator suite (2/2); Owner Simulator Manual Review remains PENDING.
+- The [Master Plan](MASTER_PLAN.md) is the authoritative practical roadmap. Current priority is dev.18,
+  Owner Simulator review, Shared Tag Input, state/latch lifecycle, Published Workflow Output,
+  Workflow Command Input, Overview controls, recovery/deployment, access boundary, then justified
+  hardware/soak validation and optional scopes.
+
 
 ## Previous checkpoint — v1.4.0-dev.16
 

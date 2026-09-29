@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.4.0-dev.18] - Workflow Modbus Write Foundation (2026-09-29)
+
+- Production Server behavior changed: `POST /api/nodes/:id/write` is retained only as a
+  compatibility-feedback route and always returns HTTP 410 with code
+  `LEGACY_DIRECT_WRITE_DISABLED`; it performs no Device lookup/connection, queue admission,
+  frame creation, write, retry, ownership/runtime mutation, Workflow start/trigger, or sensitive
+  configuration disclosure. Existing JSON body-size, Origin, and general security middleware
+  remains in force. No redirect or replacement public write API was added.
+- `WorkflowRuntimeManager` is the sole authorization point for guarded Workflow Modbus writes;
+  bounded per-Device queues, strict FC05/06/16 type/address/value validation, command identity,
+  expiry/generation fencing, resource ownership, lifecycle cancellation, explicit Audit/Traffic
+  evidence, and optional Store-backed SHARED_TAG observation are applied. Writes remain disabled
+  by default (`ALLOW_WRITES=false`).
+- Simulator validation uses only the guarded Workflow runtime. Overview remains PREVIEW ONLY;
+  Overview/Monitor are read-only. Production/hardware operation and 24/7 soak certification are
+  not authorized and remain PENDING Owner review.
+- Add validation, queue/lifecycle, endpoint fail-closed, controlled TCP Simulator tests, the
+  Manual Review guide, dev.18 scope gate, and Owner-approved [Master Plan](docs/MASTER_PLAN.md).
+  No dependency changes, generic/Published Output, new public write API, FC15, Overview write,
+  hardware certification, or O2-C/O2-D work.
+
+
 ## [1.4.0-dev.17] - O2-B PR Readiness and O2-C Deferral Record (2026-09-29)
 
 - Documentation/planning only. O2-B is complete for the Development checkpoint at

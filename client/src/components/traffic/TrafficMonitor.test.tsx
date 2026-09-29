@@ -23,7 +23,9 @@ describe('Traffic SSR layout and wiring (browser review still required)', () => 
   });
   it('changes only Traffic route; retains existing App REST/WS cap and generic runtime Table', () => {
     const app = readFileSync(new URL('../../App.tsx', import.meta.url), 'utf8'); expect(app).toContain("page==='Traffic Monitor'&&<TrafficMonitor rows={traffic}/>");
-    expect(app).toContain('slice(0,5000)'); expect(app).toContain('function Table('); expect(app).toContain('slice(0,10)');
+    expect(app).toContain('slice(0,5000)'); expect(app).toContain('function Table(');
+    expect(app).toContain("'writeStatus'"); expect(app).toContain("'effectiveValue'"); expect(app).toContain("'readBackValue'");
+    expect(app).toContain('preferred.filter(key=>available.includes(key))');
     const source = readFileSync(new URL('./TrafficMonitor.tsx', import.meta.url), 'utf8'); expect(source).not.toMatch(/dangerouslySetInnerHTML|WebSocket|fetch\(|JSON.stringify|Object.keys/);
     expect(source).toContain('key={row.key}'); expect(source).toContain('TRAFFIC_DETAIL_CHARS');
   });

@@ -12,7 +12,7 @@ afterEach(() => { for (const fn of cleanups.splice(0).reverse()) fn(); vi.useRea
 function setup(allowWrites = false) {
   vi.useFakeTimers(); const f = fixture(); cleanups.push(f.cleanup);
   const request = vi.fn(async (r: { fc: number }) => r.fc <= 4 ? readResponse(42, r.fc) : Buffer.alloc(12));
-  const connection = { runtime: { actualState: 'connected' }, generation: 1, manual: false, request, cancelMonitorRequests: vi.fn(), cancelAcquisitionRequests: vi.fn() } as unknown as DeviceConnection;
+  const connection = { runtime: { actualState: 'connected' }, generation: 1, manual: false, request, cancelMonitorRequests: vi.fn(), cancelAcquisitionRequests: vi.fn(), cancelWorkflowWrites: vi.fn() } as unknown as DeviceConnection;
   const legacy: Workflow = { version: 1, mode: 'DESIGN', running: false, nodes: [], edges: [], settings: {} };
   const workflows = new WorkflowManager(f.dir, legacy), broadcast = vi.fn(), audit = vi.fn();
   const runtime = new WorkflowRuntimeManager({ workflows, getDevices: () => [device], getConnection: () => connection, allowWrites, broadcast, audit });
@@ -42,7 +42,7 @@ describe('protected owners alongside Shared Tags', () => {
   });
   it('retains write ownership, write-on-change, commanded/effective separation and stop suppression', async () => {
     const f = setup(true), a = f.workflows.first(), b = f.workflows.create('Other');
-    const nodes = [node('source', 'BOOLEAN_CONSTANT', { value: true }), node('out', 'MODBUS_OUTPUT', { deviceId: device.id, functionCode: 5, address: 0, polarity: 'ACTIVE_LOW', initialWritePolicy: 'WRITE_ON_START', writeOnChange: true }, 1)];
+    const nodes = [node('source', 'BOOLEAN_CONSTANT', { value: true }), node('out', 'MODBUS_OUTPUT', { deviceId: device.id, functionCode: 5, address: 0, polarity: 'ACTIVE_LOW', initialWritePolicy: 'WRITE_CURRENT_ONCE', writeOnChange: true }, 1)];
     const edges = [{ id: 'edge', source: 'source', sourcePort: 0, target: 'out', targetPort: 0, enabled: true }];
     for (const w of [a, b]) f.workflows.update(w.id, { mode: 'LIVE_ARMED', nodes, edges });
     f.runtime.start(a.id); await vi.advanceTimersByTimeAsync(0); expect(f.request).toHaveBeenCalledWith(expect.objectContaining({ fc: 5, priority: true, values: [0], workflowId: a.id }));
