@@ -28,7 +28,7 @@ describe('dev.15 A+B Canvas surfaces and rail replacement',()=>{
   expect(editorCss).toContain('.overview-element.is-selected {\n  outline: 2px');expect(css).toContain('.overview-editor-chrome');
  });
  it.each(['NUMERIC_LABEL','VALUE_BADGE','STATUS_LIGHT','TEXT_LABEL'] as const)('%s shares Caption/reading/status/action allocation between representative Edit and View',type=>{
-  const f=configuration(1,type);f.element.width=320;f.element.height=120;const before=JSON.stringify(f.element);
+  const f=configuration(1,type);f.element.style.showRuntimeDetails=true;f.element.width=320;f.element.height=120;const before=JSON.stringify(f.element);
   const edit=render(<EditorMonitoring element={f.element} resolution={f.resolution}/>),view=render(<RuntimeMonitoringView element={f.element} presentation={runtimePresentation(f.element,f.resolution,sampleItem(1,type==='STATUS_LIGHT'?false:8888.88),'Connected')} age=""/>);
   for(const token of ['has-status-row','has-action-slot','has-caption','overview-runtime-reading','overview-runtime-abnormal']){expect(edit).toContain(token);expect(view).toContain(token);}
   expect(edit.match(/class="overview-runtime-reading".*?<\/span><\/span>/)?.[0]).toBe(view.match(/class="overview-runtime-reading".*?<\/span><\/span>/)?.[0]);expect(JSON.stringify(f.element)).toBe(before);

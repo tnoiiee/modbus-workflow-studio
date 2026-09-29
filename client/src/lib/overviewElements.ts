@@ -36,6 +36,8 @@ export interface OverviewElementStyle {
   valueFontSize?: number;
   backgroundOpacity?: number;
   showBorder?: boolean;
+  /** Eligible Monitoring Elements only. Absent means false: no inline Runtime Details action. */
+  showRuntimeDetails?: boolean;
   fontSize: number;
   textColor: string;
   backgroundColor: string;
@@ -332,7 +334,7 @@ export function createOverviewElement(
     locked: false,
     visible: true,
     style: { ...overviewDefaultStyle(category), backgroundOpacity: 1, showBorder: true,
-      ...(['NUMERIC_LABEL', 'TEXT_LABEL', 'STATUS_LIGHT', 'VALUE_BADGE'].includes(type) ? { captionFontSize: 11 } : {}),
+      ...(['NUMERIC_LABEL', 'TEXT_LABEL', 'STATUS_LIGHT', 'VALUE_BADGE'].includes(type) ? { captionFontSize: 11, showRuntimeDetails: false } : {}),
       ...(['NUMERIC_LABEL', 'VALUE_BADGE'].includes(type) ? { valueFontSize: 16 } : {}),
       ...(type === 'STATUS_LIGHT' ? { showText: false, valueFontSize: 12 } : {}) },
     binding: type === 'NAVIGATION_LINK' ? { ...overviewDefaultBinding(category), direction: 'NONE' } : overviewDefaultBinding(category),

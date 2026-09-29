@@ -1,5 +1,5 @@
 import type { OverviewElement } from './overviewElements.js';
-import { hasInlineRuntimeAction, inheritedMonitoringFont } from './overviewPresentationStyle.js';
+import { hasInlineRuntimeAction, inheritedMonitoringFont, showsRuntimeDetails } from './overviewPresentationStyle.js';
 import { operatorRuntimeStatus, type runtimePresentation } from './overviewRuntimePresentation.js';
 
 /** Canvas wording only. The canonical projection and Details diagnostics remain untouched. */
@@ -30,7 +30,7 @@ export function canvasMonitoringLayout(element: OverviewElement) {
   const readingHeight = light ? lampSize : 1.15 * valueSize;
   const contentHeight = Math.max(0, height - (micro ? 6 : compact ? 10 : 16));
   const statusRow = width >= 72 && contentHeight >= readingHeight + 15;
-  const inlineAction = hasInlineRuntimeAction(element) && statusRow;
+  const inlineAction = showsRuntimeDetails(element) && hasInlineRuntimeAction(element) && statusRow;
   const horizontalCaption = compact && !micro && !light;
   const caption = !!style.text.trim() && (horizontalCaption
     ? width >= 112 && contentHeight >= Math.max(readingHeight, 1.15 * captionSize) + (statusRow ? 15 : 0)

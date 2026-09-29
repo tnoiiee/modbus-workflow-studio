@@ -608,6 +608,10 @@
   font-size: var(--text-label);
 }
 
+.element-inspector__field--check label { display: inline-flex; align-items: center; gap: 8px; min-height: 24px; color: var(--color-text); }
+.element-inspector__field .element-inspector__field--check input[type='checkbox'],
+.element-inspector__field--check input[type='checkbox'] { width: 16px; min-width: 16px; height: 16px; min-height: 16px; padding: 0; margin: 0; }
+
 .element-inspector__field input[type='color'] {
   min-height: 32px;
   padding: 2px;

@@ -1,6 +1,27 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.15
+## Current application — v1.4.0-dev.16
+
+Approved base **e3f606765c8d8b83a4c30b0b861e5f90d762050e / dev.15**, branch
+`arena/01a0d291-modbus-workflow-studio`. **Dev.16 Owner Local Manual Review PENDING.**
+Scope: O2-B3 Optional Inline Runtime Details Action only.
+
+One optional persisted field, `style.showRuntimeDetails?: boolean` (absent = false at read time;
+no migration, no read-time write; new eligible Monitoring Elements are created false). Inspector
+checkbox **Show Runtime Details** (Appearance group; Numeric Label, Value Badge, Status Light,
+Text Label only). True renders the dev.15 button/slot when the existing size gate passes; false
+renders no button, no gutter and no focusable control, and Caption/Value/Unit/status reclaim the
+space. Edit/View share one layout helper. Page-level `Runtime details & safety → Element Runtime
+Details` fallback, Details eligibility/overlay, projection, subscriptions, geometry, savedViewport,
+revision, Draft/Save/Cancel/history, O2-B1/B2, Controls/Navigation, Workflow/Monitor/Traffic,
+`/ws/live` and write safety are unchanged. Production Server changed only for version sync.
+
+Validation: Stage 1 targeted Client 1032/51 + Server 14/4; Full Client **1162/66**, Full Server
+**327/25**, `npm run check` PASS. Browser/screen-reader review PENDING. No PR/tag/release/ZIP;
+O2-C/O2-D NOT STARTED. [Scope](SCOPE_O2-B3_v1.4.0-dev.16.md) ·
+[Acceptance](ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.16.md).
+
+## Previous checkpoint — v1.4.0-dev.15
 
 Approved base **0d4147d61fe89b875caa425b148ae94c636036c5 / dev.14**, branch
 `arena/01a0d291-modbus-workflow-studio`. Owner dev.14 local manual review **PASS**.

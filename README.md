@@ -1,12 +1,22 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.15
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.16
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-**v1.4.0-dev.15 — O2-B3 Canvas HMI Visual Refinement (A+B)**. Approved base
-`0d4147d61fe89b875caa425b148ae94c636036c5` / dev.14, branch
-`arena/01a0d291-modbus-workflow-studio`. Owner local manual review **PASS for dev.14**;
+**v1.4.0-dev.16 — O2-B3 Optional Inline Runtime Details Action**. Approved base
+`e3f606765c8d8b83a4c30b0b861e5f90d762050e` / dev.15, branch
+`arena/01a0d291-modbus-workflow-studio`. **dev.16 Owner local manual review PENDING.**
+
+- One optional persisted presentation field, `showRuntimeDetails` (absent = false, no migration).
+  The Inspector checkbox **Show Runtime Details** (Appearance group, eligible Monitoring types only)
+  controls the inline Details button. Off: no button, no action gutter, no focusable control; the
+  Page-level `Runtime details & safety → Element Runtime Details` path stays available. Runtime
+  eligibility, projection, geometry and protocol are unchanged.
+  [Scope](docs/SCOPE_O2-B3_v1.4.0-dev.16.md) · [acceptance](docs/ACCEPTANCE_TESTS/O2-B3-v1.4.0-dev.16.md).
+
+Previous checkpoint — **v1.4.0-dev.15 — O2-B3 Canvas HMI Visual Refinement (A+B)**. Approved base
+`0d4147d61fe89b875caa425b148ae94c636036c5` / dev.14. Owner local manual review **PASS for dev.14**;
 **dev.15 Owner local manual review PENDING**.
 
 - Canvas/Element presentation only. High-performance industrial HMI with compact, low-noise

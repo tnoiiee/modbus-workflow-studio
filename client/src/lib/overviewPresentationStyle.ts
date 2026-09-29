@@ -12,6 +12,9 @@ export function inheritedMonitoringFont(element: OverviewElement, property: 'cap
   return element.width < 112 || element.height < 36 ? .65 * base : Math.min(15, Math.max(11, .65 * base));
 }
 
+/** Persisted opt-in. Absent (legacy) resolves to false; resolving never writes the fallback. */
+export const showsRuntimeDetails = (element: OverviewElement) => element.style.showRuntimeDetails === true;
+
 /** Fixed 24px target + 4px margins, separate from a minimum readable content column. */
 export function hasInlineRuntimeAction(element: OverviewElement) {
   return element.width - 2 * element.style.borderWidth >= 112 && element.height - 2 * element.style.borderWidth >= 32;
@@ -50,12 +53,13 @@ export class PresentationNumberSession {
   }
 }
 
-/** Approved four-field extension only; separate from Binding/Source validation. */
+/** Approved presentation-field extension only; separate from Binding/Source validation. */
 export function validatePresentationStyle(style: OverviewElementStyle): string[] {
   const errors: string[] = [];
   for (const property of ['captionFontSize', 'valueFontSize', 'backgroundOpacity'] as const) {
     if (style[property] !== undefined && !isPresentationNumber(property, style[property])) errors.push(`${property} is outside its finite presentation range`);
   }
   if (style.showBorder !== undefined && typeof style.showBorder !== 'boolean') errors.push('showBorder must be boolean');
+  if (style.showRuntimeDetails !== undefined && typeof style.showRuntimeDetails !== 'boolean') errors.push('showRuntimeDetails must be boolean');
   return errors;
 }

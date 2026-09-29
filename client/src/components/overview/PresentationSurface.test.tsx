@@ -85,7 +85,7 @@ describe('dev.14 custom font surface and contextual Inspector', () => {
 });
 describe('dev.14 Details action / safe small-element fallback', () => {
   it.each(['GOOD','UNCERTAIN','STALE','BAD','DISCONNECTED'] as const)('%s retains fixed action slot and decorative centered SVG', quality => {
-    const f=configuration(), open=vi.fn(), stop=vi.fn(); f.element.style.text='Long caption '.repeat(15);
+    const f=configuration(), open=vi.fn(), stop=vi.fn(); f.element.style.text='Long caption '.repeat(15);f.element.style.showRuntimeDetails=true;
     const tree=RuntimeMonitoringView({element:f.element,presentation:runtimePresentation(f.element,f.resolution,sampleItem(1,8888.88,quality),'Connected'),age:'1s',onDetails:open});
     const button=(tree.props.children as any[]).find(n=>n?.type==='button'); expect(button.props.type).toBe('button'); expect(button.props.className).toContain('nodrag nopan'); expect(button.props['aria-label']).toContain('Runtime details:');
     button.props.onClick({stopPropagation:stop}); expect(open).toHaveBeenCalledOnce(); expect(stop).toHaveBeenCalledOnce();

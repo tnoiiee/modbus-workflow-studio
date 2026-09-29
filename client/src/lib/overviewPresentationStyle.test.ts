@@ -12,7 +12,7 @@ describe('dev.14 narrow presentation schema and lazy defaults', () => {
     expect(e.style.valueFontSize).toBe(type === 'STATUS_LIGHT' ? 12 : ['NUMERIC_LABEL', 'VALUE_BADGE'].includes(type) ? 16 : undefined);
     expect(validateOverviewElements({ id: 'page', layerOrder: ['e'] }, [e])).toEqual([]);
     expect(Object.keys(e.style).sort()).toEqual(['text','fontSize','textColor','backgroundColor','borderColor','borderWidth','borderRadius','opacity','alignment','backgroundOpacity','showBorder',
-      ...(['NUMERIC_LABEL','TEXT_LABEL','STATUS_LIGHT','VALUE_BADGE'].includes(type) ? ['captionFontSize'] : []),
+      ...(['NUMERIC_LABEL','TEXT_LABEL','STATUS_LIGHT','VALUE_BADGE'].includes(type) ? ['captionFontSize','showRuntimeDetails'] : []),
       ...(['NUMERIC_LABEL','VALUE_BADGE','STATUS_LIGHT'].includes(type) ? ['valueFontSize'] : []), ...(type === 'STATUS_LIGHT' ? ['showText'] : [])].sort());
   });
   it.each([8,16,48,96])('legacy base %s retains exact dev.13 caption/value rules without mutation', base => {

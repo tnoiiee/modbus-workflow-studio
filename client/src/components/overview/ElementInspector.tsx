@@ -1,5 +1,6 @@
 import { PresentationNumberField } from './PresentationNumberField.js';
 import { PresentationFontControl } from './PresentationFontControl.js';
+import { isRuntimeMonitoring } from '../../lib/overviewRuntimeSelection.js';
 import { hasMonitoringTypography, hasValueTypography, type PresentationPreviewProperty } from '../../lib/overviewPresentationStyle.js';
 import { FontSizeField } from './FontSizeField.js';
 import { SourceBindingFields } from './SourceBindingFields.js';
@@ -165,6 +166,7 @@ export function ElementInspector({
 }: ElementInspectorProps) {
   const bindingHelpId = useId();
   const bindingErrorId = useId();
+  const detailsId = useId();
   if (!element) {
     return (
       <div className="element-inspector" role="region" aria-label="Element Inspector">
@@ -273,6 +275,13 @@ export function ElementInspector({
           </select>
           <small>Read-only light. Off hides TRUE/FALSE visually, not its accessible status.</small>
         </label>}
+        {element.category === 'MONITORING' && isRuntimeMonitoring(element.type) && <div className="element-inspector__field element-inspector__field--check">
+          <label htmlFor={`${detailsId}-runtime-details`}>
+            <input id={`${detailsId}-runtime-details`} type="checkbox" checked={style.showRuntimeDetails === true} aria-describedby={`${detailsId}-runtime-details-help`}
+              onChange={event => onPatchStyle({ showRuntimeDetails: event.target.checked })} /> Show Runtime Details
+          </label>
+          <small id={`${detailsId}-runtime-details-help`}>Show the Runtime Details action directly on this Element. Details remain available from the Page-level Runtime panel when hidden.</small>
+        </div>}
         <label className="element-inspector__field">
             <span>Background</span>
             <input

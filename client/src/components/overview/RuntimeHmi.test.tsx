@@ -12,7 +12,7 @@ import { configuration, sampleItem, harness, time } from '../../lib/overviewRunt
 import type { OverviewElementType } from '../../lib/overviewElements.js';
 const visibleText = (html: string) => html.replace(/<[^>]*>/g, '');
 function view(type: OverviewElementType = 'NUMERIC_LABEL', caption = '', value: number | boolean = 20) {
-  const f = configuration(1, type); f.element.style.text = caption;
+  const f = configuration(1, type); f.element.style.text = caption; f.element.style.showRuntimeDetails = true;
   const p = runtimePresentation(f.element, f.resolution, sampleItem(1, value), 'Connected');
   return { f, p, html: renderToStaticMarkup(<RuntimeMonitoringView element={f.element} presentation={p} age="12s since receive" onDetails={() => {}} />) };
 }

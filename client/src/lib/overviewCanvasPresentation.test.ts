@@ -66,7 +66,7 @@ describe('dev.15 geometry-only priority policy, no persisted small-mode',()=>{
     const layout=canvasMonitoringLayout(f.element);expect(layout.lightText).toBe(false);expect(layout.inlineAction).toBe(false);
   });
   it('roomy Elements retain caption, value, unit and independent action/status slots',()=>{
-    const f=configuration();f.element.width=320;f.element.height=120;expect(canvasMonitoringLayout(f.element)).toMatchObject({caption:true,unit:true,statusRow:true,inlineAction:true,roomy:true});
+    const f=configuration();f.element.style.showRuntimeDetails=true;f.element.width=320;f.element.height=120;expect(canvasMonitoringLayout(f.element)).toMatchObject({caption:true,unit:true,statusRow:true,inlineAction:true,roomy:true});
   });
   it('legacy inherited fonts are read without materializing new fields',()=>{
     const f=configuration();delete f.element.style.captionFontSize;delete f.element.style.valueFontSize;const before=JSON.stringify(f.element);canvasMonitoringLayout(f.element);expect(JSON.stringify(f.element)).toBe(before);

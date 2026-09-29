@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.4.0-dev.16] - O2-B3 Optional Inline Runtime Details Action (2026-09-29)
+
+- Add exactly one optional persisted presentation field, `style.showRuntimeDetails?: boolean`.
+  Absent resolves to false at read time; no migration and no read-time write. New eligible
+  Monitoring Elements (Numeric Label, Value Badge, Status Light, Text Label) are created with false.
+- Inspector: contextual **Show Runtime Details** checkbox in the existing Appearance group,
+  labelled with supporting text, keyboard accessible, hidden for ineligible types; one draft edit
+  per change with unchanged Save/Cancel/Undo/Redo/revision.
+- Inline Details button (dev.15 markup/behavior) renders only when true and the existing size gate
+  passes. When off there is no button, no action gutter and no focusable control; Caption/Value/
+  Unit/status reclaim the width. Edit and View share the same setting and layout helper.
+- Page-level `Runtime details & safety → Element Runtime Details` fallback, Details eligibility,
+  overlay, Runtime projection/subscriptions, geometry and O2-B2 protocol are unchanged.
+- Add 61 tests across 2 suites; existing always-on-button fixtures opt in explicitly. Full Client
+  1162/66, Server 327/25, root check PASS. Server production change is version-only.
+  No dependencies, Picture Box/assets, O2-C/O2-D, PR/tag/release/ZIP. Owner manual review PENDING.
+
 ## [1.4.0-dev.15] - O2-B3 React Flow Canvas HMI Visual Refinement (2026-09-29)
 
 - Owner selected A+B: industrial reading hierarchy plus compact, low-noise composition.
