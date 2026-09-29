@@ -1,3 +1,6 @@
+import { validatePresentationStyle } from './overviewPresentationStyle.js';
+import type { DraftSourceIdentity } from './sourceDefinitions.js';
+import { isStableId } from './sourceDefinitions.js';
 /**
  * Overview Element model, placement, history, and validation (O1-C).
  * Pure helpers only — drafts stay client-side until Save & Exit.
@@ -20,12 +23,21 @@ export type OverviewElementType =
 
 export type OverviewElementCategory = 'MONITORING' | 'CONTROL' | 'DISPLAY';
 
-export type OverviewBindingStatus = 'NOT_BOUND' | 'DRAFT';
+export type OverviewBindingStatus = 'NOT_BOUND' | 'DRAFT' | 'BOUND' | 'MISSING' | 'INCOMPATIBLE';
 export type OverviewBindingDirection = 'MONITOR' | 'COMMAND' | 'NONE';
 export type OverviewBindingDataType = 'Boolean' | 'Number' | 'String' | 'Unknown';
 
 export interface OverviewElementStyle {
   text: string;
+  /** STATUS_LIGHT only. Absent on legacy elements means On; new lights default Off. */
+  showText?: boolean;
+  /** Optional presentation overrides; absence preserves dev.13 base-font rendering. */
+  captionFontSize?: number;
+  valueFontSize?: number;
+  backgroundOpacity?: number;
+  showBorder?: boolean;
+  /** Eligible Monitoring Elements only. Absent means false: no inline Runtime Details action. */
+  showRuntimeDetails?: boolean;
   fontSize: number;
   textColor: string;
   backgroundColor: string;
@@ -41,7 +53,9 @@ export interface OverviewElementBinding {
   tagName: string;
   dataType: OverviewBindingDataType;
   direction: OverviewBindingDirection;
-  status: OverviewBindingStatus;
+  /** Legacy configuration hint only. New bindings omit this field. */
+  status?: OverviewBindingStatus;
+  source?: DraftSourceIdentity;
 }
 
 /** Configuration metadata only; no registry lookup or runtime connection. */
@@ -54,15 +68,25 @@ export function validateOverviewBinding(category: OverviewElementCategory, value
   if (!['Boolean', 'Number', 'String', 'Unknown'].includes(String(binding.dataType))) {
     errors.push('Data Type must be Boolean, Number, String or Unknown');
   }
-  if (!['NOT_BOUND', 'DRAFT'].includes(String(binding.status))) {
+  if (!binding.source && !['NOT_BOUND', 'DRAFT'].includes(String(binding.status))) {
     errors.push('Binding status must be NOT_BOUND or DRAFT');
   }
   if (!overviewAllowedDirections(category).includes(binding.direction as OverviewBindingDirection)) {
     errors.push(`Binding direction must be ${overviewAllowedDirections(category).join(' or ')}`);
   }
   const tagId = typeof binding.tagId === 'string' ? binding.tagId.trim() : '';
-  if (binding.status === 'DRAFT' && !tagId) errors.push('DRAFT binding requires a non-empty Tag ID');
-  if (binding.status === 'NOT_BOUND' && tagId) errors.push('A Tag ID requires DRAFT status');
+  if (!binding.source && binding.status === 'DRAFT' && !tagId && !String(binding.tagName ?? '').trim()) errors.push('DRAFT binding requires a non-empty Tag ID');
+  if (!binding.source && binding.status === 'NOT_BOUND' && tagId) errors.push('A Tag ID requires DRAFT status');
+  if (binding.source) {
+    if (binding.status !== undefined) errors.push('Derived binding status must not be persisted with Source identity');
+    const source = binding.source as Record<string, unknown>;
+    const fields = source.sourceType === 'SHARED_TAG' ? ['sourceType', 'sourceId']
+      : source.sourceType === 'WORKFLOW_VARIABLE' ? ['sourceType', 'workflowId', 'variableId'] : [];
+    if (!fields.length || Object.keys(source).some(key => !fields.includes(key))) errors.push('Invalid Source identity fields');
+    for (const field of fields.filter(key => key !== 'sourceType')) {
+      if (source[field] !== undefined && source[field] !== '' && !isStableId(source[field])) errors.push(`${field} must be a stable UUID`);
+    }
+  }
   return errors;
 }
 
@@ -76,7 +100,8 @@ export function patchOverviewBinding(
   if (patch.tagId !== undefined) next.tagId = patch.tagId.trim();
   if (patch.tagName !== undefined) next.tagName = patch.tagName.trim();
   if (patch.direction !== undefined) next.direction = normalizeOverviewBindingDirection(category, patch.direction);
-  next.status = next.tagId.trim() ? 'DRAFT' : 'NOT_BOUND';
+  if (next.source) delete next.status;
+  else next.status = next.tagId.trim() || next.tagName.trim() ? 'DRAFT' : 'NOT_BOUND';
   return next;
 }
 
@@ -96,6 +121,8 @@ export interface OverviewElement {
   visible: boolean;
   style: OverviewElementStyle;
   binding: OverviewElementBinding;
+  /** Navigation only; never a Tag or command identity. */
+  targetWorkflowId?: string;
   /** Persisted View-mode control preview state (CONTROL elements only). */
   controlState?: { value: boolean; updatedAt: string };
 }
@@ -306,8 +333,11 @@ export function createOverviewElement(
     zIndex: options.zIndex ?? 1,
     locked: false,
     visible: true,
-    style: overviewDefaultStyle(category),
-    binding: overviewDefaultBinding(category),
+    style: { ...overviewDefaultStyle(category), backgroundOpacity: 1, showBorder: true,
+      ...(['NUMERIC_LABEL', 'TEXT_LABEL', 'STATUS_LIGHT', 'VALUE_BADGE'].includes(type) ? { captionFontSize: 11, showRuntimeDetails: false } : {}),
+      ...(['NUMERIC_LABEL', 'VALUE_BADGE'].includes(type) ? { valueFontSize: 16 } : {}),
+      ...(type === 'STATUS_LIGHT' ? { showText: false, valueFontSize: 12 } : {}) },
+    binding: type === 'NAVIGATION_LINK' ? { ...overviewDefaultBinding(category), direction: 'NONE' } : overviewDefaultBinding(category),
   };
 }
 
@@ -572,10 +602,12 @@ export function validateOverviewElements(
     if (!el.style || typeof el.style !== 'object') {
       errors.push(`Element ${el.id}: style is required`);
     } else {
+      for (const error of validatePresentationStyle(el.style)) errors.push(`Element ${el.id}: ${error}`);
       if (!Number.isFinite(el.style.fontSize) || el.style.fontSize < 8 || el.style.fontSize > 96) errors.push(`Element ${el.id}: font size must be 8–96`);
       if (!Number.isFinite(el.style.borderWidth) || el.style.borderWidth < 0 || el.style.borderWidth > 12) errors.push(`Element ${el.id}: border width must be 0–12`);
       if (!Number.isFinite(el.style.borderRadius) || el.style.borderRadius < 0 || el.style.borderRadius > 64) errors.push(`Element ${el.id}: border radius must be 0–64`);
       if (!['left', 'center', 'right'].includes(el.style.alignment)) errors.push(`Element ${el.id}: invalid alignment`);
+      if (el.style.showText !== undefined && (el.type !== 'STATUS_LIGHT' || typeof el.style.showText !== 'boolean')) errors.push(`Element ${el.id}: Show Text must be a Status Light boolean`);
       if (typeof el.style.text !== 'string') errors.push(`Element ${el.id}: text must be a string`);
       for (const color of ['textColor', 'backgroundColor', 'borderColor'] as const) {
         if (typeof el.style[color] !== 'string' || !el.style[color].trim()) errors.push(`Element ${el.id}: ${color} must be a non-empty color`);
@@ -585,6 +617,8 @@ export function validateOverviewElements(
       }
     }
 
+    if (el.targetWorkflowId && (el.type !== 'NAVIGATION_LINK' || !isStableId(el.targetWorkflowId))) errors.push(`Element ${el.id}: invalid navigation target`);
+    if (el.type === 'NAVIGATION_LINK' && el.binding.source) errors.push(`Element ${el.id}: navigation must not use Tag identity`);
     for (const error of validateOverviewBinding(el.category, el.binding)) {
       errors.push(`Element ${el.id}: ${error}`);
     }

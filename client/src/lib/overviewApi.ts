@@ -120,3 +120,34 @@ export function patchOverviewControlState(
 export function deleteOverviewPage(id: string): Promise<{ ok: boolean }> {
   return overviewApi<{ ok: boolean }>(`/api/overview-pages/${id}`, { method: 'DELETE' });
 }
+
+// Definition metadata only. These endpoints never return Runtime values.
+import { definitionIdentity, type CreateDefinition, type DefinitionMetadata, type DefinitionWorkflow, type SourceDefinition, type SourceIdentity } from './sourceDefinitions.js';
+export const fetchSourceDefinitions = () => overviewApi<SourceDefinition[]>('/api/source-definitions');
+export const fetchDefinitionWorkflows = () => overviewApi<DefinitionWorkflow[]>('/api/workflows');
+export function sourceDefinitionPath(source: SourceIdentity): string {
+  return source.sourceType === 'SHARED_TAG'
+    ? `/api/source-definitions/shared-tags/${encodeURIComponent(source.sourceId)}`
+    : `/api/source-definitions/workflow-variables/${encodeURIComponent(source.workflowId)}/${encodeURIComponent(source.variableId)}`;
+}
+export const createSourceDefinition = (input: CreateDefinition) => overviewApi<SourceDefinition>('/api/source-definitions', { method: 'POST', body: JSON.stringify(input) });
+export const updateSourceDefinition = (source: SourceDefinition, metadata: Partial<DefinitionMetadata>) => overviewApi<SourceDefinition>(sourceDefinitionPath(definitionIdentity(source)), { method: 'PATCH', body: JSON.stringify(metadata) });
+
+export interface DefinitionReferenceSummary {
+  scope: 'SAVED_OVERVIEW_PAGES';
+  pageCount: number;
+  bindingCount: number;
+  references: Array<{ pageId: string; pageName: string; elementId: string; elementName: string; elementType: string; direction?: 'MONITOR' | 'COMMAND' | 'NONE' }>;
+}
+export const fetchDefinitionReferences = (source: SourceIdentity) => overviewApi<DefinitionReferenceSummary>(`${sourceDefinitionPath(source)}/references`);
+export const deleteSourceDefinition = (source: SourceIdentity) => overviewApi<{ ok: boolean }>(sourceDefinitionPath(source), { method: 'DELETE' });
+
+
+export interface DefinitionReferenceBatch {
+  scope: 'SAVED_OVERVIEW_PAGES';
+  unsavedDraftsIncluded: false;
+  results: Array<{ source: SourceIdentity; found: boolean; pageCount: number; bindingCount: number }>;
+}
+export const fetchDefinitionReferenceBatch = (sources: readonly SourceIdentity[]) => overviewApi<DefinitionReferenceBatch>(
+  '/api/source-definitions/references/batch', { method: 'POST', body: JSON.stringify({ sources }) },
+);

@@ -1,3 +1,11 @@
+import { PresentationNumberField } from './PresentationNumberField.js';
+import { PresentationFontControl } from './PresentationFontControl.js';
+import { isRuntimeMonitoring } from '../../lib/overviewRuntimeSelection.js';
+import { hasMonitoringTypography, hasValueTypography, type PresentationPreviewProperty } from '../../lib/overviewPresentationStyle.js';
+import { FontSizeField } from './FontSizeField.js';
+import { SourceBindingFields } from './SourceBindingFields.js';
+import { resolveOverviewBinding, type BindingResolution } from '../../lib/overviewBinding.js';
+import type { SourceDefinition, DefinitionWorkflow } from '../../lib/sourceDefinitions.js';
 import { useEffect, useId, useState, type InputHTMLAttributes } from 'react';
 import {
   BringToFront,
@@ -118,8 +126,13 @@ function CommitText({
 
 export interface ElementInspectorProps {
   element: OverviewElement | null;
+  definitions?: readonly SourceDefinition[];
+  workflows?: readonly DefinitionWorkflow[];
+  resolution?: BindingResolution;
   onPatch: (patch: Partial<OverviewElement>) => void;
   onPatchStyle: (patch: Partial<OverviewElement['style']>) => void;
+  onPreviewFontSize?: (value: number | null) => void;
+  onPreviewPresentation?: (property: PresentationPreviewProperty, value: number | null) => void;
   onPatchBinding: (patch: Partial<OverviewElement['binding']>) => void;
   onToggleLock: () => void;
   onToggleVisible: () => void;
@@ -138,9 +151,9 @@ const DATA_TYPES: readonly OverviewBindingDataType[] = ['Boolean', 'Number', 'St
  * Every property commit mutates the Draft only (one commit = one Undo entry).
  */
 export function ElementInspector({
-  element,
+  element, definitions = [], workflows = [], resolution,
   onPatch,
-  onPatchStyle,
+  onPatchStyle, onPreviewFontSize, onPreviewPresentation,
   onPatchBinding,
   onToggleLock,
   onToggleVisible,
@@ -153,10 +166,11 @@ export function ElementInspector({
 }: ElementInspectorProps) {
   const bindingHelpId = useId();
   const bindingErrorId = useId();
+  const detailsId = useId();
   if (!element) {
     return (
       <div className="element-inspector" role="region" aria-label="Element Inspector">
-        <p className="element-inspector__empty">Select an element on the canvas to edit its properties.</p>
+        <div className="element-inspector__empty" role="status"><strong>No element selected</strong><p>Select an element on the canvas to edit its properties.</p></div>
       </div>
     );
   }
@@ -165,10 +179,12 @@ export function ElementInspector({
   const binding = element.binding;
   const disabled = element.locked;
   const bindingErrors = validateOverviewBinding(element.category, binding);
+  const resolved = resolution ?? resolveOverviewBinding(element, { definitions, available: false });
 
   return (
     <div className="element-inspector" role="region" aria-label="Element Inspector">
       <div className="element-inspector__identity">
+        <h4 className="element-inspector__section-title">Element</h4>
         <div className="element-inspector__row">
           <label className="element-inspector__field">
             <span>Element Name</span>
@@ -212,7 +228,132 @@ export function ElementInspector({
       </div>
 
       <fieldset className="element-inspector__group" disabled={disabled}>
-        <legend>Layout</legend>
+        <legend>Content</legend>
+        <label className="element-inspector__field element-inspector__field--wide">
+            <span>Text</span>
+            <CommitText type="text" value={style.text} onCommit={text => onPatchStyle({ text })} />
+          </label>
+      </fieldset>
+      <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Typography</legend>
+        {hasMonitoringTypography(element.type) && <PresentationFontControl element={element} property="captionFontSize" onPatchStyle={onPatchStyle} onPreview={onPreviewPresentation} />}
+        {hasValueTypography(element.type) && binding.dataType !== 'String' && resolved.definition?.dataType !== 'String' && (element.type !== 'STATUS_LIGHT' || style.showText !== false) &&
+          <PresentationFontControl element={element} property="valueFontSize" onPatchStyle={onPatchStyle} onPreview={onPreviewPresentation} />}
+        <div className="element-inspector__grid"><label className="element-inspector__field">
+            <span>Text Color</span>
+            <input
+              type="color"
+              value={toHexColor(style.textColor, '#e6eef5')}
+              onChange={event => onPatchStyle({ textColor: event.target.value })}
+            />
+          </label><label className="element-inspector__field">
+            <span>Alignment</span>
+            <select
+              value={style.alignment}
+              onChange={event => onPatchStyle({ alignment: event.target.value as OverviewElement['style']['alignment'] })}
+            >
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+          </label></div>
+        <details><summary>Legacy/Base typography</summary>
+          <label className="element-inspector__field">
+            <span>Legacy/Base Font Size</span>
+            <FontSizeField label="Legacy/Base Font Size" value={style.fontSize} onPreview={onPreviewFontSize}
+              onCommit={fontSize => onPatchStyle({ fontSize })} />
+          </label>
+          <p className="element-inspector__binding-help">Base size keeps dev.13 inherited caption, unit and light scaling. Custom Caption/Value sizes affect only their text.</p>
+        </details>
+      </fieldset>
+      <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Appearance</legend>
+        {element.type === 'STATUS_LIGHT' && <label className="element-inspector__field">
+          <span>Show Text</span>
+          <select aria-label="Show Text" value={style.showText === false ? 'off' : 'on'} onChange={event => onPatchStyle({ showText: event.target.value === 'on' })}>
+            <option value="off">Off</option><option value="on">On</option>
+          </select>
+          <small>Read-only light. Off hides TRUE/FALSE visually, not its accessible status.</small>
+        </label>}
+        {element.category === 'MONITORING' && isRuntimeMonitoring(element.type) && <div className="element-inspector__field element-inspector__field--check">
+          <label htmlFor={`${detailsId}-runtime-details`}>
+            <input id={`${detailsId}-runtime-details`} type="checkbox" checked={style.showRuntimeDetails === true} aria-describedby={`${detailsId}-runtime-details-help`}
+              onChange={event => onPatchStyle({ showRuntimeDetails: event.target.checked })} /> Show Runtime Details
+          </label>
+          <small id={`${detailsId}-runtime-details-help`}>Show the Runtime Details action directly on this Element. Details remain available from the Page-level Runtime panel when hidden.</small>
+        </div>}
+        <label className="element-inspector__field">
+            <span>Background</span>
+            <input
+              type="color"
+              value={toHexColor(style.backgroundColor, '#0b1822')}
+              onChange={event => onPatchStyle({ backgroundColor: event.target.value })}
+            />
+          </label>
+        <PresentationNumberField label="Background Opacity" value={(style.backgroundOpacity ?? 1) * 100} min={0} max={100} unit="%" slider
+          onPreview={value => onPreviewPresentation?.('backgroundOpacity', value === null ? null : value / 100)}
+          onCommit={value => onPatchStyle({ backgroundOpacity: value / 100 })} />
+        <p className="element-inspector__binding-help">Multiplies existing Background Color alpha; 100% preserves that color. Outer background only, not text, border, focus or intrinsic controls.</p>
+        <details><summary>Advanced presentation</summary>
+          <label className="element-inspector__field">
+            <span>Overall Opacity — legacy</span>
+            <CommitField
+              type="number"
+              min={0}
+              max={1}
+              step={0.05}
+              value={style.opacity}
+              format={clampOverviewOpacity}
+              onCommit={opacity => onPatchStyle({ opacity })}
+            />
+          </label>
+          <p className="element-inspector__binding-help">Legacy whole-element opacity is independent and still affects the complete Element. It is not Background Opacity.</p>
+        </details>
+      </fieldset>
+      <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Border</legend>
+        <label className="element-inspector__field"><span>Show Border</span>
+          <select aria-label="Show Border" value={style.showBorder === false ? 'off' : 'on'} onChange={event => onPatchStyle({ showBorder: event.target.value === 'on' })}>
+            <option value="on">On</option><option value="off">Off</option>
+          </select>
+        </label>
+        <p className="element-inspector__binding-help">Outer frame only. Light, Control, placeholder and Divider representations, warnings and focus remain visible.</p>
+        <div className="element-inspector__grid"><label className="element-inspector__field">
+            <span>Border Color</span>
+            <input
+              type="color"
+              value={toHexColor(style.borderColor, '#334155')}
+              onChange={event => onPatchStyle({ borderColor: event.target.value })}
+            />
+          </label>
+<label className="element-inspector__field">
+            <span>Border Width</span>
+            <CommitField
+              type="number"
+              min={0}
+              max={12}
+              step={1}
+              value={style.borderWidth}
+              validate={value => value >= 0 && value <= 12}
+              onCommit={borderWidth => onPatchStyle({ borderWidth })}
+            />
+          </label>
+<label className="element-inspector__field">
+            <span>Border Radius</span>
+            <CommitField
+              type="number"
+              min={0}
+              max={64}
+              step={1}
+              value={style.borderRadius}
+              validate={value => value >= 0 && value <= 64}
+              onCommit={borderRadius => onPatchStyle({ borderRadius })}
+            />
+          </label></div>
+      </fieldset>
+      <details className="element-inspector__layout"><summary>Layout and geometry</summary>
+        <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Geometry</legend>
         <div className="element-inspector__grid">
           <label className="element-inspector__field">
             <span>X</span>
@@ -280,114 +421,35 @@ export function ElementInspector({
           </button>
         </div>
       </fieldset>
+      </details>
+      {element.category === 'MONITORING' && <section className="element-inspector__preview-info" aria-label="Preview information">
+        <h4>Preview information</h4><p>EDITOR PREVIEW only — no Runtime subscription. Representative values do not resize the Element. Small Elements use Page Runtime details and safety for diagnostics. String Runtime remains unsupported.</p>
+      </section>}
 
-      <fieldset className="element-inspector__group" disabled={disabled}>
-        <legend>Appearance</legend>
-        <div className="element-inspector__grid">
-          <label className="element-inspector__field element-inspector__field--wide">
-            <span>Text</span>
-            <CommitText type="text" value={style.text} onCommit={text => onPatchStyle({ text })} />
-          </label>
-          <label className="element-inspector__field">
-            <span>Font Size</span>
-            <CommitField
-              type="number"
-              min={8}
-              max={96}
-              step={1}
-              value={style.fontSize}
-              validate={value => value >= 8 && value <= 96}
-              onCommit={fontSize => onPatchStyle({ fontSize })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Opacity</span>
-            <CommitField
-              type="number"
-              min={0}
-              max={1}
-              step={0.05}
-              value={style.opacity}
-              format={clampOverviewOpacity}
-              onCommit={opacity => onPatchStyle({ opacity })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Text Color</span>
-            <input
-              type="color"
-              value={toHexColor(style.textColor, '#e6eef5')}
-              onChange={event => onPatchStyle({ textColor: event.target.value })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Background</span>
-            <input
-              type="color"
-              value={toHexColor(style.backgroundColor, '#0b1822')}
-              onChange={event => onPatchStyle({ backgroundColor: event.target.value })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Border Color</span>
-            <input
-              type="color"
-              value={toHexColor(style.borderColor, '#334155')}
-              onChange={event => onPatchStyle({ borderColor: event.target.value })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Border Width</span>
-            <CommitField
-              type="number"
-              min={0}
-              max={12}
-              step={1}
-              value={style.borderWidth}
-              validate={value => value >= 0 && value <= 12}
-              onCommit={borderWidth => onPatchStyle({ borderWidth })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Border Radius</span>
-            <CommitField
-              type="number"
-              min={0}
-              max={64}
-              step={1}
-              value={style.borderRadius}
-              validate={value => value >= 0 && value <= 64}
-              onCommit={borderRadius => onPatchStyle({ borderRadius })}
-            />
-          </label>
-          <label className="element-inspector__field">
-            <span>Alignment</span>
-            <select
-              value={style.alignment}
-              onChange={event => onPatchStyle({ alignment: event.target.value as OverviewElement['style']['alignment'] })}
-            >
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-          </label>
-        </div>
-      </fieldset>
-
-      <fieldset className="element-inspector__group" disabled={disabled}
+      {element.type === 'NAVIGATION_LINK' ? <fieldset className="element-inspector__group" disabled={disabled}>
+        <legend>Workflow navigation</legend>
+        <p>Navigation only. No Tag identity, commands, or Runtime changes.</p>
+        <label>Target Workflow<select value={element.targetWorkflowId ?? ''} onChange={event => onPatch({ targetWorkflowId: event.target.value })}>
+          <option value="">No target</option>
+          {element.targetWorkflowId && !workflows.some(workflow => workflow.id === element.targetWorkflowId) && <option value={element.targetWorkflowId}>Missing target · {element.targetWorkflowId}</option>}
+          {workflows.map(workflow => <option key={workflow.id} value={workflow.id}>{workflow.name} · {workflow.id}</option>)}
+        </select></label>
+        <label>targetWorkflowId<input readOnly value={element.targetWorkflowId ?? ''} /></label>
+      </fieldset> : <fieldset className="element-inspector__group" disabled={disabled}
         aria-describedby={`${bindingHelpId}${bindingErrors.length ? ` ${bindingErrorId}` : ''}`}
         aria-invalid={bindingErrors.length > 0 || undefined}>
         <legend>Draft Tag binding</legend>
         <p id={bindingHelpId} className="element-inspector__binding-help">
-          Configuration only. DRAFT is not connected. No Tag lookup, live values or commands.
-          Status follows Tag ID; clear Tag ID to return to NOT_BOUND. Unknown data type is allowed for a draft.
+          Configuration only. DRAFT is not connected. BOUND verifies metadata only, never Runtime readiness.
+          No live values or commands. Unknown data type is allowed for a legacy draft.
         </p>
+        <SourceBindingFields element={element} definitions={definitions} workflows={workflows} resolution={resolved} onPatchBinding={onPatchBinding} />
         <div id={bindingErrorId} role="status" aria-live="polite" aria-atomic="true">
           {bindingErrors.length ? <ul>{bindingErrors.map(error => <li key={error}>{error}</li>)}</ul> : null}
         </div>
         <div className="element-inspector__grid">
           <label className="element-inspector__field">
-            <span>Tag ID</span>
+            <span>Legacy Tag ID (not identity)</span>
             <CommitText
               type="text"
               value={binding.tagId}
@@ -402,11 +464,11 @@ export function ElementInspector({
             />
           </label>
           <label className="element-inspector__field">
-            <span>Tag Name</span>
+            <span>Legacy Tag Name</span>
             <CommitText type="text" value={binding.tagName} onCommit={tagName => onPatchBinding({ tagName })} />
           </label>
           <label className="element-inspector__field">
-            <span>Data Type</span>
+            <span>Intended Data Type</span>
             <select
               value={binding.dataType}
               onChange={event => onPatchBinding({ dataType: event.target.value as OverviewBindingDataType })}
@@ -435,12 +497,12 @@ export function ElementInspector({
           </label>
           <label className="element-inspector__field">
             <span>Status</span>
-            <input type="text" value={binding.status} readOnly aria-readonly="true" />
+            <input type="text" value={resolved.status} readOnly aria-readonly="true" />
           </label>
         </div>
-      </fieldset>
+      </fieldset>}
 
-      <div className="element-inspector__actions element-inspector__actions--danger">
+      <div className="element-inspector__actions element-inspector__actions--danger" role="group" aria-label="Element actions">
         <button type="button" onClick={onDuplicate} aria-label="Duplicate element">
           <Copy size={14} /> Duplicate
         </button>

@@ -24,7 +24,7 @@ describe('O1-D configuration-only binding', () => {
     expect(binding).toEqual({ tagId: 'plant.pump', tagName: 'Pump', dataType: 'Boolean', direction: 'COMMAND', status: 'DRAFT' });
     expect(original.binding.status).toBe('NOT_BOUND');
     expect(validateOverviewBinding(original.category, binding)).toEqual([]);
-    expect(patchOverviewBinding(original.category, binding, { tagId: '  ' })).toEqual({ ...binding, tagId: '', status: 'NOT_BOUND' });
+    expect(patchOverviewBinding(original.category, binding, { tagId: '  ' })).toEqual({ ...binding, tagId: '', status: 'DRAFT' });
   });
   it.each(['Boolean', 'Number', 'String', 'Unknown'] as const)('allows %s draft metadata without resolving a Tag', dataType => {
     const binding = { ...element().binding, tagId: 'not-in-any-registry', status: 'DRAFT', dataType };

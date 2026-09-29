@@ -1,0 +1,48 @@
+/* Scoped to the existing Modal; no shared design-system or Overview overrides. */
+.acquisition-dialog .modal { width: min(960px, calc(100vw - var(--space-6))); max-width: none; max-height: calc(100dvh - var(--space-6)); display: flex; flex-direction: column; }
+.acquisition-dialog .modal__header, .acquisition-dialog .modal__footer { flex-shrink: 0; padding: var(--space-4) var(--space-5); }
+.acquisition-dialog .modal__title { font-size: var(--text-numeric); overflow-wrap: anywhere; }
+.acquisition-dialog .modal__body { overflow-y: auto; min-height: 0; padding: var(--space-4) var(--space-5); }
+.acquisition-dialog .modal__description { font-size: var(--text-section); margin: 0 0 var(--space-4); line-height: var(--line-height-body); }
+.acquisition-form { display: grid; gap: var(--space-4); color: var(--color-text); font-size: var(--text-body); line-height: var(--line-height-body); }
+.acquisition-form p { margin: 0; }
+.acquisition-source { display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2); font-size: var(--text-section); color: var(--color-text-secondary); }
+.acquisition-section { border: 0; border-top: 1px solid var(--color-border); padding: var(--space-3) 0 0; margin: 0; min-width: 0; }
+.acquisition-section legend { font-size: var(--text-body); font-weight: var(--weight-semibold); padding: 0 var(--space-3) 0 0; }
+.acquisition-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
+.acquisition-field { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
+.acquisition-field label { font-size: var(--text-body); font-weight: var(--weight-medium); }
+.acquisition-form :is(input, select) { width: 100%; min-width: 0; min-height: 40px; padding: var(--space-2); border: 1px solid var(--color-border-strong); border-radius: var(--radius-md); background: var(--color-surface-sunken); color: var(--color-text); font: inherit; }
+.acquisition-form input[readonly] { border-style: dashed; color: var(--color-text-secondary); background: var(--color-surface-2); }
+.acquisition-form :is(small, .acquisition-feedback, .acquisition-notes, .acquisition-impact, .acquisition-callout, .acquisition-setting p) { font-size: var(--text-section); line-height: var(--line-height-body); overflow-wrap: anywhere; }
+.acquisition-field small { color: var(--color-text-secondary); }
+.acquisition-form .acquisition-error { color: var(--color-danger); font-size: var(--text-section); overflow-wrap: anywhere; }
+.acquisition-error:empty { display: none; }
+.acquisition-form [aria-invalid="true"] { border-color: var(--color-danger); }
+.acquisition-form .acquisition-impact:not(:empty) { margin-top: var(--space-2); color: var(--color-info); }
+.acquisition-callout { padding: var(--space-3); border-left: 3px solid var(--color-warning); background: var(--color-warning-soft); border-radius: var(--radius-sm); }
+.acquisition-callout strong { font-weight: var(--weight-semibold); }
+.acquisition-enabled { margin: 0; padding: var(--space-3); min-width: 0; border: 1px solid var(--color-border-accent); border-radius: var(--radius-md); background: var(--color-accent-soft); }
+.acquisition-setting { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: var(--space-3); }
+.acquisition-setting input[type="checkbox"] { width: 20px; height: 20px; min-height: 0; margin: 2px 0 0; accent-color: var(--color-accent); }
+.acquisition-setting label { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); cursor: pointer; font-weight: var(--weight-semibold); }
+.acquisition-setting label span { font-size: var(--text-section); font-weight: var(--weight-medium); }
+.acquisition-setting p { color: var(--color-text-secondary); margin-top: var(--space-1); }
+.acquisition-feedback, .acquisition-notes { color: var(--color-text-secondary); }
+.acquisition-notes summary { cursor: pointer; }
+.acquisition-notes[open] p { margin-top: var(--space-2); }
+.acquisition-form code { font-family: var(--font-mono); overflow-wrap: anywhere; }
+.acquisition-dialog :is(button, summary, input, select, [tabindex]):focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+.acquisition-actions { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.acquisition-actions > div { display: flex; gap: var(--space-2); }
+.acquisition-dialog button { font-size: var(--text-body); white-space: normal; }
+.acquisition-remove { color: var(--color-danger); }
+.acquisition-row-state { display: block; margin-top: var(--space-2); font-size: var(--text-section); color: var(--color-text-secondary); }
+@media (max-width: 800px) { .acquisition-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) {
+  .acquisition-grid { grid-template-columns: minmax(0, 1fr); }
+  .acquisition-dialog .modal { width: calc(100vw - var(--space-4)); max-height: calc(100dvh - var(--space-4)); }
+  .acquisition-dialog :is(.modal__header, .modal__body, .modal__footer) { padding: var(--space-3); }
+  .acquisition-actions { flex-wrap: wrap; }
+  .acquisition-actions > div { margin-left: auto; }
+}

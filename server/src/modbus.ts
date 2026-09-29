@@ -1,8 +1,9 @@
 import net from 'node:net';
+import { ModbusTcpFramer } from './modbusFraming.js';
 import { EventEmitter } from 'node:events';
 import type { DeviceConfig, DeviceRuntime } from './types.js';
 
-export type RequestClass = 'workflow' | 'monitor' | 'write';
+export type RequestClass = 'workflow' | 'monitor' | 'write' | 'acquisition';
 
 export interface Request {
   unitId: number;
@@ -13,6 +14,7 @@ export interface Request {
   priority?: boolean;
   generation: number;
   requestClass?: RequestClass;
+  acquisitionOwner?: string;
   monitorListId?: string;
   monitorGeneration?: number;
   workflowId?: string;
@@ -75,6 +77,11 @@ export class DeviceConnection extends EventEmitter {
   active = false;
   activeRequest?: Request;
   private activeAbort?: (error: Error) => void;
+  private receiver?: (frame: Buffer) => void;
+  private framer?: ModbusTcpFramer<(frame: Buffer) => void>;
+  // Timed-out/cancelled transaction IDs are never reused on the same TCP session.
+  private retiredTransactions = new Set<number>();
+  readonly acquisitionQueueLimit = 32;
   private connectPromise?: Promise<void>;
   private connectReject?: (error: Error) => void;
   manual = false;
@@ -110,9 +117,24 @@ export class DeviceConnection extends EventEmitter {
       this.connectReject = reject;
       const socket = net.createConnection({ host: this.config.host, port: this.config.port });
       this.socket = socket;
+      const framer = new ModbusTcpFramer<(frame: Buffer) => void>();
+      this.framer = framer;
+      socket.on('data', chunk => {
+        if (this.socket !== socket) return;
+        try {
+          framer.push(chunk, () => this.receiver, (packet, receiver) => {
+            if (receiver && receiver === this.receiver) receiver(packet);
+          });
+        } catch (error) {
+          this.activeAbort?.(new DeviceRequestError('INVALID_FRAME', (error as Error).message));
+          socket.destroy(); // Invalid framing cannot safely be resynchronized by guessing bytes.
+        }
+      });
       const timer = setTimeout(() => socket.destroy(Error('Connect timeout')), this.config.timeout);
       socket.once('connect', () => {
         clearTimeout(timer);
+        if (this.socket !== socket || this.manual) { socket.destroy(); return; }
+        framer.clear(); this.retiredTransactions.clear();
         this.connectPromise = undefined;
         this.connectReject = undefined;
         this.generation += 1;
@@ -133,6 +155,7 @@ export class DeviceConnection extends EventEmitter {
       });
       socket.once('close', () => {
         clearTimeout(timer);
+        framer.clear();
         if (this.socket !== socket) return;
         this.socket = undefined;
         this.connectPromise = undefined;
@@ -150,6 +173,7 @@ export class DeviceConnection extends EventEmitter {
     this.manual = true;
     this.runtime.desiredState = 'disconnected';
     this.generation += 1;
+    this.framer?.clear();
     const error = new DeviceRequestError('MANUAL_DISCONNECT', 'Manual disconnect');
     this.connectReject?.(error);
     this.connectReject = undefined;
@@ -199,6 +223,16 @@ export class DeviceConnection extends EventEmitter {
     return cancelled;
   }
 
+  cancelAcquisitionRequests(owner?: string): void {
+    const matches = (r: Request) => r.requestClass === 'acquisition' && (!owner || r.acquisitionOwner === owner);
+    const error = new DeviceRequestError('ACQUISITION_CANCELLED', 'Acquisition request invalidated');
+    const retained: QueueItem[] = [];
+    for (const item of this.queue) { if (matches(item.r)) item.bad(error); else retained.push(item); }
+    this.queue = retained;
+    if (this.activeRequest && matches(this.activeRequest)) this.activeAbort?.(error);
+    this.updateQueueMetrics();
+  }
+
   request(r: Omit<Request, 'generation'>) {
     return new Promise<Buffer>((resolve, reject) => {
       const requestClass = r.requestClass ?? (r.priority ? 'write' : 'workflow');
@@ -208,6 +242,14 @@ export class DeviceConnection extends EventEmitter {
         bad: reject,
       };
 
+      if (requestClass === 'acquisition') {
+        if (![1, 2, 3, 4].includes(r.fc) || r.priority || r.values) {
+          reject(new DeviceRequestError('READ_ONLY', 'Acquisition supports reads only')); return;
+        }
+        if (this.queue.filter(job => job.r.requestClass === 'acquisition').length >= this.acquisitionQueueLimit) {
+          reject(new DeviceRequestError('ACQUISITION_QUEUE_FULL', 'Acquisition queue is full')); return;
+        }
+      }
       if (requestClass === 'monitor') {
         const duplicate =
           (this.activeRequest?.requestClass === 'monitor' &&
@@ -234,9 +276,13 @@ export class DeviceConnection extends EventEmitter {
       if (requestClass === 'write' && r.priority) {
         this.queue.unshift(item);
       } else if (requestClass === 'workflow') {
-        const firstMonitor = this.queue.findIndex(queued => queued.r.requestClass === 'monitor');
+        const firstMonitor = this.queue.findIndex(queued => queued.r.requestClass === 'monitor' || queued.r.requestClass === 'acquisition');
         if (firstMonitor < 0) this.queue.push(item);
         else this.queue.splice(firstMonitor, 0, item);
+      } else if (requestClass !== 'acquisition') {
+        const firstAcquisition = this.queue.findIndex(job => job.r.requestClass === 'acquisition');
+        if (firstAcquisition < 0) this.queue.push(item);
+        else this.queue.splice(firstAcquisition, 0, item);
       } else {
         this.queue.push(item);
       }
@@ -281,7 +327,14 @@ export class DeviceConnection extends EventEmitter {
 
     this.active = true;
     this.activeRequest = item.r;
-    const tx = ++this.tx & 0xffff;
+    let tx = ++this.tx & 0xffff;
+    let attempts = 0;
+    while (this.retiredTransactions.has(tx) && attempts++ < 65536) tx = ++this.tx & 0xffff;
+    if (attempts >= 65536) {
+      item.bad(new DeviceRequestError('TRANSACTION_EXHAUSTED', 'Reconnect required: transaction IDs exhausted'));
+      this.active = false; this.activeRequest = undefined;
+      this.socket.destroy(); return;
+    }
     const started = Date.now();
 
     try {
@@ -313,30 +366,43 @@ export class DeviceConnection extends EventEmitter {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
-          socket.off('data', onData);
+          if (this.receiver === onData) this.receiver = undefined;
           socket.off('close', onClose);
           socket.off('error', onError);
           if (this.activeAbort === abort) this.activeAbort = undefined;
           callback(value);
         };
         const timer = setTimeout(() => {
+          this.retiredTransactions.add(tx);
           this.runtime.timeoutCount += 1;
           finish(reject, new DeviceRequestError('TIMEOUT', 'Request timeout'));
         }, this.config.timeout);
         const onData = (buffer: Buffer) => {
-          if (buffer.length < 9 || buffer.readUInt16BE(0) !== tx) return;
-          if (buffer[7]! & 0x80) finish(reject, new DeviceRequestError('MODBUS_EXCEPTION', `Modbus exception ${buffer[8]}`));
-          else finish(value => resolve(value as Buffer), buffer);
+          if (this.socket !== socket || this.generation !== item.r.generation || buffer.readUInt16BE(0) !== tx) return;
+          if (buffer[6] !== item.r.unitId || (buffer[7]! & 0x7f) !== item.r.fc) {
+            finish(reject, new DeviceRequestError('INVALID_RESPONSE', 'Unit or function code mismatch')); return;
+          }
+          if (buffer[7]! & 0x80) {
+            finish(reject, new DeviceRequestError('MODBUS_EXCEPTION', `Modbus exception ${buffer[8]}`)); return;
+          }
+          if (item.r.fc <= 4) {
+            const bytes = item.r.fc <= 2 ? Math.ceil((item.r.quantity ?? 1) / 8) : (item.r.quantity ?? 1) * 2;
+            if (buffer.length !== 9 + bytes || buffer[8] !== bytes) {
+              finish(reject, new DeviceRequestError('INVALID_RESPONSE', 'Read byte count mismatch')); return;
+            }
+          }
+          finish(value => resolve(value as Buffer), buffer);
         };
         const onClose = () => finish(reject, new DeviceRequestError('DISCONNECTED', 'Socket closed'));
         const onError = (error: Error) => finish(reject, error);
-        const abort = (error: Error) => finish(reject, error);
+        const abort = (error: Error) => { this.retiredTransactions.add(tx); finish(reject, error); };
         this.activeAbort = abort;
-        socket.on('data', onData);
+        this.receiver = onData;
         socket.once('close', onClose);
         socket.once('error', onError);
         socket.write(packet, error => error && finish(reject, error));
       });
+      if (item.r.generation !== this.generation) throw new DeviceRequestError('STALE_REQUEST', 'Stale completion');
       this.runtime.latency = Date.now() - started;
       item.ok(result);
       this.emit('traffic', {

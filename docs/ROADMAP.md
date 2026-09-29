@@ -1,5 +1,71 @@
 # Roadmap
 
+## Current direction — v1.4.0-dev.17 (documentation and PR-readiness checkpoint)
+
+O2-B (read-only Overview Runtime) is **COMPLETE FOR DEVELOPMENT CHECKPOINT** at implementation
+checkpoint `c633a4426b72f805c279eb1e25c7deba74d2071b` / v1.4.0-dev.16 (Owner manual review PASS).
+Hardware certification and 24/7 soak certification remain **PENDING**.
+
+Priority order (each requires its own Owner-approved scope before implementation):
+
+1. Workflow Shared Signal Foundation
+2. Workflow access to SHARED_TAG
+3. Workflow-scoped Signal and state model
+4. Published Workflow Outputs
+5. Modbus Write Foundation Audit
+6. Controlled Simulator Write validation
+7. **O2-C Picture Box and Assets — DEFERRED, not cancelled.** Scope Gate complete; implementation
+   resumes only after explicit Owner reactivation on the latest approved Base. Record:
+   [O2-C deferred scope](SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md). No version numbers are reserved.
+8. O2-D — integration/accessibility/responsive regression and Final O2 Review (not authorized).
+
+Nothing above is implemented by dev.17. The sections below are historical and do not override this
+direction or the latest Owner instruction; where they mention O2-C planning, the deferral above governs.
+
+## Current approved staging — O2-B1 / v1.4.0-dev.6
+
+O2-A dev.5 is APPROVED / Owner Manual Review PASS. O2-B1 implements acquisition and runtime
+foundation only: TCP framing, Shared Tag mapping, server acquisition, normalized memory store.
+Stage 1 ACCEPTED by Owner; Full Gates and one normal development checkpoint delivery authorized.
+Owner Local Manual Review remains PENDING; this is not final release acceptance.
+[Scope](SCOPE_O2-B1_v1.4.0-dev.6.md) · [Acceptance](ACCEPTANCE_TESTS/O2-B1-v1.4.0-dev.6.md).
+
+- O2-B2 (future version): REST snapshot, Tag WS subscription/delta, replay/gap/reconnect.
+- O2-B3 (future version): Overview live rendering, quality/value/age, final O2-B integration.
+- O2-C/O2-D remain deferred. No authorization for any of these later checkpoints.
+
+Everything below is historical and does not override this staging or the latest Owner instruction.
+
+## Historical O2-A punchlist — v1.4.0-dev.2
+
+Owner accepted checkpoint `fa2ac89e1f4582df5f6cdda7fe8b6de40fd91390` with punchlist:
+Data Sources standalone page, Delete confirmation/reference impact, and immediate Font Size Draft
+rendering with one Undo commit. Only this Font Size subset is pulled forward from O2-C.
+No O2-B/Monitoring Runtime, Picture Box work or other O2-C/O2-D implementation is authorized.
+
+[Scope](SCOPE_O2-A_PUNCHLIST_v1.4.0-dev.2.md) · [Acceptance](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.2.md).
+
+## Previous foundation direction — v1.4.0 Overview Binding and Monitoring
+
+Base: merged v1.3.0 Overview Designer Foundation (`eed588481ae7e7376f9926e58dbd37f9076b5c2e`).
+The Owner's current direction supersedes conflicting historical version assignments below.
+
+- **O2-A / v1.4.0-dev.1:** approved configuration-only definition catalogs, stable binding,
+  source/type/capability resolution, Inspector and separate Workflow navigation wiring.
+  Implementation at Stage 1; no Full Gates/manual acceptance yet.
+- **O2-B:** planned, NOT authorized — continuous server-side acquisition, normalized Tag Runtime,
+  REST initial snapshot, WebSocket deltas, quality/timestamps/sequence and reconnect/gap recovery.
+- **O2-C:** planned, NOT authorized — Picture Box assets/modes and existing Element improvements.
+- **O2-D:** planned, NOT authorized — integration/accessibility/responsive regression and Final O2 Review.
+
+Transport-neutral boundaries support future multiple servers/sites and external Historian/control-room
+or HA deployments; none is implemented here. MQTT Sparkplug B is future adapter planning only.
+No Broker, Sparkplug types/encoding/topics/commands or Browser MQTT client in Core.
+
+[O2-A approved scope](SCOPE_O2-A_v1.4.0-dev.1.md) · [O2-A acceptance](ACCEPTANCE_TESTS/O2-A-v1.4.0-dev.1.md).
+
+## Historical plans — not authorization for the current session
+
 ## v1.2.11: Monitor Scheduler & WebSocket Reliability — source complete
 
 Delivered through follow-up PR #2 from source commit `a393cf3f2521abc41d21c13e5e6db02a481aa56a`:

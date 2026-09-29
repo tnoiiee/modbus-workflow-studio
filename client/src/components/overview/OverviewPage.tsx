@@ -1,4 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { previewOverviewPresentation, type PresentationPreview, type PresentationPreviewProperty } from '../../lib/overviewPresentationStyle.js';
+import { OverviewRuntimeProvider } from './OverviewRuntimeProvider.js';
+import { OverviewRuntimeStatus } from './OverviewRuntimeStatus.js';
+import { OverviewTagClientAdapter } from '../../lib/overviewTagClientAdapter.js';
+import { overviewRuntimeSelection, runtimeViewAllowed } from '../../lib/overviewRuntimeSelection.js';
+import { InspectorTransition } from './InspectorTransition.js';
+import { overviewInspectorPresentation } from '../../lib/overviewWorkspace.js';
+import { previewOverviewFontSize, type FontSizePreview } from '../../lib/overviewFontDraft.js';
+import { bindingPresentation, type BindingPresentation } from '../../lib/overviewBinding.js';
+import { fetchSourceDefinitions, fetchDefinitionWorkflows } from '../../lib/overviewApi.js';
+import { OverviewCatalog, observeOverviewCatalog, overviewCatalogNotice } from '../../lib/overviewCatalog.js';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactFlowInstance } from '@xyflow/react';
 import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
@@ -109,10 +120,26 @@ function asElements(page: OverviewPageRecord | null): OverviewElement[] {
  * Save & Exit pipeline, page CRUD dialogs, and session-scoped panel collapse.
  * Persistence goes through `/api/overview-pages` only.
  */
-export function OverviewPage({ active = true }: { active?: boolean } = {}) {
+export function OverviewPage({ active = true, onNavigateWorkflow, onOpenDataSources }: { active?: boolean; onOpenDataSources?: () => void; onNavigateWorkflow?: (targetWorkflowId?: string) => Promise<void> } = {}) {
+  const [runtimeAdapter] = useState(() => new OverviewTagClientAdapter());
+  const runtimePageRequest = useRef(0);
+  const [pageLoading, setPageLoading] = useState(true);
+  useEffect(() => () => { ++runtimePageRequest.current; runtimeAdapter.stop(); }, [runtimeAdapter]);
+  // Confirmed metadata survives pending/failed refreshes; never patch Page/Draft/history.
+  const [catalog] = useState(() => new OverviewCatalog(() => Promise.all([fetchSourceDefinitions(), fetchDefinitionWorkflows()])));
+  const catalogState = useSyncExternalStore(catalog.subscribe, catalog.getSnapshot, catalog.getSnapshot);
+  const { definitions, workflows: definitionWorkflows, available: catalogAvailable } = catalogState;
+  const catalogNotice = overviewCatalogNotice(catalogState);
+  const refreshCatalog = catalog.refresh;
+  useEffect(() => {
+    if (!active) return;
+    return observeOverviewCatalog(catalog, window);
+  }, [active, catalog]);
   const [pages, setPages] = useState<OverviewPageSummary[]>([]);
   const [activePageId, setActivePageId] = useState('');
   const [activePage, setActivePage] = useState<OverviewPageRecord | null>(null);
+  const loadedPageIdRef = useRef('');
+  loadedPageIdRef.current = activePage?.id ?? '';
   const [mode, setMode] = useState<OverviewMode>('VIEW');
   const [saveState, setSaveState] = useState<OverviewSaveState>('SAVED');
   const [baseline, setBaseline] = useState<OverviewPageRecord | null>(null);
@@ -143,6 +170,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const [inspectorCollapsed, setInspectorCollapsed] = useState(() => getSessionPanelCollapsed('inspector'));
 
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [presentationPreview, setPresentationPreview] = useState<PresentationPreview | null>(null);
+  const [fontSizePreview, setFontSizePreview] = useState<FontSizePreview | null>(null);
   const [history, setHistory] = useState<OverviewDraftHistory>(() => emptyOverviewHistory());
 
   // Element delete confirmation (all paths route through this dialog).
@@ -169,12 +198,46 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const revision = displayedOverviewRevision(baseline?.revision ?? activePage?.revision);
   const draftElements = asElements(draft);
   const selectedElement = draftElements.find(el => el.id === selectedElementId) ?? null;
+  const previewFontSize = useCallback((fontSize: number | null) => {
+    setFontSizePreview(fontSize !== null && selectedElementId && mode === 'EDIT'
+      ? { elementId: selectedElementId, fontSize } : null);
+  }, [selectedElementId, mode]);
+  const previewPresentation = useCallback((property: PresentationPreviewProperty, value: number | null) => {
+    setPresentationPreview(current => value === null
+      ? current?.property === property ? null : current
+      : selectedElementId && mode === 'EDIT' ? { elementId: selectedElementId, property, value } : null);
+  }, [selectedElementId, mode]);
+  const canvasElements = useMemo(() => previewOverviewPresentation(previewOverviewFontSize(draftElements,
+    active && fontSizePreview?.elementId === selectedElementId ? fontSizePreview : null, mode),
+    active && presentationPreview?.elementId === selectedElementId ? presentationPreview : null, mode),
+  [draft?.elements, fontSizePreview, presentationPreview, selectedElementId, mode, active]);
+
+  const previousPresentation = useRef<BindingPresentation>();
+  const bindingResolutions = useMemo(() => {
+    const next = bindingPresentation(asElements(workingPage), { definitions, available: catalogAvailable }, previousPresentation.current);
+    previousPresentation.current = next;
+    return next.resolutions;
+  }, [workingPage?.elements, definitions, catalogAvailable]);
+  const runtimeSelection = useMemo(() => overviewRuntimeSelection(asElements(activePage), bindingResolutions), [activePage?.elements, bindingResolutions]);
+  const runtimeReady = !pageLoading && !!activePage && activePage.id === activePageId;
+  const runtimeEnabled = runtimeViewAllowed(active, mode, runtimeReady, runtimeSelection);
+  const handleNavigateWorkflow = useCallback(async (targetWorkflowId?: string) => {
+    if (mode !== 'VIEW') return;
+    setControlError(undefined);
+    try {
+      if (!onNavigateWorkflow) throw Error('Workflow navigation is unavailable.');
+      await onNavigateWorkflow(targetWorkflowId);
+    } catch (cause) { setControlError(cause instanceof Error ? cause.message : 'Missing Workflow target.'); }
+  }, [mode, onNavigateWorkflow]);
+
 
   /* ---- page list loading ------------------------------------------------ */
 
   const loadPages = useCallback(async (preferId?: string) => {
+    const request = ++runtimePageRequest.current; runtimeAdapter.stop(); setPageLoading(true);
     try {
       const list = await fetchOverviewPages();
+      if (request !== runtimePageRequest.current) return;
       setPages(list);
       setLoadError(undefined);
       const remembered = (() => {
@@ -197,7 +260,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         setDraft(null);
         return;
       }
-      if (requested !== activePageIdRef.current) {
+      if (requested !== activePageIdRef.current || requested !== loadedPageIdRef.current) {
         setActivePageId(requested);
         try {
           localStorage.setItem('mws.activeOverviewPageId', requested);
@@ -205,6 +268,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
           void 0;
         }
         const record = await fetchOverviewPage(requested);
+        if (request !== runtimePageRequest.current) return;
         setActivePage(record);
         setBaseline(record);
         setDraft(record);
@@ -218,10 +282,10 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       }
       return list;
     } catch (error) {
-      setLoadError(error instanceof Error ? error.message : 'Unable to load Overview pages');
+      if (request === runtimePageRequest.current) setLoadError(error instanceof Error ? error.message : 'Unable to load Overview pages');
       return undefined;
-    }
-  }, []);
+    } finally { if (request === runtimePageRequest.current) setPageLoading(false); }
+  }, [runtimeAdapter]);
 
   useEffect(() => {
     void loadPages();
@@ -257,7 +321,8 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   /* ---- mode machine ----------------------------------------------------- */
 
   const enterEdit = useCallback(() => {
-    if (!activePage) return;
+    if (!activePage || pageLoading) return;
+    runtimeAdapter.stop();
     const session = beginOverviewEdit(activePage);
     setBaseline(session.baseline);
     setDraft(session.draft);
@@ -267,7 +332,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     setSaveConfirmPending(false);
     setSelectedElementId(null);
     setHistory(emptyOverviewHistory());
-  }, [activePage]);
+  }, [activePage, pageLoading, runtimeAdapter]);
 
   const openSaveConfirm = useCallback(() => {
     if (mode !== 'EDIT') return;
@@ -562,9 +627,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         setPendingPageId(nextPageId);
         return;
       }
+      const request = ++runtimePageRequest.current; runtimeAdapter.stop(); setPageLoading(true);
       void (async () => {
         try {
         const record = await fetchOverviewPage(nextPageId);
+        if (request !== runtimePageRequest.current) return;
         setActivePageId(nextPageId);
         setActivePage(record);
         setBaseline(record);
@@ -576,11 +643,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         setViewport(normalizeOverviewSavedViewport(record.savedViewport));
         setRestoreViewportEpoch(token => token + 1);
       } catch (error) {
-        setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
-      }
+        if (request === runtimePageRequest.current) setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
+      } finally { if (request === runtimePageRequest.current) setPageLoading(false); }
     })();
   },
-  [activePageId, saveState],
+  [activePageId, saveState, runtimeAdapter],
 );
 
   const confirmPendingPageSwitch = useCallback(() => {
@@ -588,9 +655,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
     const nextPageId = pendingPageId;
     setPendingPageId(null);
     setSaveState('SAVED');
+    const request = ++runtimePageRequest.current; runtimeAdapter.stop(); setPageLoading(true);
     void (async () => {
       try {
         const record = await fetchOverviewPage(nextPageId);
+        if (request !== runtimePageRequest.current) return;
         setActivePageId(nextPageId);
         setActivePage(record);
         setBaseline(record);
@@ -598,10 +667,10 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         setSelectedElementId(null);
         setHistory(emptyOverviewHistory());
       } catch (error) {
-        setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
-      }
+        if (request === runtimePageRequest.current) setLoadError(error instanceof Error ? error.message : 'Unable to open Overview page');
+      } finally { if (request === runtimePageRequest.current) setPageLoading(false); }
     })();
-  }, [pendingPageId]);
+  }, [pendingPageId, runtimeAdapter]);
 
   /* ---- element draft mutations ------------------------------------------ */
 
@@ -745,6 +814,11 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
               ...el.binding,
               direction: normalizeOverviewBindingDirection(nextCategory, el.binding.direction),
             };
+            if (nextType === 'NAVIGATION_LINK') {
+              next.binding = { tagId: '', tagName: '', dataType: 'Unknown', direction: 'NONE', status: 'NOT_BOUND' };
+            } else if (nextType !== el.type) {
+              delete next.targetWorkflowId;
+            }
           }
           return next;
         }),
@@ -975,10 +1049,12 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   const hasSelection = Boolean(selectedElementId);
   const canDeletePage = pages.length > 1 && Boolean(workingPage);
 
+  const inspectorPresentation = overviewInspectorPresentation(mode, selectedElement?.id ?? null, inspectorCollapsed);
   const workspaceClass = [
-    'overview__workspace',
+    'overview__workspace overview__workspace--motion',
     libraryCollapsed && mode === 'EDIT' ? 'overview__workspace--library-collapsed' : '',
-    inspectorCollapsed && mode === 'EDIT' ? 'overview__workspace--inspector-collapsed' : '',
+    inspectorPresentation === 'hidden' ? 'overview__workspace--inspector-hidden' : '',
+    inspectorPresentation === 'collapsed' ? 'overview__workspace--inspector-collapsed' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -1010,6 +1086,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
   );
 
   return (
+    <OverviewRuntimeProvider adapter={runtimeAdapter} enabled={runtimeEnabled} pageId={activePageId} selection={runtimeSelection} elements={asElements(activePage)} resolutions={bindingResolutions}>
     <section
       className={`overview${mode === 'VIEW' ? ' overview--view' : ' overview--edit'}`}
       ref={overviewRootRef}
@@ -1018,6 +1095,13 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
       data-save-status-last={isSaveStatusLastGroup(mode) ? 'true' : 'false'}
     >
       <div className="overview-bars">
+        <div className="overview-catalog-bar">
+          <button type="button" onClick={() => void refreshCatalog()}>Refresh Source definitions</button>
+          {onOpenDataSources && <button type="button" onClick={onOpenDataSources}>Data Sources</button>}
+          <span>{mode === 'EDIT' ? 'EDITOR PREVIEW · Configuration only' : 'Read-only Monitoring · latest received'} · CONTROL RUNTIME NOT ENABLED</span>
+          <span role="status" aria-live="polite" aria-atomic="true">{catalogNotice}</span>
+        </div>
+        {mode === 'VIEW' && active && <OverviewRuntimeStatus pageId={activePageId} selection={runtimeSelection} elements={asElements(activePage)} />}
         <OverviewCommandBar
           pages={pages}
           activePageId={activePageId}
@@ -1109,11 +1193,13 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         )}
 
         <OverviewCanvas
+          bindingResolutions={bindingResolutions}
+          onNavigateWorkflow={handleNavigateWorkflow}
           mode={mode}
           designWidth={workingPage?.designWidth ?? OVERVIEW_DEFAULT_WIDTH}
           designHeight={workingPage?.designHeight ?? OVERVIEW_DEFAULT_HEIGHT}
           backgroundColor={workingPage?.backgroundColor ?? OVERVIEW_DEFAULT_BACKGROUND}
-          elements={draftElements}
+          elements={canvasElements}
           selectedElementId={selectedElementId}
           viewport={viewport}
           onViewportChange={handleViewportChange}
@@ -1126,7 +1212,10 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
           controlStates={mode === 'EDIT' ? undefined : Object.fromEntries(Object.entries(controlStates).filter(([, record]) => record.pageId === activePageId))}
         />
 
-        {mode === 'EDIT' && inspectorCollapsed ? (
+        <InspectorTransition visible={inspectorPresentation !== 'hidden'} onReturnFocus={() => {
+          overviewRootRef.current?.querySelector<HTMLElement>('.overview-canvas')?.focus({ preventScroll: true });
+        }}>
+        {inspectorPresentation === 'hidden' ? null : inspectorPresentation === 'collapsed' ? (
           <div className="overview-rail overview-rail--inspector">
             <Tooltip label="Expand Element Inspector">
               <button
@@ -1162,12 +1251,13 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
               ) : null}
             </div>
             {mode === 'EDIT' ? (
-              <ElementInspector key={selectedElement?.id ?? 'empty'} element={selectedElement} {...inspectorHandlers} />
+              <ElementInspector key={selectedElement?.id ?? 'empty'} onPreviewFontSize={previewFontSize} onPreviewPresentation={previewPresentation} definitions={definitions} workflows={definitionWorkflows} resolution={selectedElement ? bindingResolutions[selectedElement.id] : undefined} element={selectedElement} {...inspectorHandlers} />
             ) : (
               <p className="empty">Element Inspector is available in Edit Mode</p>
             )}
           </aside>
         )}
+        </InspectorTransition>
       </div>
 
       {/* New / Rename / Duplicate modal */}
@@ -1398,7 +1488,7 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         open={elementDeleteTarget !== null}
         title="Delete Overview Element"
         description={elementDeleteTarget ? buildElementDeleteDescription(elementDeleteTarget.name) : ''}
-        facts={elementDeleteTarget ? buildElementDeleteFacts(elementDeleteTarget) : []}
+        facts={elementDeleteTarget ? buildElementDeleteFacts(elementDeleteTarget, bindingResolutions[elementDeleteTarget.id]?.status) : []}
         confirmLabel="Delete"
         cancelLabel="Cancel"
         danger
@@ -1406,5 +1496,6 @@ export function OverviewPage({ active = true }: { active?: boolean } = {}) {
         onClose={cancelDeleteElement}
       />
     </section>
+    </OverviewRuntimeProvider>
   );
 }

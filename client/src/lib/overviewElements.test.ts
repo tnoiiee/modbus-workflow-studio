@@ -608,8 +608,9 @@ describe('Owner punchlist: selection contract (item 2)', () => {
     expect(canvas).toContain('onSelectElement(node.id)');
     expect(canvas).toContain('onPaneClick={handlePaneClick}');
     expect(canvas).toContain('onSelectElement(null)');
-    // select true only:
-    expect(canvas).toContain('if (change.selected) onSelectElement(change.id)');
+    // dev.4: pointer selection is exclusively onNodeClick; ignore both RF echoes.
+    expect(canvas).toContain("if (change.type === 'select') continue;");
+    expect(canvas).toContain('onKeyDownCapture={handleNodeKeyDown}');
     expect(canvas).not.toContain('else onSelectElement(null)');
   });
 
