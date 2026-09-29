@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.4.0-dev.17] - O2-B PR Readiness and O2-C Deferral Record (2026-09-29)
+
+- Documentation/planning only. O2-B is complete for the Development checkpoint at
+  `c633a4426b72f805c279eb1e25c7deba74d2071b` / dev.16 (Owner manual review PASS); Hardware and
+  24/7 soak certification remain PENDING.
+- Add `docs/SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md`: O2-C Scope Gate COMPLETE,
+  implementation DEFERRED (not cancelled) in favor of Workflow Shared Signal Foundation and safe
+  Modbus Write validation. No Asset, Picture Box, schema or dependency work; dev.17/dev.18 are not
+  reserved for O2-C.
+- Update CURRENT_STATE and ROADMAP; add PR-readiness record for `arena/01a0eb36-...` → `main`.
+- Version literals synchronized to dev.17 only. No production behavior, O2-B2 protocol, O2-B3
+  Runtime, persisted schema or dependency change.
+
 ## [1.4.0-dev.16] - O2-B3 Optional Inline Runtime Details Action (2026-09-29)
 
 - Add exactly one optional persisted presentation field, `style.showRuntimeDetails?: boolean`.

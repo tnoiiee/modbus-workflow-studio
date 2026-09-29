@@ -1,5 +1,27 @@
 # Roadmap
 
+## Current direction — v1.4.0-dev.17 (documentation and PR-readiness checkpoint)
+
+O2-B (read-only Overview Runtime) is **COMPLETE FOR DEVELOPMENT CHECKPOINT** at implementation
+checkpoint `c633a4426b72f805c279eb1e25c7deba74d2071b` / v1.4.0-dev.16 (Owner manual review PASS).
+Hardware certification and 24/7 soak certification remain **PENDING**.
+
+Priority order (each requires its own Owner-approved scope before implementation):
+
+1. Workflow Shared Signal Foundation
+2. Workflow access to SHARED_TAG
+3. Workflow-scoped Signal and state model
+4. Published Workflow Outputs
+5. Modbus Write Foundation Audit
+6. Controlled Simulator Write validation
+7. **O2-C Picture Box and Assets — DEFERRED, not cancelled.** Scope Gate complete; implementation
+   resumes only after explicit Owner reactivation on the latest approved Base. Record:
+   [O2-C deferred scope](SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md). No version numbers are reserved.
+8. O2-D — integration/accessibility/responsive regression and Final O2 Review (not authorized).
+
+Nothing above is implemented by dev.17. The sections below are historical and do not override this
+direction or the latest Owner instruction; where they mention O2-C planning, the deferral above governs.
+
 ## Current approved staging — O2-B1 / v1.4.0-dev.6
 
 O2-A dev.5 is APPROVED / Owner Manual Review PASS. O2-B1 implements acquisition and runtime

@@ -1,12 +1,20 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.16
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.17
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
+**v1.4.0-dev.17 — O2-B documentation and PR-readiness checkpoint.** O2-B (read-only Overview
+Runtime) is complete for the Development checkpoint at `c633a4426b72f805c279eb1e25c7deba74d2071b` /
+dev.16 (Owner manual review PASS); Hardware and 24/7 soak certification remain **PENDING**. This
+checkpoint changes documentation and Version literals only. **O2-C Picture Box/Assets is DEFERRED
+(not cancelled)** to prioritize Workflow Shared Signal and safe Modbus Write validation; see
+[the deferred record](docs/SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md) and the
+[PR readiness](docs/ACCEPTANCE_TESTS/O2-B-PR-READINESS-v1.4.0-dev.17.md).
+
 **v1.4.0-dev.16 — O2-B3 Optional Inline Runtime Details Action**. Approved base
 `e3f606765c8d8b83a4c30b0b861e5f90d762050e` / dev.15, branch
-`arena/01a0d291-modbus-workflow-studio`. **dev.16 Owner local manual review PENDING.**
+`arena/01a0d291-modbus-workflow-studio`. Owner manual review **PASS**.
 
 - One optional persisted presentation field, `showRuntimeDetails` (absent = false, no migration).
   The Inspector checkbox **Show Runtime Details** (Appearance group, eligible Monitoring types only)

@@ -29,8 +29,8 @@ it('real server startup / WS reconnect never connects Device; acquisition outliv
   try {
     await started();
     const base = `http://127.0.0.1:${port}`;
-    expect((await (await fetch(`${base}/api/health`)).json()).version).toBe('1.4.0-dev.16');
-    const browser = async () => { const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/live`); clients.push(ws); ws.on('message', raw => { const message = JSON.parse(String(raw)); liveTypes.push(message.type); if (message.type === 'hello') expect(message.data.version).toBe('1.4.0-dev.16'); }); await once(ws, 'open'); ws.send(JSON.stringify({ type: 'resync' })); return ws; };
+    expect((await (await fetch(`${base}/api/health`)).json()).version).toBe('1.4.0-dev.17');
+    const browser = async () => { const ws = new WebSocket(`ws://127.0.0.1:${port}/ws/live`); clients.push(ws); ws.on('message', raw => { const message = JSON.parse(String(raw)); liveTypes.push(message.type); if (message.type === 'hello') expect(message.data.version).toBe('1.4.0-dev.17'); }); await once(ws, 'open'); ws.send(JSON.stringify({ type: 'resync' })); return ws; };
     const source = { sourceType: 'SHARED_TAG', sourceId: mapping.sourceId };
     const snapshot = async () => { const response = await fetch(`${base}/api/tag-runtime/snapshot`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ protocolVersion: 1, sources: [source] }) }); expect(response.status).toBe(200); return response.json(); };
     const initialSnapshot = await snapshot();

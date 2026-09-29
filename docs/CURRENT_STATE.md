@@ -1,6 +1,22 @@
 # Current Project State
 
-## Current application — v1.4.0-dev.16
+## Current application — v1.4.0-dev.17 (documentation and PR-readiness checkpoint)
+
+- **O2-B is COMPLETE FOR DEVELOPMENT CHECKPOINT.** Approved O2-B implementation checkpoint:
+  `c633a4426b72f805c279eb1e25c7deba74d2071b` / **v1.4.0-dev.16** (Owner manual review PASS).
+- dev.17 is one documentation, PR-readiness and Version-synchronization Commit on top of it.
+  **Production behavior is unchanged** (Version literals only; O2-B2 protocol, O2-B3 Runtime,
+  persisted schema and dependencies unchanged).
+- **O2-C Scope Gate is COMPLETE; implementation is DEFERRED before implementation** (not cancelled).
+  No O2-C Source, API, storage, schema or dependency change exists. Record:
+  [SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md](SCOPE_GATES/O2-C-PICTURE-BOX-ASSETS-DEFERRED.md).
+- **Immediate priority:** Workflow Shared Signal Foundation and safe Modbus Write validation
+  (see [ROADMAP](ROADMAP.md)); none of it is started or authorized by this checkpoint.
+- **Hardware certification: PENDING. 24/7 soak certification: PENDING.**
+- Integration: Pull Request `arena/01a0eb36-modbus-workflow-studio` → `main`; Owner performs the
+  Manual Merge. [PR readiness](ACCEPTANCE_TESTS/O2-B-PR-READINESS-v1.4.0-dev.17.md).
+
+## Previous checkpoint — v1.4.0-dev.16
 
 Approved base **e3f606765c8d8b83a4c30b0b861e5f90d762050e / dev.15**, branch
 `arena/01a0d291-modbus-workflow-studio`. **Dev.16 Owner Local Manual Review PENDING.**
