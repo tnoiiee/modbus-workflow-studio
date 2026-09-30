@@ -13,6 +13,11 @@ describe('Traffic SSR layout and wiring (browser review still required)', () => 
   it('shows result, payload, zero values, origin and event-level details button', () => {
     const html = renderToStaticMarkup(<TrafficMonitor rows={[row]} />); for (const value of ['Shared Tag Acquisition','success','010203','0 ms','aria-expanded="false"','aria-controls=', 'Best-effort']) expect(html).toContain(value);
   });
+  it('shows a shortened, accessible and copyable Command ID without changing transport semantics', () => {
+    const html = renderToStaticMarkup(<TrafficMonitor rows={[{ ...row, commandId: 'command-1234567890' }]} />);
+    expect(html).toContain('Command:'); expect(html).toContain('Copy full Command ID command-1234567890'); expect(html).toContain('command-1234567890');
+    expect(html).toContain('Best-effort live traffic, not a complete packet capture.');
+  });
   it('escapes markup, bounds long previews and never assumes raw objects', () => {
     const html = renderToStaticMarkup(<TrafficMonitor rows={[null, {}, { ...row, payload: '<script>alert(1)</script>', error: 'X'.repeat(1000000) }]} />);
     expect(html).not.toContain('<script>'); expect(html).toContain('&lt;script&gt;'); expect(html).toContain('—'); expect(html.length).toBeLessThan(18000);

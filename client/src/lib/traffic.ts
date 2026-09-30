@@ -8,7 +8,7 @@ export type TrafficPhase = 'TX' | 'RX' | 'ERROR' | 'Unspecified';
 export type TrafficOrigin = 'Workflow' | 'Modbus Monitor' | 'Shared Tag Acquisition' | 'Generic / Unspecified';
 export interface TrafficRow {
   key: string; timestamp: string | null; direction: string | null; phase: TrafficPhase; deviceId: string | null;
-  origin: TrafficOrigin; workflowId: string | null; nodeId: string | null; monitorListId: string | null;
+  origin: TrafficOrigin; workflowId: string | null; nodeId: string | null; monitorListId: string | null; commandId: string | null;
   tx: number | null; fc: number | null; address: number | null; quantity: number | null;
   requestClass: string | null; duration: number | null; result: string | null;
   payload: string | null; error: string | null; encodedPayload: string | null; malformed: boolean;
@@ -35,19 +35,19 @@ export function normalizeTrafficRow(raw: unknown): Omit<TrafficRow, 'key'> {
   const metadata = (key: string) => { const s = text(key); return s === null ? null : trafficText(s, 256); };
   const numeric = (key: string) => number(own(raw, key), true);
   const direction = metadata('direction'), requestClass = metadata('requestClass');
-  const workflowId = metadata('workflowId'), nodeId = metadata('nodeId'), monitorListId = metadata('monitorListId');
+  const workflowId = metadata('workflowId'), nodeId = metadata('nodeId'), monitorListId = metadata('monitorListId'), commandId = metadata('commandId');
   const phase: TrafficPhase = direction === 'TX' || direction === 'RX' || direction === 'ERROR' ? direction : 'Unspecified';
   const origin: TrafficOrigin = requestClass === 'acquisition' ? 'Shared Tag Acquisition'
     : requestClass === 'monitor' || monitorListId !== null || (workflowId?.startsWith('monitor:') && workflowId.length > 8) ? 'Modbus Monitor'
     : workflowId !== null ? 'Workflow' : 'Generic / Unspecified';
   return { timestamp: metadata('timestamp'), direction, phase, deviceId: metadata('deviceId'), origin,
-    workflowId, nodeId, monitorListId, tx: numeric('tx'), fc: numeric('fc'), address: numeric('address'), quantity: numeric('quantity'),
+    workflowId, nodeId, monitorListId, commandId, tx: numeric('tx'), fc: numeric('fc'), address: numeric('address'), quantity: numeric('quantity'),
     requestClass, duration: number(own(raw, 'duration')), result: valueText('result'), payload: valueText('payload'), error: valueText('error'), encodedPayload: valueText('encodedPayload'),
     malformed: phase === 'Unspecified' || metadata('timestamp') === null || metadata('deviceId') === null,
   };
 }
 function fingerprint(row: Omit<TrafficRow, 'key'>): string {
-  const composite = [row.timestamp, row.direction, row.deviceId, row.workflowId, row.nodeId, row.monitorListId, row.tx, row.fc, row.address, row.requestClass].join('|');
+  const composite = [row.timestamp, row.direction, row.deviceId, row.workflowId, row.nodeId, row.monitorListId, row.commandId, row.tx, row.fc, row.address, row.requestClass].join('|');
   let hash = 2166136261;
   for (let i = 0; i < composite.length; i++) hash = Math.imul(hash ^ composite.charCodeAt(i), 16777619);
   return (hash >>> 0).toString(16);

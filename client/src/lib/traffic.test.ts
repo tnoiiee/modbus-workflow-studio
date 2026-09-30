@@ -9,6 +9,11 @@ describe('dedicated tolerant Traffic display model', () => {
     expect(b).toMatchObject({ result: 'success', payload: rx.payload, origin: 'Shared Tag Acquisition', workflowId: null, nodeId: null });
     expect(TRAFFIC_COLUMNS).toContain('Result'); expect(TRAFFIC_COLUMNS).toContain('Payload / error');
   });
+  it('retains an optional Workflow Command ID as bounded correlation metadata', () => {
+    const model = normalizeTrafficRow({ ...rx, workflowId: 'wf', nodeId: 'node', commandId: 'command-123' });
+    expect(model).toMatchObject({ workflowId: 'wf', nodeId: 'node', commandId: 'command-123', phase: 'RX', fc: 3, address: 0 });
+    expect(normalizeTrafficRow({ ...rx, commandId: { toString: () => 'unsafe' } }).commandId).toBeNull();
+  });
   it.each(['TX','RX','ERROR'])('takes phase only from existing %s direction', direction => { expect(normalizeTrafficRow({ ...rx, direction, result: 'other' }).phase).toBe(direction); });
   it('does not infer phase from result or request class', () => { expect(normalizeTrafficRow({ result: 'error', requestClass: 'acquisition' }).phase).toBe('Unspecified'); });
   it('proves Monitor only from contractual class/list/synthetic context, not display names', () => {

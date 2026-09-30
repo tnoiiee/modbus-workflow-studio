@@ -5,7 +5,7 @@ const optional = (value: string | number | null) => value === null ? '—' : typ
 function TrafficDetails({ row }: { row: TrafficRow }) {
   const fields: Array<[string, string | number | null]> = [
     ['Timestamp', row.timestamp], ['Direction', row.direction], ['Device', row.deviceId], ['Origin', row.origin],
-    ['Workflow ID', row.workflowId], ['Node ID', row.nodeId], ['Monitor list ID', row.monitorListId],
+    ['Workflow ID', row.workflowId], ['Node ID', row.nodeId], ['Command ID', row.commandId], ['Monitor list ID', row.monitorListId],
     ['Transaction ID', row.tx], ['Function code', row.fc], ['Address', row.address], ['Quantity', row.quantity],
     ['Request class', row.requestClass], ['Duration (ms)', row.duration], ['Result', row.result],
     ['Error', row.error], ['Payload (protocol hex)', row.payload], ['Encoded payload', row.encodedPayload],
@@ -41,6 +41,7 @@ export function TrafficMonitor({ rows }: { rows: unknown[] }) {
             <td><span className="traffic-origin">{row.origin}</span><span className="traffic-cell-text">{optional(row.requestClass)}</span>
               {row.workflowId !== null && <span className="traffic-cell-text">Workflow: {trafficText(row.workflowId)}</span>}
               {row.nodeId !== null && <span className="traffic-cell-text">Node: {trafficText(row.nodeId)}</span>}
+              {row.commandId !== null && <span className="traffic-cell-text">Command: <button type="button" className="traffic-command-copy" title={row.commandId} aria-label={`Copy full Command ID ${row.commandId}`} onClick={()=>{void navigator.clipboard?.writeText(row.commandId!).catch(()=>undefined)}}>{trafficText(row.commandId, 18)}</button></span>}
               {row.monitorListId !== null && <span className="traffic-cell-text">List: {trafficText(row.monitorListId)}</span>}</td>
             <td>{optional(row.tx)}</td><td>{row.fc === null ? '—' : `FC${String(row.fc).padStart(2, '0')}`}</td><td>{optional(row.address)}</td>
             <td>{row.duration === null ? '—' : `${row.duration} ms`}</td><td><span className="traffic-cell-text">{optional(row.result)}</span></td>

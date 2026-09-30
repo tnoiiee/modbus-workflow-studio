@@ -1,11 +1,11 @@
-# MODBUS WORKFLOW STUDIO v1.4.0-dev.18
+# MODBUS WORKFLOW STUDIO v1.4.0-dev.19
 
 Full-stack TypeScript application for designing and operating Modbus TCP workflows through a browser, REST API, WebSocket, and a Node.js raw TCP gateway.
 
 ## Current status
 
-**v1.4.0-dev.18 — Workflow Modbus Write Foundation for controlled Simulator validation.**
-Production Server behavior changed: legacy `POST /api/nodes/:id/write` is disabled and always
+**v1.4.0-dev.19 — Workflow MODBUS_OUTPUT Manual Testability** on the approved dev.18 Write Foundation.
+Production Server behavior remains unchanged from approved dev.18: legacy `POST /api/nodes/:id/write` is disabled and always
 returns **HTTP 410** with code `LEGACY_DIRECT_WRITE_DISABLED` and message “Direct node writes are
 disabled. Modbus writes must use the guarded Workflow runtime.” It does not inspect the Device or body,
 connect, queue, frame, write, retry, mutate runtime/ownership, or start/trigger a Workflow. Existing
@@ -16,14 +16,16 @@ Only `WorkflowRuntimeManager` may authorize Workflow writes. Writes use strict F
 FC06 UInt16/Int16, or FC16 UInt32/Int32/Float32/Float64 validation, guarded admission, bounded
 shared Device queues, generation/expiry fencing, cancellation, resource ownership, and explicit
 Audit/Traffic evidence. `ALLOW_WRITES=false` by default. Simulator write testing must use the
-[controlled Manual Review guide](docs/ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md).
+[controlled Manual Review guide](docs/ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.19.md).
+
+The dev.19 Inspector lets authors select FC05/FC06/FC16 first, uses compatible datatype choices and explicit zero-based span guidance, and selects optional read-back only from existing SHARED_TAG definitions/mappings. Runtime, existing Audit, and Traffic views make write-state and command correlation easier to locate; these are read-only presentations and do not change write authority. See the [dev.19 Simulator Manual Review](docs/ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.19.md) for the deterministic hold/release expiry and Simulator-only mismatch procedures. Owner Simulator Manual Review remains PENDING.
 
 Overview controls remain **PREVIEW ONLY** and have no Device/Workflow command path. Overview and
 Modbus Monitor remain read-only. Production/hardware writes are unauthorized; hardware acceptance
 and 24/7 soak certification remain **PENDING** Owner review. The v1.4.0-dev.16 O2-B read-only
 Overview checkpoint is historical context, not a write authorization. O2-C remains deferred.
 
-Project direction and the practical non-certifying roadmap are in the [Master Plan](docs/MASTER_PLAN.md). The dev.18 implementation boundary is recorded in the [scope gate](docs/SCOPE_GATES/O2-B-WORKFLOW-WRITE-FOUNDATION-v1.4.0-dev.18.md).
+Project direction and the practical non-certifying roadmap are in the [Master Plan](docs/MASTER_PLAN.md). The dev.19 implementation boundary is recorded in the [scope gate](docs/SCOPE_GATES/O2-B-WORKFLOW-WRITE-MANUAL-TESTABILITY-v1.4.0-dev.19.md); the [dev.18 Write Foundation gate](docs/SCOPE_GATES/O2-B-WORKFLOW-WRITE-FOUNDATION-v1.4.0-dev.18.md) remains the approved base.
 
 
 **v1.4.0-dev.16 — O2-B3 Optional Inline Runtime Details Action**. Approved base

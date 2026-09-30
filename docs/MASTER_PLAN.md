@@ -92,18 +92,11 @@ MQTT/Sparkplug is **not implemented** and is **not a committed requirement**, no
 
 ## Current execution priority
 
-1. Complete v1.4.0-dev.18 guarded Workflow Modbus write implementation and validation.
-2. Owner Simulator Write review.
-3. Shared Tag Input.
-4. Explicit state/latch lifecycle and diagnostics.
-5. Published Workflow Output.
-6. Workflow Command Input.
-7. Overview Operator Control through Workflow authority.
-8. Backup/restore and production deployment essentials.
-9. Practical access boundary.
-10. Hardware validation when explicitly authorized and justified.
-11. Soak validation where justified.
-12. Optional scopes according to real need and a separately approved scope.
+1. Complete v1.4.0-dev.19 MODBUS_OUTPUT manual authoring/diagnostic testability on the approved dev.18 Write Foundation; do not alter write admission/lifecycle.
+2. Owner Simulator Manual Review for dev.19.
+3. Stop for Owner direction. Shared Tag Input, Published Workflow Output and other future capabilities require separate scope approval and are not authorized by this checkpoint.
+
+No production Device, hardware or soak test is authorized by this sequence.
 
 ## Practical checkpoint Definition of Done
 

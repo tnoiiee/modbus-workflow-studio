@@ -1,31 +1,25 @@
 # Roadmap
 
-## Current direction — v1.4.0-dev.18 (Workflow Modbus Write Foundation)
+## Current direction — v1.4.0-dev.19 (Workflow MODBUS_OUTPUT Manual Testability)
 
-The [Master Plan](MASTER_PLAN.md) defines the seven Major phases, optional scopes, practical Definition of Done, OT boundary, and current execution priority. The [dev.18 scope gate](SCOPE_GATES/O2-B-WORKFLOW-WRITE-FOUNDATION-v1.4.0-dev.18.md) and [Simulator Manual Review](ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md) govern this checkpoint.
+The [Master Plan](MASTER_PLAN.md) defines the overall roadmap and OT boundary. The approved dev.18
+Write Foundation remains locked at `3a26c92a2e8723c18a54f314cdee7c71f5b157ac`; dev.19 is limited to
+manual FC06/FC16 authoring, contextual datatype/span guidance, existing SHARED_TAG read-back
+selection, and Runtime/Audit/Traffic diagnostic presentation. See the [dev.19 scope gate](SCOPE_GATES/O2-B-WORKFLOW-WRITE-MANUAL-TESTABILITY-v1.4.0-dev.19.md) and
+[Simulator Manual Review](ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.19.md).
 
-Implement the Owner-approved guarded Workflow write boundary for controlled Simulator validation.
-The Production Server behavior change is explicit: legacy `POST /api/nodes/:id/write` remains
-only as a compatibility-feedback route and always returns HTTP 410 with code
-`LEGACY_DIRECT_WRITE_DISABLED` and message `Direct node writes are disabled. Modbus writes must use
-the guarded Workflow runtime.` It never looks up/connects a Device, queues, frames, writes,
-retries, mutates runtime/ownership, starts/triggers a Workflow, or discloses sensitive config.
-Existing JSON body-size, Origin and security protections stay in force; middleware may reject
-invalid/oversized input before the route. There is no redirect or replacement public write API.
+`WorkflowRuntimeManager` remains the only write authority. `ALLOW_WRITES=false` remains the default;
+legacy `POST /api/nodes/:id/write` remains HTTP 410, with no replacement public Write API. No Server
+write admission/lifecycle change, new Audit event/schema, or O2-B2 protocol change is authorized.
+Overview Controls remain PREVIEW ONLY; Overview and Modbus Monitor remain read-only. Production
+Device tests are not authorized. Owner Simulator Manual Review is PENDING; hardware and 24/7 soak
+certification remain PENDING.
 
-`WorkflowRuntimeManager` is the only write authority. Writes default disabled (`ALLOW_WRITES=false`)
-and require strict FC/type/address/value validation, running/current runtime generation, LIVE_ARMED,
-output resource ownership, valid enabled connected non-manually-disconnected Device, typed unexpired
-command, queue capacity, and existing write-on-change/interval policy. Device queues are bounded;
-Stop/Delete/manual disconnect fence pending work and stale completions. Optional read-back observes
-only an explicitly associated SHARED_TAG from the existing Server Tag Runtime Store/acquisition.
-No new poller, connection, retry, or browser protocol is created.
-
-Use [the controlled Simulator Manual Review](ACCEPTANCE_TESTS/O2-B-WORKFLOW-WRITE-MANUAL-REVIEW-v1.4.0-dev.18.md).
-Overview Controls remain PREVIEW ONLY; Overview and Modbus Monitor are read-only. Production and
-hardware writes are unauthorized; hardware acceptance and 24/7 soak certification remain PENDING
-Owner review. O2-A/O2-B protected functionality remains locked. O2-C stays deferred; no O2-D,
-assets, generic Signal/Variable, Published Output, Overview write, or FC15 scope is authorized.
+The manual review guide defines a deterministic expiry boundary using an ON_WIRE first response,
+a queued second command, the displayed fixed five-second expiry time and explicit release. It also
+defines a safe, non-safety-rated Simulator-only FC05/FC01 read-back mismatch. No configurable expiry,
+commissioning Write screen, automatic retry, Shared Tag Input, Published Workflow Output, O2-C/O2-D,
+FC15, dependency upgrade, or production/hardware test is in scope.
 
 
 ## Historical approved staging — O2-B1 / v1.4.0-dev.6

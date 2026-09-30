@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0-dev.19] - Workflow MODBUS_OUTPUT Manual Testability (2026-09-30)
+
+- Unlock FC06/FC16 normal Inspector authoring with contextual datatypes and atomic Function Code/type transitions recorded as one Undo entry; preserve invalid saved settings for authoritative Server validation.
+- Add zero-based address and final register-span guidance, catalog-only SHARED_TAG read-back selection, and clear unresolved/disabled mapping warnings without creating acquisition resources.
+- Make MODBUS_OUTPUT Runtime details, existing Audit fields and optional Traffic Command ID correlation easier to inspect. No Audit schema/event or Server runtime behavior change; Traffic remains transport-only.
+- Document deterministic five-second Simulator hold/release expiry and safe FC05/FC01 mismatch review. dev.18 write admission/lifecycle/authority remain unchanged; no generic API, Overview write, configurable expiry, Shared Tag Input, Published Output, or dependency change.
+- Owner Simulator Manual Review PENDING; Production Device test NOT AUTHORIZED; hardware and 24/7 soak certification PENDING.
+
 ## [1.4.0-dev.18] - Workflow Modbus Write Foundation (2026-09-29)
 
 - Production Server behavior changed: `POST /api/nodes/:id/write` is retained only as a

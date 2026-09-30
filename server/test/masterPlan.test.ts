@@ -29,11 +29,11 @@ describe('Owner roadmap and development boundary', () => {
     expect(masterPlan).not.toMatch(/\b(?:IEC|ISA|SIL)\s+(?:compliant|certified|certification target)\b/i);
   });
 
-  it('preserves the exact execution priority, deferred O2-C record, and dev.18 scope boundary', () => {
+  it('records the dev.19 execution priority, deferred O2-C record, and historical dev.18 scope boundary', () => {
     const ordered = [
-      'Complete v1.4.0-dev.18', 'Owner Simulator Write review', 'Shared Tag Input', 'Explicit state/latch lifecycle',
-      'Published Workflow Output', 'Workflow Command Input', 'Overview Operator Control', 'Backup/restore',
-      'Practical access boundary', 'Hardware validation', 'Soak validation', 'Optional scopes',
+      'Complete v1.4.0-dev.19 MODBUS_OUTPUT manual authoring/diagnostic testability',
+      'Owner Simulator Manual Review for dev.19', 'Stop for Owner direction',
+      'Shared Tag Input', 'Published Workflow Output',
     ];
     let position = -1;
     for (const item of ordered) { const next = masterPlan.indexOf(item, position + 1); expect(next).toBeGreaterThan(position); position = next; }
